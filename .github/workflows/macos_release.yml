@@ -5,6 +5,8 @@ on:
     branches:
       - 'master'
       - 'Stable*'
+      - 'klv_synchronization'
+      - 'foxfour_dev'
     tags:
       - 'v*'
     paths-ignore:
