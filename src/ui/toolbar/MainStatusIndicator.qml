@@ -9,18 +9,20 @@
 
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 
 import QGroundControl
 import QGroundControl.Controls
+import QGroundControl.Controllers
 import QGroundControl.MultiVehicleManager
 import QGroundControl.ScreenTools
 import QGroundControl.Palette
 import QGroundControl.FactSystem
 
 RowLayout {
-    id:         control
+    id:         _root
     spacing:    0
-
+    
     property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
     property var    _vehicleInAir:      _activeVehicle ? _activeVehicle.flying || _activeVehicle.landing : false
     property bool   _vtolInFWDFlight:   _activeVehicle ? _activeVehicle.vtolInFwdFlight : false
@@ -28,6 +30,11 @@ RowLayout {
     property real   _margins:           ScreenTools.defaultFontPixelWidth
     property real   _spacing:           ScreenTools.defaultFontPixelWidth / 2
     property bool   _healthAndArmingChecksSupported: _activeVehicle ? _activeVehicle.healthAndArmingCheckReport.supported : false
+    property var    _dynamicCameras:    globals.activeVehicle ? globals.activeVehicle.cameraManager : null
+    property int    _curCameraIndex:    _dynamicCameras ? _dynamicCameras.currentCamera : 0
+    property bool   _isCamera:          _dynamicCameras ? _dynamicCameras.cameras.count > 0 : false
+    property var    _camera:            _isCamera ? _dynamicCameras.cameras.get(_curCameraIndex) : null
+
 
     QGCMarqueeLabel {
         id:             mainStatusLabel
@@ -125,6 +132,83 @@ RowLayout {
         implicitHeight: 1
         visible:        vtolModeLabel.visible
     }
+
+    // -- Zoom Slider
+    Text {
+        text: "Zoom: " + _camera.zoomLevel.toFixed(0) + "X"
+        color: "#f0f0f0"
+        font.family: "monospace"
+        font.pixelSize: 16
+        Layout.preferredWidth: 80
+        horizontalAlignment: Text.AlignLeft
+    }    
+
+    property bool blockUpdates: false
+    Connections {
+        target: _camera
+        
+        // Block signal to avoid binding loop
+        onZoomLevelChanged: {
+            if (!blockUpdates) {
+                blockUpdates = true
+                zoomSlider.value = _camera.zoomLevel
+                blockUpdates = false
+            }
+        }
+        onZoomEnabledChanged: {
+            zoomSlider.value = _camera.zoomLevel
+        }
+    }
+
+    QGCSlider {
+        id:                 zoomSlider
+        orientation:        Qt.Horizontal
+        from:               1
+        to:                 12
+        value:              _camera ? _camera.zoomLevel : zoomSlider.from
+
+        height:             ScreenTools.defaultFontPixelHeight
+        width:              ScreenTools.defaultFontPixelWidth * 100
+        leftPadding:        ScreenTools.defaultFontPixelWidth
+        
+        snapMode:           Slider.SnapOnRelease
+        stepSize:           0.01
+        background: Rectangle {
+            x: zoomSlider.leftPadding
+            y: zoomSlider.topPadding + zoomSlider.availableHeight / 2 - height / 2
+            implicitWidth: 200
+            implicitHeight: 4
+            width: zoomSlider.availableWidth
+            height: implicitHeight
+            radius: 2
+            color: "#bdbebf"
+
+            Rectangle {
+                width: zoomSlider.visualPosition * parent.width
+                height: parent.height
+                color: "#95F792"
+                radius: 2
+            }
+        }
+
+        handle: Rectangle {
+            x: zoomSlider.leftPadding + zoomSlider.visualPosition * (zoomSlider.availableWidth - width)
+            y: zoomSlider.topPadding + zoomSlider.availableHeight / 2 - height / 2
+            implicitWidth: 13
+            implicitHeight: 26
+            radius: 13
+            color: zoomSlider.pressed ? "#f0f0f0" : "#f6f6f6"
+            border.color: "#f0f0f0"
+        }
+
+        onMoved: {
+            if (!blockUpdates) {
+                blockUpdates = true
+                _camera.zoomLevel = value
+                blockUpdates = false
+            }
+        }     
+    }   
 
     QGCLabel {
         id:                     vtolModeLabel
