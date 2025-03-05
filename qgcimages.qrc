@@ -48,8 +48,9 @@
         <file alias="AirframeStandardPlane.png">src/AutoPilotPlugins/Common/Images/Plane.svg</file>
         <file alias="AlertAircraft.svg">src/FlightMap/Images/AlertAircraft.svg</file>
         <file alias="Analyze.svg">src/ui/toolbar/Images/Analyze.svg</file>
-        <file alias="APM/BrandImage">src/FirmwarePlugin/APM/APMBrandImage.png</file>
         <file alias="APM/BrandImageSub">src/FirmwarePlugin/APM/APMBrandImageSub.png</file>
+        <file alias="F4/BrandImage">src/FirmwarePlugin/APM/F4BrandImage.svg</file>
+        <file alias="F4/BrandImageSub">src/FirmwarePlugin/APM/APMBrandImageSub.png</file>
         <file alias="APMode.svg">src/AutoPilotPlugins/Common/Images/APMode.svg</file>
         <file alias="Armed.svg">src/ui/toolbar/Images/Armed.svg</file>
         <file alias="arrow-down.png">src/QmlControls/arrow-down.png</file>

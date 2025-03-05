@@ -259,6 +259,7 @@ Rectangle {
         RowLayout {
             Layout.alignment:   Qt.AlignHCenter
             spacing:            5
+            visible:            QGroundControl.multiVehicleManager.activeVehicle
 
             // Take Photo, Start/Stop Video button
             // IMPORTANT: This control supports both mavlink cameras and simple video streams. Do no reference anything here which is not
