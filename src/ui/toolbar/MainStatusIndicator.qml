@@ -135,7 +135,7 @@ RowLayout {
 
     // -- Zoom Slider
     Text {
-        text: "Zoom: " + _camera.zoomLevel.toFixed(0) + "X"
+        text: _camera ? ("Zoom: " + _camera.zoomLevel.toFixed(1) + "X") : " "
         color: "#f0f0f0"
         font.family: "monospace"
         font.pixelSize: 16
@@ -156,7 +156,11 @@ RowLayout {
             }
         }
         onZoomEnabledChanged: {
-            zoomSlider.value = _camera.zoomLevel
+            if (!blockUpdates) {
+                blockUpdates = true
+                zoomSlider.value = _camera.zoomLevel
+                blockUpdates = false
+            }
         }
     }
 
@@ -203,8 +207,12 @@ RowLayout {
 
         onMoved: {
             if (!blockUpdates) {
+                if (value < 1.1){
+                    value = 1
+                }
                 blockUpdates = true
                 _camera.zoomLevel = value
+                _camera.zoomEnabled = value > 1
                 blockUpdates = false
             }
         }     

@@ -210,5 +210,52 @@ Item {
             }
             property int zoom: 0
         }
+        Item {
+            id: keyboardZoomControl
+            
+            // Optional: make the plugin configurable
+            property real zoomStep: 1
+            property var zoomInKeys: [Qt.Key_Plus, Qt.Key_Equal, Qt.Key_Up, Qt.Key_W]
+            property var zoomOutKeys: [Qt.Key_Minus, Qt.Key_Down, Qt.Key_S]
+            property real minZoom: 1
+            property real maxZoom: 32
+
+            // Ensure the plugin is focused to receive key events
+            focus: true
+            Component.onCompleted: {
+                forceActiveFocus()
+            }
+            Keys.enabled: true
+            // Key event handler
+            Keys.onPressed: (event) => {
+                console.log("event.key", event.key)
+                console.log("_camera.zoomLevel", _camera.zoomLevel)
+                // Check for zoom in keys
+                if (zoomInKeys.includes(event.key)) {
+                    let newZoom = Math.min(maxZoom, _camera.zoomLevel + zoomStep)
+                    _camera.zoomLevel = newZoom
+                    event.accepted = true
+                }
+                
+                // Check for zoom out keys
+                if (zoomOutKeys.includes(event.key)) {
+                    let newZoom = Math.max(minZoom, _camera.zoomLevel - zoomStep)
+                    _camera.zoomLevel = newZoom
+                    event.accepted = true
+                }
+                console.log("_camera.zoomLevel", _camera.zoomLevel)
+            }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    keyboardZoomControl.forceActiveFocus()
+                }
+            }
+
+            // Optional: Reset zoom to default
+            Keys.onEscapePressed: {
+                _camera.zoomLevel = 1.0
+            }
+        }
     }
 }
