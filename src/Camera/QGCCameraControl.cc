@@ -2399,6 +2399,7 @@ void QGCCameraControl::startTracking(QRectF rec, QString timestamp, bool is_zoom
                                  true,
                                  MAVLINK_MSG_ID_CAMERA_TRACKING_IMAGE_STATUS,
                                  50000);
+        emit zoomLevelChanged();
     }
 }
 
@@ -2428,6 +2429,7 @@ QGCCameraControl::startTracking(QPointF point, double radius)
                                  true,
                                  MAVLINK_MSG_ID_CAMERA_TRACKING_IMAGE_STATUS,
                                  50000);
+        emit zoomLevelChanged();
     }
 }
 

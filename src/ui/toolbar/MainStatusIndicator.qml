@@ -135,11 +135,11 @@ RowLayout {
 
     // -- Zoom Slider
     Text {
-        text: _camera ? ("Zoom: " + _camera.zoomLevel.toFixed(1) + "X") : " "
+        text: _camera ? ("Zoom: " + Math.max(1.0, _camera.zoomLevel.toFixed(1)) + "X") : " "
         color: "#f0f0f0"
         font.family: "monospace"
         font.pixelSize: 16
-        Layout.preferredWidth: 80
+        Layout.preferredWidth: ScreenTools.defaultFontPixelWidth * 12
         horizontalAlignment: Text.AlignLeft
     }    
 
@@ -151,14 +151,23 @@ RowLayout {
         onZoomLevelChanged: {
             if (!blockUpdates) {
                 blockUpdates = true
-                zoomSlider.value = _camera.zoomLevel
+                var val = _camera.zoomLevel.toFixed(2)
+                if (val < 1.1){
+                    val = 1
+                }
+                zoomSlider.value = val
                 blockUpdates = false
             }
         }
         onZoomEnabledChanged: {
+            return
             if (!blockUpdates) {
                 blockUpdates = true
-                zoomSlider.value = _camera.zoomLevel
+                var val = _camera.zoomEnabled ? _camera.zoomLevel.toFixed(2) : 1
+                if (val < 1.1){
+                    val = 1
+                }
+                zoomSlider.value = val
                 blockUpdates = false
             }
         }
@@ -168,7 +177,7 @@ RowLayout {
         id:                 zoomSlider
         orientation:        Qt.Horizontal
         from:               1
-        to:                 12
+        to:                 32
         value:              _camera ? _camera.zoomLevel : zoomSlider.from
 
         height:             ScreenTools.defaultFontPixelHeight
@@ -176,7 +185,7 @@ RowLayout {
         leftPadding:        ScreenTools.defaultFontPixelWidth
         
         snapMode:           Slider.SnapOnRelease
-        stepSize:           0.01
+        stepSize:           0.5
         background: Rectangle {
             x: zoomSlider.leftPadding
             y: zoomSlider.topPadding + zoomSlider.availableHeight / 2 - height / 2
@@ -207,12 +216,12 @@ RowLayout {
 
         onMoved: {
             if (!blockUpdates) {
+                blockUpdates = true
                 if (value < 1.1){
                     value = 1
                 }
-                blockUpdates = true
                 _camera.zoomLevel = value
-                _camera.zoomEnabled = value > 1
+                _camera.zoomEnabled = value >= 1.1
                 blockUpdates = false
             }
         }     
