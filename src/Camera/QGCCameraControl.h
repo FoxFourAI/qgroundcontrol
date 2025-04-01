@@ -237,9 +237,10 @@ public:
     Q_INVOKABLE virtual void stopZoom       ();
     Q_INVOKABLE virtual void stopStream     ();
     Q_INVOKABLE virtual void resumeStream   ();
-    Q_INVOKABLE virtual void startTracking(QRectF rec, QString timestamp, bool is_zoom = false);
+    Q_INVOKABLE virtual void startTracking  (QRectF rec, QString timestamp, bool is_zoom = false);
     Q_INVOKABLE virtual void startTracking  (QPointF point, double radius);
-    Q_INVOKABLE virtual void stopTracking(QString timestamp);
+    Q_INVOKABLE virtual void setZoomParams  (qreal level, QRectF rec, QString timestamp);
+    Q_INVOKABLE virtual void stopTracking   (QString timestamp);
 
     virtual int         version             () { return _version; }
     virtual QString     modelName           () { return _modelName; }

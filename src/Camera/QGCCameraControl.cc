@@ -19,6 +19,7 @@
 #include <QStandardPaths>
 #include <QDomDocument>
 #include <QDomNodeList>
+#include <iostream>
 
 QGC_LOGGING_CATEGORY(CameraControlLog, "CameraControlLog")
 QGC_LOGGING_CATEGORY(CameraControlVerboseLog, "CameraControlVerboseLog")
@@ -567,8 +568,10 @@ QGCCameraControl::setThermalOpacity(double val)
 }
 
 //-----------------------------------------------------------------------------
+/*
 void
 QGCCameraControl::setZoomLevel(qreal level)
+// TODO this function needs to deprecate, use setZoomParams instead
 {
     qCDebug(CameraControlLog) << "setZoomLevel()" << level;
     if(hasZoom()) {
@@ -588,6 +591,83 @@ QGCCameraControl::setZoomLevel(qreal level)
         emit zoomLevelChanged();
     }
 }
+*/
+void
+QGCCameraControl::setZoomLevel(qreal level)
+{
+    qCInfo(CameraControlLog) << "setZoomLevel()" << level;
+    if(hasZoom()) {
+        _zoomLevel = level;
+        int center_x = 1;
+        int center_y = 2;
+        int ts_pt1   = 3;
+        int ts_pt2   = 4;
+        //-- Limit
+        level = std::min(std::max(level, 0.0), 100.0);
+        return;
+        if(_vehicle) {
+            _vehicle->sendMavCommand(
+                _compID,                                // Target component
+                MAV_CMD_SET_CAMERA_ZOOM,                // Command id
+                false,                                  // ShowError
+                ZOOM_TYPE_RANGE,                        // Zoom type
+                static_cast<float>(level),              // Level
+                0, 
+                center_x,                               // Center x
+                center_y,                               // Center y
+                ts_pt1,
+                ts_pt2);
+        }
+        // FIXME why zoomEnabledChanged is here?
+        emit zoomEnabledChanged();
+        emit zoomLevelChanged();
+    }
+}
+
+//-----------------------------------------------------------------------------
+void
+QGCCameraControl::setZoomParams(qreal level, QRectF rec, QString timestamp)
+{
+    auto center_x = static_cast<float>(rec.x() + rec.width() / 2);
+    auto center_y = static_cast<float>(rec.y() + rec.height() / 2);
+    uint64_t uint_timestamp = timestamp.toULongLong();
+
+    uint_timestamp = uint_timestamp | (1ULL << 63);
+
+    uint32_t timestampLow = static_cast<uint32_t>(uint_timestamp);
+    uint32_t timestampHigh = static_cast<uint32_t>(uint_timestamp >> 32);
+    // 6.7   643.277   428   0   2147483648     
+    qCInfo(CameraControlLog) << "setZoomParams()" << level 
+                              << " " << center_x
+                              << " " << center_y
+                              << " " << timestampLow
+                              << " " << timestampHigh << '\n';
+
+
+    if(hasZoom()) {
+        qCInfo(CameraControlLog) << "hasZoom()";
+        //-- Limit
+        level = std::min(std::max(level, 0.0), 100.0);
+        if(_vehicle) {
+            _vehicle->sendMavCommand(
+                _compID,                                // Target component
+                MAV_CMD_SET_CAMERA_ZOOM,                // Command id
+                false,                                  // ShowError
+                ZOOM_TYPE_RANGE,                        // Zoom type
+                static_cast<float>(level),              // Level
+                0, 
+                center_x,                               // Center x
+                center_y,                               // Center y
+                static_cast<float>(timestampLow),
+                static_cast<float>(timestampHigh));
+        }
+        // FIXME why zoomEnabledChanged is here?
+        emit zoomEnabledChanged();
+        emit zoomLevelChanged();
+    }
+}
+
+
 
 //-----------------------------------------------------------------------------
 void

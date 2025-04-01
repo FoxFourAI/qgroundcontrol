@@ -120,8 +120,8 @@ RowLayout {
             anchors.left:           parent.left
             anchors.right:          parent.right
             anchors.verticalCenter: parent.verticalCenter
-            height:                 control.height
-            onClicked:              mainWindow.showIndicatorDrawer(overallStatusComponent, control)
+            height:                 _root.height
+            onClicked:              mainWindow.showIndicatorDrawer(overallStatusComponent, _root)
 
             property Component overallStatusComponent: _activeVehicle ? overallStatusIndicatorPage : overallStatusOfflineIndicatorPage
         }
@@ -135,7 +135,7 @@ RowLayout {
 
     // -- Zoom Slider
     Text {
-        text: _camera ? ("Zoom: " + Math.max(1.0, _camera.zoomLevel.toFixed(1)) + "X") : " "
+        text: _camera ? ("Zoom: x" + Math.max(1.0, _camera.zoomLevel.toFixed(1))) : " "
         color: "#f0f0f0"
         font.family: "monospace"
         font.pixelSize: 16
@@ -152,9 +152,6 @@ RowLayout {
             if (!blockUpdates) {
                 blockUpdates = true
                 var val = _camera.zoomLevel.toFixed(2)
-                if (val < 1.1){
-                    val = 1
-                }
                 zoomSlider.value = val
                 blockUpdates = false
             }
@@ -164,9 +161,6 @@ RowLayout {
             if (!blockUpdates) {
                 blockUpdates = true
                 var val = _camera.zoomEnabled ? _camera.zoomLevel.toFixed(2) : 1
-                if (val < 1.1){
-                    val = 1
-                }
                 zoomSlider.value = val
                 blockUpdates = false
             }
