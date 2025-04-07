@@ -221,6 +221,7 @@ public:
     Q_PROPERTY(TrackingStatus trackingStatus    READ trackingStatus                                 CONSTANT)
     Q_PROPERTY(bool         trackingImageStatus READ trackingImageStatus                            NOTIFY trackingImageStatusChanged)
     Q_PROPERTY(QRectF       trackingImageRect   READ trackingImageRect                              NOTIFY trackingImageStatusChanged)
+    Q_PROPERTY(qreal        maxZoomLevel        READ maxZoomLevel                                   CONSTANT)
 
     Q_INVOKABLE virtual void setVideoMode   ();
     Q_INVOKABLE virtual void setPhotoMode   ();
@@ -276,6 +277,7 @@ public:
     virtual QString     batteryRemainingStr ();
     virtual bool        paramComplete       () { return _paramComplete; }
     virtual qreal       zoomLevel           () { return _zoomLevel; }
+    virtual qreal       maxZoomLevel        () { return 32.0; }  // Default maximum zoom level
     virtual qreal       focusLevel          () { return _focusLevel; }
 
     virtual QmlObjectListModel* streams     () { return &_streams; }

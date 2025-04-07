@@ -568,7 +568,6 @@ QGCCameraControl::setThermalOpacity(double val)
 }
 
 //-----------------------------------------------------------------------------
-/*
 void
 QGCCameraControl::setZoomLevel(qreal level)
 // TODO this function needs to deprecate, use setZoomParams instead
@@ -585,38 +584,6 @@ QGCCameraControl::setZoomLevel(qreal level)
                 false,                                  // ShowError
                 ZOOM_TYPE_RANGE,                        // Zoom type
                 static_cast<float>(level));             // Level
-        }
-        // FIXME why zoomEnabledChanged is here?
-        emit zoomEnabledChanged();
-        emit zoomLevelChanged();
-    }
-}
-*/
-void
-QGCCameraControl::setZoomLevel(qreal level)
-{
-    qCInfo(CameraControlLog) << "setZoomLevel()" << level;
-    if(hasZoom()) {
-        _zoomLevel = level;
-        int center_x = 1;
-        int center_y = 2;
-        int ts_pt1   = 3;
-        int ts_pt2   = 4;
-        //-- Limit
-        level = std::min(std::max(level, 0.0), 100.0);
-        return;
-        if(_vehicle) {
-            _vehicle->sendMavCommand(
-                _compID,                                // Target component
-                MAV_CMD_SET_CAMERA_ZOOM,                // Command id
-                false,                                  // ShowError
-                ZOOM_TYPE_RANGE,                        // Zoom type
-                static_cast<float>(level),              // Level
-                0, 
-                center_x,                               // Center x
-                center_y,                               // Center y
-                ts_pt1,
-                ts_pt2);
         }
         // FIXME why zoomEnabledChanged is here?
         emit zoomEnabledChanged();

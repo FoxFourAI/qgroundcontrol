@@ -106,6 +106,15 @@ DECLARE_SETTINGGROUP(Video, "Video")
 
     // Set default value for videoSource
     _setDefaults();
+
+    _lowLatencyModeFact = _createSettingsFact(lowLatencyModeName);
+    _forceVideoDecoderFact = _createSettingsFact(forceVideoDecoderName);
+    _pipZoomSizeXFact = _createSettingsFact(pipZoomSizeXName);
+    _pipZoomSizeYFact = _createSettingsFact(pipZoomSizeYName);
+    _pipCenterXFact = _createSettingsFact(pipCenterXName);
+    _pipCenterYFact = _createSettingsFact(pipCenterYName);
+
+    _name = tr("Video");
 }
 
 void VideoSettings::_setDefaults()
@@ -128,6 +137,11 @@ DECLARE_SETTINGSFACT(VideoSettings, rtspTimeout)
 DECLARE_SETTINGSFACT(VideoSettings, streamEnabled)
 DECLARE_SETTINGSFACT(VideoSettings, disableWhenDisarmed)
 DECLARE_SETTINGSFACT(VideoSettings, lowLatencyMode)
+DECLARE_SETTINGSFACT(VideoSettings, forceVideoDecoder)
+DECLARE_SETTINGSFACT(VideoSettings, pipZoomSizeX)
+DECLARE_SETTINGSFACT(VideoSettings, pipZoomSizeY)
+DECLARE_SETTINGSFACT(VideoSettings, pipCenterX)
+DECLARE_SETTINGSFACT(VideoSettings, pipCenterY)
 
 DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, videoSource)
 {
@@ -144,24 +158,6 @@ DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, videoSource)
         connect(_videoSourceFact, &Fact::valueChanged, this, &VideoSettings::_configChanged);
     }
     return _videoSourceFact;
-}
-
-DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, forceVideoDecoder)
-{
-    if (!_forceVideoDecoderFact) {
-        _forceVideoDecoderFact = _createSettingsFact(forceVideoDecoderName);
-
-        _forceVideoDecoderFact->setVisible(
-#ifdef Q_OS_IOS
-            false
-#else
-            true
-#endif
-        );
-
-        connect(_forceVideoDecoderFact, &Fact::valueChanged, this, &VideoSettings::_configChanged);
-    }
-    return _forceVideoDecoderFact;
 }
 
 DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, udpPort)

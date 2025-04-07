@@ -38,6 +38,12 @@ public:
     DEFINE_SETTINGFACT(lowLatencyMode)
     DEFINE_SETTINGFACT(forceVideoDecoder)
 
+    // New PIP settings
+    DEFINE_SETTINGFACT(pipZoomSizeX)
+    DEFINE_SETTINGFACT(pipZoomSizeY)
+    DEFINE_SETTINGFACT(pipCenterX)
+    DEFINE_SETTINGFACT(pipCenterY)
+
     Q_ENUM(VideoDecoderOptions)
 
     Q_PROPERTY(bool     streamConfigured        READ streamConfigured       NOTIFY streamConfiguredChanged)

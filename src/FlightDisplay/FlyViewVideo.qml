@@ -24,6 +24,7 @@ Item {
     property real last_zoom_factor: 1
     property real last_zoom_center_x: 0
     property real last_zoom_center_y: 0
+    property var lastZoomRectangle: null  // Store the last used rectangle for zooming
     QGCPipState {
         id: videoPipState
         pipOverlay: _pipOverlay
@@ -146,11 +147,21 @@ Item {
         onReleased: mouse => {
             // TODO: zooming inside the zoom window
             // TODO: replace hardcoding
-            let MAX_ZOOM_FACTOR = 32;
-            let VID_ZOOM_SIZE_X = 0.45;
-            let VID_ZOOM_SIZE_Y = 0.3;
-            let CENTER_X_OVERLAY = 0.5;
-            let CENTER_Y_OVERLAY = 0.16;
+            // let MAX_ZOOM_FACTOR = 12;
+            // let VID_ZOOM_SIZE_X = 0.45;
+            // let VID_ZOOM_SIZE_Y = 0.3;
+            // let CENTER_X_OVERLAY = 0.5;
+            // let CENTER_Y_OVERLAY = 0.16;
+            let MAX_ZOOM_FACTOR = videoStreaming._camera ? videoStreaming._camera.maxZoomLevel : 12;
+            let VID_ZOOM_SIZE_X = QGroundControl.settingsManager.videoSettings.pipZoomSizeX.rawValue;
+            let VID_ZOOM_SIZE_Y = QGroundControl.settingsManager.videoSettings.pipZoomSizeY.rawValue;
+            let CENTER_X_OVERLAY = QGroundControl.settingsManager.videoSettings.pipCenterX.rawValue;
+            let CENTER_Y_OVERLAY = QGroundControl.settingsManager.videoSettings.pipCenterY.rawValue;
+            console.log("MAX_ZOOM_FACTOR: ", MAX_ZOOM_FACTOR);
+            console.log("VID_ZOOM_SIZE_X: ", VID_ZOOM_SIZE_X);
+            console.log("VID_ZOOM_SIZE_Y: ", VID_ZOOM_SIZE_Y);
+            console.log("CENTER_X_OVERLAY: ", CENTER_X_OVERLAY);
+            console.log("CENTER_Y_OVERLAY: ", CENTER_Y_OVERLAY);
             selectionRect.visible = false;
 
             let x0 = Math.floor(Math.max(0, selectionRect.x));
@@ -228,11 +239,13 @@ Item {
             last_zoom_center_x = rec.x + rec.width / 2
             last_zoom_center_y = rec.y + rec.height / 2
             last_zoom_factor = factor
-            videoStreaming.updateZoom(factor.toFixed(2));
+            
             let latestFrameTimestamp = QGroundControl.videoManager.lastKlvTimestamp;
             //videoStreaming._camera.startTracking(rec, latestFrameTimestamp, true)
             videoStreaming._camera.setZoomParams(factor.toFixed(1), rec, latestFrameTimestamp);
+            videoStreaming.updateZoom(factor.toFixed(2));
             videoStreaming._camera.zoomEnabled = true;
+            lastZoomRectangle = rec;  // Update the last used rectangle
         }
 
         onDoubleClicked: QGroundControl.videoManager.fullScreen = !QGroundControl.videoManager.fullScreen

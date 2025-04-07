@@ -210,7 +210,7 @@ Item {
                 if(_hasZoom) {
                     var z = 0
                     z = Math.round(pinch.scale)
-                    _camera.zoomLevel = Math.max(Math.min(pinch.scale * initZoom, 32), 1)
+                    _camera.zoomLevel = Math.max(Math.min(pinch.scale * initZoom, 12), 1)
                 }
             }
             property int zoom: 0
@@ -223,7 +223,7 @@ Item {
             property var zoomInKeys: [Qt.Key_Plus, Qt.Key_Equal, Qt.Key_Up, Qt.Key_W]
             property var zoomOutKeys: [Qt.Key_Minus, Qt.Key_Down, Qt.Key_S]
             property real minZoom: 1
-            property real maxZoom: 32
+            property real maxZoom: 12
 
             // Ensure the plugin is focused to receive key events
             focus: true
