@@ -171,7 +171,7 @@ RowLayout {
         id:                 zoomSlider
         orientation:        Qt.Horizontal
         from:               1
-        to:                 32
+        to:                 12
         value:              _camera ? _camera.zoomLevel : zoomSlider.from
 
         height:             ScreenTools.defaultFontPixelHeight
@@ -214,6 +214,7 @@ RowLayout {
                 if (value < 1.1){
                     value = 1
                 }
+                // TODO updateZoom
                 _camera.zoomLevel = value
                 _camera.zoomEnabled = value >= 1.1
                 blockUpdates = false
