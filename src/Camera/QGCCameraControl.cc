@@ -19,6 +19,7 @@
 #include <QStandardPaths>
 #include <QDomDocument>
 #include <QDomNodeList>
+#include <iostream>
 
 QGC_LOGGING_CATEGORY(CameraControlLog, "CameraControlLog")
 QGC_LOGGING_CATEGORY(CameraControlVerboseLog, "CameraControlVerboseLog")
@@ -569,6 +570,7 @@ QGCCameraControl::setThermalOpacity(double val)
 //-----------------------------------------------------------------------------
 void
 QGCCameraControl::setZoomLevel(qreal level)
+// TODO this function needs to deprecate, use setZoomParams instead
 {
     qCDebug(CameraControlLog) << "setZoomLevel()" << level;
     if(hasZoom()) {
@@ -583,9 +585,56 @@ QGCCameraControl::setZoomLevel(qreal level)
                 ZOOM_TYPE_RANGE,                        // Zoom type
                 static_cast<float>(level));             // Level
         }
+        // FIXME why zoomEnabledChanged is here?
         emit zoomEnabledChanged();
+        emit zoomLevelChanged();
     }
 }
+
+//-----------------------------------------------------------------------------
+void
+QGCCameraControl::setZoomParams(qreal level, QRectF rec, QString timestamp)
+{
+    auto center_x = static_cast<float>(rec.x() + rec.width() / 2);
+    auto center_y = static_cast<float>(rec.y() + rec.height() / 2);
+    uint64_t uint_timestamp = timestamp.toULongLong();
+
+    uint_timestamp = uint_timestamp | (1ULL << 63);
+
+    uint32_t timestampLow = static_cast<uint32_t>(uint_timestamp);
+    uint32_t timestampHigh = static_cast<uint32_t>(uint_timestamp >> 32);
+    // 6.7   643.277   428   0   2147483648     
+    qCInfo(CameraControlLog) << "setZoomParams()" << level 
+                              << " " << center_x
+                              << " " << center_y
+                              << " " << timestampLow
+                              << " " << timestampHigh << '\n';
+
+
+    if(hasZoom()) {
+        qCInfo(CameraControlLog) << "hasZoom()";
+        //-- Limit
+        level = std::min(std::max(level, 0.0), 100.0);
+        if(_vehicle) {
+            _vehicle->sendMavCommand(
+                _compID,                                // Target component
+                MAV_CMD_SET_CAMERA_ZOOM,                // Command id
+                false,                                  // ShowError
+                ZOOM_TYPE_RANGE,                        // Zoom type
+                static_cast<float>(level),              // Level
+                0, 
+                center_x,                               // Center x
+                center_y,                               // Center y
+                static_cast<float>(timestampLow),
+                static_cast<float>(timestampHigh));
+        }
+        // FIXME why zoomEnabledChanged is here?
+        emit zoomEnabledChanged();
+        emit zoomLevelChanged();
+    }
+}
+
+
 
 //-----------------------------------------------------------------------------
 void
@@ -2361,7 +2410,7 @@ QGCCameraControl::setTrackingEnabled(bool set)
 }
 
 //-----------------------------------------------------------------------------
-void QGCCameraControl::startTracking(QRectF rec, QString timestamp)
+void QGCCameraControl::startTracking(QRectF rec, QString timestamp, bool is_zoom)
 {
     if(_trackingMarquee != rec) {
         _trackingMarquee = rec;
@@ -2374,6 +2423,9 @@ void QGCCameraControl::startTracking(QRectF rec, QString timestamp)
                                   << "Timestamp: " << timestamp;
 
         uint64_t uint_timestamp = timestamp.toULongLong();
+        if (is_zoom) {
+            uint_timestamp = uint_timestamp | (1ULL << 63);
+        }
         // FIXME: we put the 64-bit timestamp into fifth and sixth parameters here which is not a good practice in MavLink
         uint32_t timestampLow = static_cast<uint32_t>(uint_timestamp);
         uint32_t timestampHigh = static_cast<uint32_t>(uint_timestamp >> 32);
@@ -2394,6 +2446,7 @@ void QGCCameraControl::startTracking(QRectF rec, QString timestamp)
                                  true,
                                  MAVLINK_MSG_ID_CAMERA_TRACKING_IMAGE_STATUS,
                                  50000);
+        emit zoomLevelChanged();
     }
 }
 
@@ -2423,6 +2476,7 @@ QGCCameraControl::startTracking(QPointF point, double radius)
                                  true,
                                  MAVLINK_MSG_ID_CAMERA_TRACKING_IMAGE_STATUS,
                                  50000);
+        emit zoomLevelChanged();
     }
 }
 

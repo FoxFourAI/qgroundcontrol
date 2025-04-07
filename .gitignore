@@ -1,3 +1,13 @@
+cmake_install.cmake
+Makefile
+libs/
+.gitignore
+.qt/
+CMakeCache.txt
+CPackConfig.cmake
+CPackSourceConfig.cmake
+metainfo/
+
 .idea/
 .vscode/
 .cache/

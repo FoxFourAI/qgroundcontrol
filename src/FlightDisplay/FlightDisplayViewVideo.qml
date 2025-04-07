@@ -36,6 +36,10 @@ Item {
     property bool   _hasZoom:           _camera && _camera.hasZoom
     property int    _fitMode:           QGroundControl.settingsManager.videoSettings.videoFit.rawValue
 
+    function updateZoom(zoomLevel){
+        _camera.zoomLevel = zoomLevel
+    }
+
     function getWidth() {
         return videoBackground.getWidth()
     }
@@ -192,6 +196,7 @@ Item {
             }
         }
         //-- Zoom
+        //-- Touchpad zoom
         PinchArea {
             id:             pinchZoom
             enabled:        _hasZoom
@@ -205,10 +210,53 @@ Item {
                 if(_hasZoom) {
                     var z = 0
                     z = Math.round(pinch.scale)
-                    _camera.zoomLevel = Math.max(Math.min(pinch.scale * initZoom, 32), 1)
+                    _camera.zoomLevel = Math.max(Math.min(pinch.scale * initZoom, 12), 1)
                 }
             }
             property int zoom: 0
+        }
+        //-- Keyboard zoom
+        Item {
+            id: keyboardZoomControl
+            
+            property real zoomStep: 1
+            property var zoomInKeys: [Qt.Key_Plus, Qt.Key_Equal, Qt.Key_Up, Qt.Key_W]
+            property var zoomOutKeys: [Qt.Key_Minus, Qt.Key_Down, Qt.Key_S]
+            property real minZoom: 1
+            property real maxZoom: 12
+
+            // Ensure the plugin is focused to receive key events
+            focus: true
+            Component.onCompleted: {
+                forceActiveFocus()
+            }
+            Keys.enabled: true
+            Keys.onPressed: (event) => {
+                // Check for zoom in keys
+                if (zoomInKeys.includes(event.key)) {
+                    let newZoom = Math.floor(Math.min(maxZoom, _camera.zoomLevel + zoomStep))
+                    _camera.zoomLevel = newZoom
+                    event.accepted = true
+                }
+                
+                // Check for zoom out keys
+                if (zoomOutKeys.includes(event.key)) {
+                    let newZoom = Math.ceil(Math.max(minZoom, _camera.zoomLevel - zoomStep))
+                    _camera.zoomLevel = newZoom
+                    event.accepted = true
+                }
+            }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    keyboardZoomControl.forceActiveFocus()
+                }
+            }
+
+            // TODO: Optional: idk if it would be useful
+            Keys.onEscapePressed: {
+                _camera.zoomLevel = 1.0
+            }
         }
     }
 }

@@ -130,8 +130,8 @@ public:
     /// Return the resource file which contains the vehicle icon used in the flight view when the view is light (Map for instance)
     virtual QString vehicleImageOutline(const Vehicle* vehicle) const final;
 
-    QString brandImageIndoor(const Vehicle* vehicle) const final{ Q_UNUSED(vehicle); return QStringLiteral("/qmlimages/APM/BrandImageSub"); }
-    QString brandImageOutdoor(const Vehicle* vehicle) const final { Q_UNUSED(vehicle); return QStringLiteral("/qmlimages/APM/BrandImageSub"); }
+    QString brandImageIndoor(const Vehicle* vehicle) const final{ Q_UNUSED(vehicle); return QStringLiteral("/qmlimages/F4/BrandImageSub"); }
+    QString brandImageOutdoor(const Vehicle* vehicle) const final { Q_UNUSED(vehicle); return QStringLiteral("/qmlimages/F4/BrandImageSub"); }
     const FirmwarePlugin::remapParamNameMajorVersionMap_t& paramNameRemapMajorVersionMap(void) const final { return _remapParamName; }
     int remapParamNameHigestMinorVersionNumber(int majorVersionNumber) const final;
     const QVariantList& toolIndicators(const Vehicle* vehicle) final;

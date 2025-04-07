@@ -20,6 +20,18 @@ import QGroundControl.FactSystem
 import QGroundControl.FactControls
 
 ColumnLayout {
+    QGCSlider {
+        id:                 "customSliderAttempt"
+        orientation:        Qt.Horizontal
+        from:               0
+        to:                 100
+        value:              50
+        height:             ScreenTools.defaultFontPixelHeight
+        width:              ScreenTools.defaultFontPixelWidth * 100
+        leftPadding:        ScreenTools.defaultFontPixelWidth
+
+    }   
+
     spacing: ScreenTools.defaultFontPixelHeight / 2
 
     FactPanelController { id: controller }
