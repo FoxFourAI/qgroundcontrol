@@ -21,6 +21,7 @@
 #include "QGCMapEngineManager.h"
 #include "ADSBVehicleManager.h"
 #include "MissionCommandTree.h"
+#include "OpenIDAuthManager.h"
 #include "HorizontalFactValueGrid.h"
 #include "FlightPathSegment.h"
 #include "InstrumentValueData.h"
@@ -111,6 +112,7 @@ QGroundControlQmlGlobal::QGroundControlQmlGlobal(QObject *parent)
     : QObject(parent)
     , _mapEngineManager(QGCMapEngineManager::instance())
     , _adsbVehicleManager(ADSBVehicleManager::instance())
+    , _openIDAuthManager(OpenIDAuthManager::instance())
     , _qgcPositionManager(QGCPositionManager::instance())
     , _missionCommandTree(MissionCommandTree::instance())
     , _videoManager(VideoManager::instance())

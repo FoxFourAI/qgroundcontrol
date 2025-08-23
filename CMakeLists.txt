@@ -192,6 +192,7 @@ find_package(Qt6
         Location
         Multimedia
         Network
+        NetworkAuth
         OpenGL
         Positioning
         Qml

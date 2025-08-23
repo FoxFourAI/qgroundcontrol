@@ -37,6 +37,7 @@
 #include "QGCLogging.h"
 #include "AudioOutput.h"
 #include "AutoPilotPlugin.h"
+#include "OpenIDAuthManager.h"
 #include "CmdLineOptParser.h"
 #include "ESP8266ComponentController.h"
 #include "FollowMe.h"
@@ -292,6 +293,7 @@ void QGCApplication::init()
     qmlRegisterType<GeoTagController>("QGroundControl.Controllers", 1, 0, "GeoTagController");
     qmlRegisterType<LogDownloadController>("QGroundControl.Controllers", 1, 0, "LogDownloadController");
     qmlRegisterType<MAVLinkConsoleController>("QGroundControl.Controllers", 1, 0, "MAVLinkConsoleController");
+    qmlRegisterType<OpenIDAuthManager>("QGroundControl.Auth", 1, 0, "OpenIDAuthManager");
 
 
     qmlRegisterUncreatableType<AutoPilotPlugin>("QGroundControl.AutoPilotPlugin", 1, 0, "AutoPilotPlugin", "Reference only");

@@ -13,6 +13,7 @@
         <file alias="APMSupportForwardingIndicator.qml">src/UI/toolbar/APMSupportForwardingIndicator.qml</file>
         <file alias="GimbalIndicator.qml">src/UI/toolbar/GimbalIndicator.qml</file>
         <file alias="GCSControlIndicator.qml">src/UI/toolbar/GCSControlIndicator.qml</file>
+        <file alias="LoginWidget.qml">src/UI/toolbar/LoginWidget.qml</file>
     </qresource>
     <qresource prefix="/checklists">
         <file alias="DefaultChecklist.qml">src/FlightDisplay/DefaultChecklist.qml</file>

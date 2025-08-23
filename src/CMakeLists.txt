@@ -34,6 +34,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         Qt6::Multimedia
         Qt6::MultimediaQuickPrivate
         Qt6::Network
+        Qt6::NetworkAuth
         Qt6::Positioning
         Qt6::PositioningPrivate
         Qt6::Qml
@@ -53,6 +54,7 @@ add_subdirectory(ADSB)
 add_subdirectory(AnalyzeView)
 add_subdirectory(Android)
 add_subdirectory(API)
+add_subdirectory(Auth)
 add_subdirectory(AutoPilotPlugins)
 add_subdirectory(Camera)
 add_subdirectory(Comms)
