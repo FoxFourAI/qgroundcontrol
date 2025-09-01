@@ -15,8 +15,10 @@
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtNetwork/QNetworkReply>
+#include <QGCLoggingCategory.h>
 
-Q_LOGGING_CATEGORY(OpenIDAuthLog, "qgc.auth.openid")
+
+QGC_LOGGING_CATEGORY(OpenIDAuthLog, "qgc.auth.openid")
 
 OpenIDAuthManager* OpenIDAuthManager::instance()
 {
@@ -35,7 +37,11 @@ OpenIDAuthManager::OpenIDAuthManager(QObject *parent)
     , _authState(NotAuthenticated)
     , _statusText("Login")
     , _statusColor("white")
+    ,_modelDecryptionManager(new UavModelDecryptionManager(this))
 {
+    connect(_modelDecryptionManager, &UavModelDecryptionManager::decryptionCompleted, this, &OpenIDAuthManager::onDecryptionFinished);
+    connect(_modelDecryptionManager, &UavModelDecryptionManager::decryptionFailed, this, &OpenIDAuthManager::onDecryptionError);
+
     initializeOAuth();
 }
 
@@ -44,7 +50,16 @@ OpenIDAuthManager::~OpenIDAuthManager()
     if (_replyHandler) {
         delete _replyHandler;
     }
+
+    if (_networkManager) {
+        delete _networkManager;
+    }
+
+    if (_modelDecryptionManager) {
+        delete _modelDecryptionManager;
+    }
 }
+
 
 void OpenIDAuthManager::initializeOAuth()
 {
@@ -95,6 +110,12 @@ void OpenIDAuthManager::login()
     qCWarning(OpenIDAuthLog) << "Starting login process";
     setAuthState(Authenticating);
 
+    // Uncomment this for test login
+    // setAuthState(Authenticated);
+    // _accessToken = "123456";
+    // emit authenticationCompleted(_accessToken);
+    // return;
+
             // Connect to see the URL it wants to open in browser
     connect(_oauth2Flow, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser,
             this, [](const QUrl &url) {
@@ -123,6 +144,12 @@ void OpenIDAuthManager::authorize()
     qCDebug(OpenIDAuthLog) << "Starting authorization process with arming service";
     setAuthState(Authorizing);
 
+    // Uncomment this for test authorization
+    // _modelDecryptionToken.resize(128, 'c');
+    // setAuthState(Authorized);
+    // emit authorizationCompleted();
+    // return;
+
     // Make real POST request to arming service
     QUrl armingServiceUrl(ARMING_SERVICE_URL);
     QNetworkRequest request(armingServiceUrl);
@@ -137,8 +164,6 @@ void OpenIDAuthManager::authorize()
     QJsonDocument jsonDoc(jsonBody);
     QByteArray postData = jsonDoc.toJson();
 
-    qWarning() << "Sending arming service unlock request with body:" << postData;
-
     QNetworkReply* reply = _networkManager->post(request, postData);
 
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
@@ -146,11 +171,12 @@ void OpenIDAuthManager::authorize()
 
         if (reply->error() == QNetworkReply::NoError) {
             QByteArray responseData = reply->readAll();
+            // TODO: obtain the 128-byte model decryption token from the response. For now, just filling in with some string
+            _modelDecryptionToken.resize(128, 's');
             qWarning() << "Arming service authorization successful:" << responseData;
 
             setAuthState(Authorized);
             emit authorizationCompleted();
-            qWarning() << "Authorization completed via arming service";
         } else {
             qCWarning(OpenIDAuthLog) << "Failed to authorize with arming service:" << reply->errorString();
             qCWarning(OpenIDAuthLog) << "HTTP Status:" << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -162,6 +188,24 @@ void OpenIDAuthManager::authorize()
         }
     });
 }
+
+void OpenIDAuthManager::decrypt_model()
+{
+    if (_authState != Authorized) {
+        qCWarning(OpenIDAuthLog) << "Cannot decrypt model: not authorized";
+        return;
+    }
+
+    if (_modelDecryptionToken.isEmpty()) {
+        qCWarning(OpenIDAuthLog) << "Cannot decrypt model: no token";
+        setAuthState(Error);
+        return;
+    }
+    setAuthState(ModelDecrypting);
+
+    _modelDecryptionManager->startModelDecryption(_modelDecryptionToken);
+}
+
 
 void OpenIDAuthManager::logout()
 {
@@ -190,6 +234,16 @@ void OpenIDAuthManager::onAuthenticationError(const QString& error)
     qCWarning(OpenIDAuthLog) << "Authentication error:" << error;
     setAuthState(Error);
 }
+
+void OpenIDAuthManager::onDecryptionFinished() {
+    qCDebug(OpenIDAuthLog) << "Model decryption finished";
+    setAuthState(ModelDecrypted);
+}
+void OpenIDAuthManager::onDecryptionError(const QString& error) {
+    qCWarning(OpenIDAuthLog) << "Model decription error:" << error;
+    setAuthState(Error);
+}
+
 
 void OpenIDAuthManager::setAuthState(AuthState state)
 {
@@ -223,8 +277,16 @@ void OpenIDAuthManager::updateStatusDisplay()
         newColor = "yellow";
         break;
     case Authorized:
-        newText = "Authorized";
+        newText = "Decrypt";
         newColor = "#95F792";
+        break;
+    case ModelDecrypting:
+        newText = "Decrypting...";
+        newColor = "yellow";
+        break;
+    case ModelDecrypted:
+        newText = "Decrypted!";
+        newColor = "#95F792" ;
         break;
     case Error:
         newText = "Error";
@@ -263,8 +325,6 @@ void OpenIDAuthManager::requestArmingServiceUnlock()
     QJsonDocument jsonDoc(jsonBody);
     QByteArray postData = jsonDoc.toJson();
 
-    qWarning() << "Requesting arming service unlock with body:" << postData;
-
     QNetworkReply* reply = _networkManager->post(request, postData);
 
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
@@ -272,13 +332,12 @@ void OpenIDAuthManager::requestArmingServiceUnlock()
 
         if (reply->error() == QNetworkReply::NoError) {
             QByteArray responseData = reply->readAll();
-            qWarning() << "Arming service unlock response:" << responseData;
 
             // For now, assume successful response means we're authenticated
             // Later we can parse the response for more specific handling
             _userName = "Authorized User"; // Set a default username
 
-            qWarning() << "Arming service unlock successful";
+            qCInfo(OpenIDAuthLog) << "Arming service unlock successful";
             setAuthState(Authenticated);
             emit authenticationCompleted(_accessToken);
         } else {

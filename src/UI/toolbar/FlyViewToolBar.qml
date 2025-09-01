@@ -196,6 +196,7 @@ Rectangle {
                     case loginButton.authManager.NotAuthenticated:
                     case loginButton.authManager.Error:
                         console.log("Starting login flow...")
+                        loginButton.authManager.setVehicle(QGroundControl.multiVehicleManager.activeVehicle)
                         loginButton.authManager.login()
                         break
                     case loginButton.authManager.Authenticated:
@@ -203,9 +204,12 @@ Rectangle {
                         loginButton.authManager.authorize()
                         break
                     case loginButton.authManager.Authorized:
-                        console.log("Already authorized - could show menu or logout")
-                        // Could add logout or show user info here
+                        console.log("Starting model decryption...")
+                        loginButton.authManager.decrypt_model();
                         break
+                    case loginButton.authManager.ModelDecrypted:
+                        console.log("Model is already decripted. Ignoring the click");
+                        // Could add logout or show some info here
                     default:
                         console.log("Unexpected auth state:", loginButton.authManager.authState)
                         break

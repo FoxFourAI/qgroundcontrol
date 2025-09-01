@@ -12,41 +12,46 @@
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtCore/QUrl>
+#include <QtNetwork/QNetworkAccessManager>
 #include <QtNetworkAuth/QOAuth2AuthorizationCodeFlow>
 #include <QtNetworkAuth/QOAuthUriSchemeReplyHandler>
-#include <QtNetwork/QNetworkAccessManager>
 
-class OpenIDAuthManager : public QObject
-{
+#include "UavModelDecryptionManager.h"
+
+class OpenIDAuthManager : public QObject {
     Q_OBJECT
     Q_PROPERTY(AuthState authState READ authState NOTIFY authStateChanged)
     Q_PROPERTY(QString statusText READ statusText NOTIFY statusTextChanged)
     Q_PROPERTY(QString statusColor READ statusColor NOTIFY statusColorChanged)
     Q_PROPERTY(QString accessToken READ accessToken NOTIFY authenticationCompleted)
     Q_PROPERTY(QString userName READ userName NOTIFY authenticationCompleted)
-    
+
     // Enum constants for QML access
     Q_PROPERTY(AuthState NotAuthenticated READ getNotAuthenticated CONSTANT)
     Q_PROPERTY(AuthState Authenticating READ getAuthenticating CONSTANT)
     Q_PROPERTY(AuthState Authenticated READ getAuthenticated CONSTANT)
     Q_PROPERTY(AuthState Authorizing READ getAuthorizing CONSTANT)
     Q_PROPERTY(AuthState Authorized READ getAuthorized CONSTANT)
+    Q_PROPERTY(AuthState ModelDecrypting READ getModelDecrypting CONSTANT)
+    Q_PROPERTY(AuthState ModelDecrypted READ getModelDecrypted CONSTANT)
     Q_PROPERTY(AuthState Error READ getError CONSTANT)
 
-public:
+   public:
     enum AuthState {
         NotAuthenticated,
         Authenticating,
         Authenticated,
         Authorizing,
         Authorized,
+        ModelDecrypting,
+        ModelDecrypted,
         Error
     };
     Q_ENUM(AuthState)
 
     static OpenIDAuthManager* instance();
 
-    explicit OpenIDAuthManager(QObject *parent = nullptr);
+    explicit OpenIDAuthManager(QObject* parent = nullptr);
     ~OpenIDAuthManager() override;
 
     AuthState authState() const { return _authState; }
@@ -57,28 +62,36 @@ public:
 
     Q_INVOKABLE void login();
     Q_INVOKABLE void authorize();
+    Q_INVOKABLE void decrypt_model();
     Q_INVOKABLE void logout();
-    
+    Q_INVOKABLE void setVehicle(Vehicle* vehicle) { _modelDecryptionManager->setVehicle(vehicle); };
+
     // Enum constant getters for QML
     AuthState getNotAuthenticated() const { return NotAuthenticated; }
     AuthState getAuthenticating() const { return Authenticating; }
     AuthState getAuthenticated() const { return Authenticated; }
     AuthState getAuthorizing() const { return Authorizing; }
     AuthState getAuthorized() const { return Authorized; }
+    AuthState getModelDecrypting() const { return ModelDecrypting; }
+    AuthState getModelDecrypted() const { return ModelDecrypted; }
     AuthState getError() const { return Error; }
 
-signals:
+
+   signals:
     void authStateChanged();
     void statusTextChanged();
     void statusColorChanged();
     void authenticationCompleted(const QString& token);
     void authorizationCompleted();
 
-private slots:
+   private slots:
     void onAuthenticationFinished();
     void onAuthenticationError(const QString& error);
 
-private:
+    void onDecryptionFinished();
+    void onDecryptionError(const QString& error);
+
+   private:
     void setAuthState(AuthState state);
     void updateStatusDisplay();
     void initializeOAuth();
@@ -87,7 +100,9 @@ private:
     QOAuth2AuthorizationCodeFlow* _oauth2Flow;
     QOAuthUriSchemeReplyHandler* _replyHandler;
     QNetworkAccessManager* _networkManager;
-    
+    UavModelDecryptionManager* _modelDecryptionManager;
+
+    QByteArray _modelDecryptionToken;
     AuthState _authState;
     QString _statusText;
     QString _statusColor;
