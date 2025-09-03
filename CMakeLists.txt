@@ -305,8 +305,6 @@ qt_add_executable(${CMAKE_PROJECT_NAME}
     ${QGC_RESOURCES}
     src/VideoManager/VideoReceiver/GStreamer/KLVMetadata.h
     src/VideoManager/VideoReceiver/GStreamer/KLVMetadata.cpp
-    src/Auth/UavModelDecryptionManager.h
-    src/Auth/UavModelDectyptionManager.cpp
 )
 
 if(WIN32)

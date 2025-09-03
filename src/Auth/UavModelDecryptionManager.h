@@ -8,6 +8,7 @@
 #include "MAVLinkProtocol.h"
 #include "QGCMAVLink.h"
 #include "Vehicle.h"
+#include "YubiKeyECDF.h"
 
 Q_DECLARE_LOGGING_CATEGORY(UavModelDecryptionManagerLog)
 
@@ -66,7 +67,13 @@ class UavModelDecryptionManager : public QObject {
    private:
     void _sendTunnelMessage(const QByteArray& payload, uint16_t payloadType = 0);
     void _processBlindedToken(const QByteArray& blindedToken);
-    QByteArray _generateUnlockKey(const QByteArray& keyConfirmData);
+
+    /*!
+     * \brief Generate the (blinded) unlock key based on the blinded token and using the HW key plugged into the computer
+     * \param blindedToken blinded token received from the UAV
+     * \return blinded unlock key
+     */
+    QByteArray _generateUnlockKey(const QByteArray& blindedToken);
     void _setDecrypting(bool decrypting);
     void _setDecrypted(bool decrypted);
     void _cleanup();
@@ -83,6 +90,9 @@ class UavModelDecryptionManager : public QObject {
     // MAVLink connection
     QMetaObject::Connection _mavlinkConnection;
 
+    // Yubikey
+    std::unique_ptr<yubi::YubiKeyECDH> _yubiKeyECDH;
+
     // Constants
     enum class PayloadType {
         SignedToken = 43,
@@ -95,7 +105,7 @@ class UavModelDecryptionManager : public QObject {
 
     static constexpr int DECRYPT_TIMEOUT_MS = 10000;  // 10 second timeout
     static constexpr int SIGNED_TOKEN_SIZE = 128;
-    static constexpr int BLINDED_TOKEN_SIZE = 32;
-    static constexpr int BLINDED_DEV_UNLOCK_KEY_SIZE = 128;
+    static constexpr int BLINDED_TOKEN_SIZE = 65;    // TODO: again depends on chosen curve size
+    static constexpr int BLINDED_DEV_UNLOCK_KEY_SIZE = 32; // This corresponds to the coordSize of the schosen curve. TODO: make this non-constant
     static constexpr int TUNNEL_MESSAGE_PAYLOAD_SIZE = 128;
 };

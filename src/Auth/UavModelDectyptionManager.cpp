@@ -157,7 +157,7 @@ void UavModelDecryptionManager::_sendTunnelMessage(const QByteArray& payload, ui
     mavlink_tunnel_t tunnel = {};
 
     tunnel.target_system = 1;
-    // TODO: replace with the proper one
+    // TODO: find out the target_component dynamically or send the tunnel to each of the possible ONBOARD_COMPUTER instances
     tunnel.target_component = MAV_COMP_ID_ONBOARD_COMPUTER2;
     tunnel.payload_type = payloadType;
     tunnel.payload_length = qMin(payload.size(), static_cast<int>(sizeof(tunnel.payload)));
@@ -200,12 +200,24 @@ void UavModelDecryptionManager::_processBlindedToken(const QByteArray& blindedTo
     qCDebug(UavModelDecryptionManagerLog) << "Final decryption payload sent, waiting for completion confirmation...";
 }
 
-QByteArray UavModelDecryptionManager::_generateUnlockKey(const QByteArray& keyConfirmData) {
-    // TODO: perform all the communication with YubiKey here and obtain the payload
-    QByteArray payload;
-    payload.resize(BLINDED_DEV_UNLOCK_KEY_SIZE, 'k');
+QByteArray UavModelDecryptionManager::_generateUnlockKey(const QByteArray& blindedToken) {
+    try {
+        if (!_yubiKeyECDH) {
+            // TODO: make the user prompt to enter the PIN code
+            const std::string userPin{"123456"};
 
-    return payload;
+            // If we haven't created the yubikey object, then try to create it now
+            _yubiKeyECDH = std::make_unique<yubi::YubiKeyECDH>(userPin);
+        }
+        // TODO: take the curve information (like the coordinate size) from some config
+        const int coordSize = 32; // For now, using 32 bytes, as for NIST P-256 curve
+        const auto unlockKey = _yubiKeyECDH->perform(blindedToken, coordSize);
+        return unlockKey;
+    } catch (const yubi::YubiKeyError &e) {
+        qWarning() << "YUBI KEY ECDH ERROR: " << e.what();
+    }
+
+    return {};
 }
 
 void UavModelDecryptionManager::_decryptionTimeout() {
