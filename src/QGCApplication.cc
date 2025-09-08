@@ -57,6 +57,7 @@
 #include "ParameterManager.h"
 #include "PositionManager.h"
 #include "QGCCameraManager.h"
+#include "OnboardComputersManager.h"
 #include "QGCCorePlugin.h"
 #include "QGCFileDownload.h"
 #include "QGCImageProvider.h"
