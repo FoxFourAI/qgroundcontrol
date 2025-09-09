@@ -9,6 +9,26 @@
 #include <string>
 #include <vector>
 
+#if defined(__APPLE__) && defined(__MACH__)
+
+#ifndef BYTE
+typedef unsigned char BYTE;
+#endif
+
+typedef const void *LPCVOID;
+typedef uint32_t DWORD;
+typedef DWORD *PDWORD;
+typedef long LONG;
+typedef const char *LPCSTR;
+typedef const BYTE *LPCBYTE;
+typedef BYTE *LPBYTE;
+typedef DWORD *LPDWORD;
+typedef char *LPSTR;
+
+#define SCARD_AUTOALLOCATE (DWORD)(-1)
+
+#endif
+
 namespace yubi {
 
 void cout_packet(const std::vector<uint8_t> &packet, const size_t packet_len) {
@@ -35,7 +55,11 @@ class YubiKeyHandler {
 
         // Find YubiKey reader
         auto readersLen = SCARD_AUTOALLOCATE;
+#if defined(__APPLE__) && defined(__MACH__)
+        char readers[255];
+#else
         LPSTR readers = nullptr;
+#endif
         rv = SCardListReaders(context, nullptr, (LPSTR)&readers, &readersLen);
         if (rv != SCARD_S_SUCCESS) {
             SCardReleaseContext(context);
@@ -45,7 +69,10 @@ class YubiKeyHandler {
         // Find YubiKey (simplified - assumes first reader)
         std::string readerName(readers);
         if (readerName.find("Yubico") == std::string::npos) {
+#if defined(__APPLE__) && defined(__MACH__)
+#else
             SCardFreeMemory(context, readers);
+#endif
             SCardReleaseContext(context);
             throw YubiKeyError("YubiKey not found");
         }
@@ -53,7 +80,10 @@ class YubiKeyHandler {
         // Connect to card
         rv =
             SCardConnect(context, readers, SCARD_SHARE_SHARED, SCARD_PROTOCOL_T1 | SCARD_PROTOCOL_T0, &card, &protocol);
+#if defined(__APPLE__) && defined(__MACH__)
+#else
         SCardFreeMemory(context, readers);
+#endif
 
         if (rv != SCARD_S_SUCCESS) {
             SCardReleaseContext(context);
@@ -91,8 +121,8 @@ class YubiKeyHandler {
         uint8_t sw2 = response[responseLen - 1];
 
         std::stringstream ss;
-        ss << operation << " response len: " << responseLen << " SW1: " << std::hex << std::uppercase
-                 << std::setw(2) << std::setfill('0') << static_cast<int>(sw1) << ", SW2: " << static_cast<int>(sw2);
+        ss << operation << " response len: " << responseLen << " SW1: " << std::hex << std::uppercase << std::setw(2)
+           << std::setfill('0') << static_cast<int>(sw1) << ", SW2: " << static_cast<int>(sw2);
         qDebug() << ss.str();
         cout_packet(response, responseLen);
 
@@ -171,7 +201,7 @@ QByteArray YubiKeyECDH::perform(const QByteArray &pubPoint, int coordSize) {
     // Make a conversion betwen QT-style QByteArray and common C++-style
     std::vector<uint8_t> vectorPubPoint(pubPoint.begin(), pubPoint.end());
     auto res = m_yubikey->performECDH(vectorPubPoint, coordSize);
-    return QByteArray(reinterpret_cast<const char*>(res.data()), res.size());
+    return QByteArray(reinterpret_cast<const char *>(res.data()), res.size());
 }
 
 }  // namespace yubi
