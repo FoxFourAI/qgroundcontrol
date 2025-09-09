@@ -1,7 +1,10 @@
 #include "YubiKeyECDF.h"
 
-// TODO: on windows we may need to include just <winscard.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <winscard.h>
+#else
 #include <PCSC/winscard.h>
+#endif
 
 #include <iomanip>
 #include <iostream>
