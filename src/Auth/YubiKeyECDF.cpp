@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <sstream>
 
 #if defined(__APPLE__) && defined(__MACH__)
 
