@@ -312,6 +312,13 @@ Rectangle {
                         }
                     }
                 }
+
+                Shortcut {
+                    sequence: "Z"  // Or whatever key combination you want
+                    onActivated: {
+                        _mavlinkCamera.zoomLevel = 1;
+                    }
+                }
             }
 
             // Tracking button
@@ -332,17 +339,33 @@ Rectangle {
                     fillMode:           Image.PreserveAspectFit
                     sourceSize.height:  height
                     color:              qgcPal.text
+
+
                     MouseArea {
-                        anchors.fill:   parent
-                        onClicked: {
+                        function triggerTargetTracking() {
                             _mavlinkCamera.trackingEnabled = !_mavlinkCamera.trackingEnabled;
                             if(!_mavlinkCamera.trackingEnabled) {
                                 let latestFrameTimestamp = QGroundControl.videoManager.lastKlvTimestamp;
                                 console.log("Latest timestamp in js: " + latestFrameTimestamp);
                                 !_mavlinkCamera.stopTracking(latestFrameTimestamp);
                             }
+                            targetCanvas.requestPaint();
+                        }
+
+                        anchors.fill:   parent
+                        id: targetTrackingMouseArea
+                        onClicked: {
+                            triggerTargetTracking();
                         }
                     }
+
+                    Shortcut {
+                        sequence: "T"  // Or whatever key combination you want
+                        onActivated: {
+                            targetTrackingMouseArea.triggerTargetTracking();
+                        }
+                    }
+
                 }
             }
         }
