@@ -291,6 +291,8 @@ void Vehicle::_commonInit()
 
     connect(_standardModes, &StandardModes::modesUpdated, this, &Vehicle::flightModesChanged);
 
+    _onboardComputersManager = _firmwarePlugin->createOnboardComputersManager(this);
+
     _parameterManager = new ParameterManager(this);
     connect(_parameterManager, &ParameterManager::parametersReadyChanged, this, &Vehicle::_parametersReady);
 
@@ -367,7 +369,7 @@ void Vehicle::_commonInit()
 
     // Create camera manager instance
     _cameraManager = _firmwarePlugin->createCameraManager(this);
-    _onboardComputersManager = _firmwarePlugin->createOnboardComputersManager(this);
+
 }
 
 Vehicle::~Vehicle()
