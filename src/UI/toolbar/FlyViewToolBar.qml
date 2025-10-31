@@ -19,6 +19,7 @@ import QGroundControl.MultiVehicleManager
 import QGroundControl.ScreenTools
 import QGroundControl.Controllers
 
+
 Rectangle {
     id:     _root
     width:  parent.width
@@ -28,13 +29,13 @@ Rectangle {
     property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
     property bool   _communicationLost: _activeVehicle ? _activeVehicle.vehicleLinkManager.communicationLost : false
     property color  _mainStatusBGColor: qgcPal.brandingPurple
+    property int    _currentComputer :  _activeVehicle.onboardComputersManager.currentComputer
 
     function dropMainStatusIndicatorTool() {
         mainStatusIndicator.dropMainStatusIndicator();
     }
 
     QGCPalette { id: qgcPal }
-
     /// Bottom single pixel divider
     Rectangle {
         anchors.left:   parent.left
@@ -102,7 +103,7 @@ Rectangle {
     //-------------------------------------------------------------------------
     //-- Branding Logo
     Image {
-        anchors.right:          parent.right
+        anchors.right:          foxFourLogo.left
         anchors.top:            parent.top
         anchors.bottom:         parent.bottom
         anchors.margins:        ScreenTools.defaultFontPixelHeight * 0.66
@@ -150,6 +151,24 @@ Rectangle {
                     }
                 }
             }
+        }
+    }
+
+    //-- FoxFour Button
+    Image{
+        id:foxFourLogo
+        anchors.right:          parent.right
+        anchors.top:            parent.top
+        anchors.bottom:         parent.bottom
+        anchors.margins:        5
+        source:                 "qrc:/qmlimages/F4/FoxFourTextLogo.svg"
+        width:                  _activeVehicle && _currentComputer? 70:0
+        MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    showVehicleConfigParametersPageComponent("Component 192");
+                }
         }
     }
 
