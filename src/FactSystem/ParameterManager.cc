@@ -402,20 +402,22 @@ void ParameterManager::_factRawValueUpdated(const QVariant &rawValue)
 
 void ParameterManager::_handleOnboardComputerTimeout(uint8_t compId)
 {
-  if(!_waitingReadParamIndexMap.contains(compId))
-    return;
-  //removing category from all lists, and sending signal to update UI
-  _paramCountMap.remove(compId);
-  _waitingReadParamIndexMap.remove(compId);
-  _waitingReadParamNameMap.remove(compId);
-  _waitingWriteParamNameMap.remove(compId);
-  _totalParamCount-=_paramCountMap[compId];
-  QString category=_mapCompId2FactMap[compId].first()->category();
-  for(auto &fact:_mapCompId2FactMap[compId].values())
-    delete fact;
-  _mapCompId2FactMap.remove(compId);
+    if (!_waitingReadParamIndexMap.contains(compId)){
+        return;
+    }
+    //removing category from all lists, and sending signal to update UI
+    _paramCountMap.remove(compId);
+    _waitingReadParamIndexMap.remove(compId);
+    _waitingReadParamNameMap.remove(compId);
+    _waitingWriteParamNameMap.remove(compId);
+    _totalParamCount-=_paramCountMap[compId];
+    QString category=_mapCompId2FactMap[compId].first()->category();
+    for (auto &fact:_mapCompId2FactMap[compId].values()){
+        delete fact;
+    }
+    _mapCompId2FactMap.remove(compId);
 
-  emit removeCategory(category);
+    emit removeCategory(category);
 }
 
 void ParameterManager::_ftpDownloadComplete(const QString &fileName, const QString &errorMsg)

@@ -29,7 +29,7 @@ Rectangle {
     property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
     property bool   _communicationLost: _activeVehicle ? _activeVehicle.vehicleLinkManager.communicationLost : false
     property color  _mainStatusBGColor: qgcPal.brandingPurple
-    property int    _currentComputer :  _activeVehicle.onboardComputersManager.currentComputer
+    property int    _currentComputer :  _activeVehicle ? _activeVehicle.onboardComputersManager.currentComputer : 0
 
     function dropMainStatusIndicatorTool() {
         mainStatusIndicator.dropMainStatusIndicator();
@@ -103,7 +103,7 @@ Rectangle {
     //-------------------------------------------------------------------------
     //-- Branding Logo
     Image {
-        anchors.right:          foxFourLogo.left
+        anchors.right:          foxFourLogo.visible? foxFourLogo.left:parent.right
         anchors.top:            parent.top
         anchors.bottom:         parent.bottom
         anchors.margins:        ScreenTools.defaultFontPixelHeight * 0.66
@@ -162,13 +162,16 @@ Rectangle {
         anchors.bottom:         parent.bottom
         anchors.margins:        5
         source:                 "qrc:/qmlimages/F4/FoxFourTextLogo.svg"
-        width:                  _activeVehicle && _currentComputer? 70:0
+        visible:                _activeVehicle && _currentComputer
+        width:                  70
+
         MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    showVehicleConfigParametersPageComponent("Component 192");
-                }
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+                let onboardCompStartIndex=191
+                showVehicleConfigParametersPageComponent(qsTr("Component ")+(onboardCompStartIndex+_currentComputer-1).toString())
+            }
         }
     }
 

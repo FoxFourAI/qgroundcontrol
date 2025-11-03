@@ -40,16 +40,16 @@ Item {
 
     function selectComponent(comp = "")
     {
-        if(comp === "")
+        if (comp === "")
         {
             controller.currentCategory=controller.categories.get(0)
         }
         else
         {
-            for(var i=0;i<controller.categories.count;i++)
+            for (let i=0;i<controller.categories.count;i++)
             {
-                var cat=controller.categories.get(i)
-                if(cat.name===comp)
+                let cat=controller.categories.get(i)
+                if (cat.name===comp)
                 {
                      controller.currentCategory=cat;
                     break;
