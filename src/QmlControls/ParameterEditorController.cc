@@ -70,7 +70,7 @@ QHash<int, QByteArray> ParameterTableModel::roleNames() const
 
 void ParameterTableModel::setShowComponent(bool showComponent)
 {
-  _showComponent=showComponent;
+  _showComponent = showComponent;
 }
 
 void ParameterTableModel::clear()
@@ -98,9 +98,9 @@ void ParameterTableModel::insert(int row, Fact* fact)
     }
 
     ColumnData colData(_tableViewColCount, QString());
-    QString name=fact->name();
+    QString name = fact->name();
     if(_showComponent)
-      name=QString::number(fact->componentId()).rightJustified(3,'0')+" : "+name;
+      name = QString::number(fact->componentId()).rightJustified(3,'0')+" : "+name;
 
     colData[NameColumn] = name;
     colData[ValueColumn] = QVariant::fromValue(fact);
@@ -166,7 +166,7 @@ ParameterEditorController::ParameterEditorController(QObject *parent)
     connect(this, &ParameterEditorController::showModifiedOnlyChanged,  this, &ParameterEditorController::_searchTextChanged);
     connect(&_searchTimer, &QTimer::timeout,                            this, &ParameterEditorController::_performSearch);
     connect(_parameterMgr, &ParameterManager::factAdded,                this, &ParameterEditorController::_factAdded);
-    connect(_parameterMgr, &ParameterManager::removeCategory,          this, &ParameterEditorController::_removeCategory);
+    connect(_parameterMgr, &ParameterManager::removeCategory,           this, &ParameterEditorController::_removeCategory);
 
     ParameterEditorCategory* category = _categories.count() ? _categories.value<ParameterEditorCategory*>(0) : nullptr;
     setCurrentCategory(category);
@@ -320,8 +320,8 @@ void ParameterEditorController::_factAdded(int compId, Fact* fact)
 
 void ParameterEditorController::_removeCategory(QString categoryName)
 {
-  auto *cat=_mapCategoryName2Category[categoryName];
-  QString catName=cat->name;
+  auto *cat = _mapCategoryName2Category[categoryName];
+  QString catName = cat->name;
   _categories.removeOne(cat);
   delete _mapCategoryName2Category.take(categoryName);
   setCurrentCategory(_mapCategoryName2Category.first());
@@ -516,7 +516,7 @@ void ParameterEditorController::_performSearch(void)
         _searchParameters.beginReset();
         _searchParameters.clear();
 
-        for(const uint8_t components:_parameterMgr->componentIds())
+        for (const uint8_t components: _parameterMgr->componentIds())
           for (const QString &paraName: _parameterMgr->parameterNames(components)) {
             Fact* fact = _parameterMgr->getParameter(components, paraName);
             bool matched = _shouldShow(fact);

@@ -65,7 +65,7 @@ private:
     int                 _tableViewColCount = 3;
     QList<ColumnData>   _tableData;
     bool                _externalBeginResetModel = false;
-    bool                _showComponent=false;
+    bool                _showComponent = false;
 };
 
 class ParameterEditorGroup : public QObject
