@@ -73,6 +73,6 @@ class OnboardComputersManager : public QObject {
     bool _vehicleReadyState = false;
     int _currentComputerIndex = 0;
     const int _timeoutCheckInterval=2000;
-    QTimer _timeoutCheckTimer;
+    QTimer    _timeoutCheckTimer;
     QMap<uint8_t, OnboardComputerStruct> _onboardComputers;
 };

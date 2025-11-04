@@ -58,9 +58,9 @@ ParameterManager::ParameterManager(Vehicle *vehicle)
     // Ensure the cache directory exists
     (void) QFileInfo(QSettings().fileName()).dir().mkdir("ParamCache");
 
-    auto mngr=_vehicle->getOnboardComputersManager();
+    auto mngr = _vehicle->getOnboardComputersManager();
 
-    connect(mngr,&OnboardComputersManager::onboardComputerTimeout,this,&ParameterManager::_handleOnboardComputerTimeout);
+    connect(mngr, &OnboardComputersManager::onboardComputerTimeout, this, &ParameterManager::_handleOnboardComputerTimeout);
 }
 
 ParameterManager::~ParameterManager()
@@ -410,8 +410,8 @@ void ParameterManager::_handleOnboardComputerTimeout(uint8_t compId)
     _waitingReadParamIndexMap.remove(compId);
     _waitingReadParamNameMap.remove(compId);
     _waitingWriteParamNameMap.remove(compId);
-    _totalParamCount-=_paramCountMap[compId];
-    QString category=_mapCompId2FactMap[compId].first()->category();
+    _totalParamCount -= _paramCountMap[compId];
+    QString category = _mapCompId2FactMap[compId].first()->category();
     for (auto &fact:_mapCompId2FactMap[compId].values()){
         delete fact;
     }
