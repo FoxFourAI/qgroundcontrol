@@ -15,7 +15,7 @@
 class Vehicle;
 
 enum PositionSrc{
-  eSrc_GlobalPosition=0,
+  eSrc_GlobalPosition = 0,
   eSrc_GPSRaw
 };
 
@@ -43,7 +43,7 @@ signals:
     void pointsCleared  (void);
 
 private slots:
-    void _vehicleCoordinateChanged(QGeoCoordinate coordinate,PositionSrc src);
+    void _vehicleCoordinateChanged(QGeoCoordinate coordinate, PositionSrc src);
 
 private:
     Vehicle*        _vehicle;

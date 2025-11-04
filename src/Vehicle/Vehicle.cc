@@ -743,7 +743,7 @@ void Vehicle::_handleGpsRawInt(mavlink_message_t& message)
 
     if (gpsRawInt.fix_type >= GPS_FIX_TYPE_3D_FIX) {
         QGeoCoordinate newPosition(gpsRawInt.lat  / (double)1E7, gpsRawInt.lon / (double)1E7, gpsRawInt.alt  / 1000.0);
-        emit updateTrajectory(newPosition,eSrc_GPSRaw);
+        emit updateTrajectory(newPosition, eSrc_GPSRaw);
         if (!_globalPositionIntMessageAvailable) {
             if (newPosition != _coordinate) {
                 _coordinate = newPosition;
@@ -780,7 +780,7 @@ void Vehicle::_handleGlobalPositionInt(mavlink_message_t& message)
     if (newPosition != _coordinate) {
         _coordinate = newPosition;
         emit coordinateChanged(_coordinate);
-        emit updateTrajectory(newPosition,eSrc_GlobalPosition);
+        emit updateTrajectory(newPosition, eSrc_GlobalPosition);
     }
 }
 

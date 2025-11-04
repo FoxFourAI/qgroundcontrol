@@ -21,9 +21,9 @@ void TrajectoryPoints::_vehicleCoordinateChanged(QGeoCoordinate coordinate, Posi
 {
     // The goal of this algorithm is to limit the number of trajectory points whic represent the vehicle path.
     // Fewer points means higher performance of map display.
-    QGeoCoordinate &lastPoint=src==eSrc_GlobalPosition?_lastPoint   :_gpsLastPoit;
-    QVariantList   &pointList=src==eSrc_GlobalPosition?_points      :_gpsPoints;
-    double         &athimuth =src==eSrc_GlobalPosition?_lastAzimuth :_gpsLastAzimuth;
+    QGeoCoordinate &lastPoint = (src == eSrc_GlobalPosition) ? _lastPoint   : _gpsLastPoit   ;
+    QVariantList   &pointList = (src == eSrc_GlobalPosition) ? _points      : _gpsPoints     ;
+    double         &athimuth  = (src == eSrc_GlobalPosition) ? _lastAzimuth : _gpsLastAzimuth;
 
     if (lastPoint.isValid()) {
         double distance = lastPoint.distanceTo(coordinate);
@@ -37,7 +37,7 @@ void TrajectoryPoints::_vehicleCoordinateChanged(QGeoCoordinate coordinate, Posi
                 athimuth = lastPoint.azimuthTo(coordinate);
                 lastPoint = coordinate;
                 pointList.append(QVariant::fromValue(coordinate));
-                if (src==eSrc_GlobalPosition){
+                if (src == eSrc_GlobalPosition){
                     emit pointAdded(coordinate);
                 } else {
                     emit gpsPointAdded(coordinate);
@@ -47,7 +47,7 @@ void TrajectoryPoints::_vehicleCoordinateChanged(QGeoCoordinate coordinate, Posi
                 // the last point to be the new position.
                 lastPoint = coordinate;
                 pointList[pointList.count() - 1] = QVariant::fromValue(coordinate);
-                if (src==eSrc_GlobalPosition){
+                if (src == eSrc_GlobalPosition){
                     emit updateLastPoint(coordinate);
                 } else {
                     emit gpsUpdateLastPoint(coordinate);
@@ -58,7 +58,7 @@ void TrajectoryPoints::_vehicleCoordinateChanged(QGeoCoordinate coordinate, Posi
         // Add the very first trajectory point to the list
         lastPoint = coordinate;
         pointList.append(QVariant::fromValue(coordinate));
-        if (src==eSrc_GlobalPosition){
+        if (src == eSrc_GlobalPosition){
             emit pointAdded(coordinate);
         } else {
             emit gpsPointAdded(coordinate);
@@ -82,8 +82,8 @@ void TrajectoryPoints::clear(void)
     _points.clear();
     _gpsPoints.clear();
     _lastPoint = QGeoCoordinate();
-    _gpsLastPoit=QGeoCoordinate();
-    _gpsLastAzimuth= qQNaN();
+    _gpsLastPoit = QGeoCoordinate();
+    _gpsLastAzimuth = qQNaN();
     _lastAzimuth = qQNaN();
     emit pointsCleared();
 }
