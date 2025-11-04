@@ -35,8 +35,8 @@ OnboardComputersManager::OnboardComputersManager(Vehicle* vehicle) : _vehicle(ve
             &OnboardComputersManager::_vehicleReady);
     connect(_vehicle, &Vehicle::mavlinkMessageReceived, this, &OnboardComputersManager::_mavlinkMessageReceived);
 
-    connect(&_timeoutCheckTimer,&QTimer::timeout,this,&OnboardComputersManager::_checkTimeouts);
-    _timeoutCheckTimer.start(2000);
+    connect(&_timeoutCheckTimer, &QTimer::timeout, this, &OnboardComputersManager::_checkTimeouts);
+    _timeoutCheckTimer.start(_timeoutCheckInterval);
 }
 
 void OnboardComputersManager::_vehicleReady(bool ready) { _vehicleReadyState = ready; }
@@ -63,18 +63,18 @@ void OnboardComputersManager::_checkTimeouts()
     if (_onboardComputers.isEmpty())
         return;
 
-    auto iter=_onboardComputers.begin();
-    while (iter!=_onboardComputers.end())
+    auto iter = _onboardComputers.begin();
+    while (iter != _onboardComputers.end())
     {
-        auto &compIter=iter.value();
+        auto &compIter = iter.value();
         // Check all computers for timeout. If has some, emitting timeout on his ID, and removing it form list.
-        if (compIter.lastHeartbeat.elapsed()>_timeoutCheckInterval*2){
-            uint8_t compID=iter.key();
-            iter=_onboardComputers.erase(iter);
-            qCDebug(OnboardComputersManagerLog)<<"Deleting onboard computer: "<<compID <<", due to timeout.";
-            if (_currentComputerIndex==compID){
+        if (compIter.lastHeartbeat.elapsed() > _timeoutCheckInterval*2){
+            uint8_t compID = iter.key();
+            iter = _onboardComputers.erase(iter);
+            qCDebug(OnboardComputersManagerLog) << "Deleting onboard computer: " << compID << ", due to timeout.";
+            if (_currentComputerIndex == compID){
                 if (_onboardComputers.isEmpty()){
-                    _currentComputerIndex=0;
+                    _currentComputerIndex = 0;
                     emit currentComputerChanged(0);
                 }else
                     setCurrentComputer(_onboardComputers.first().compID);
