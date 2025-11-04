@@ -73,7 +73,7 @@ class StandardModes;
 class TerrainAtCoordinateQuery;
 class TerrainProtocolHandler;
 class TrajectoryPoints;
-enum PositionSrc;
+enum class  PositionSrc;
 class VehicleBatteryFactGroup;
 class VehicleObjectAvoidance;
 class GimbalController;

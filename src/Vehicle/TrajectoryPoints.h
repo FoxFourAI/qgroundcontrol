@@ -14,7 +14,7 @@
 #include <QtCore/QVariantList>
 class Vehicle;
 
-enum PositionSrc{
+enum class PositionSrc{
   eSrc_GlobalPosition = 0,
   eSrc_GPSRaw
 };
