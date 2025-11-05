@@ -169,8 +169,8 @@ Rectangle {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
             onClicked: {
-                let onboardCompStartIndex=191
-                showVehicleConfigParametersPageComponent(qsTr("Component ")+(onboardCompStartIndex+_currentComputer-1).toString())
+                let onboardCompStartIndex = 191
+                showVehicleConfigParametersPageComponent(qsTr("Component ") + (onboardCompStartIndex + _currentComputer - 1).toString())
             }
         }
     }
