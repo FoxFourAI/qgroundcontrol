@@ -12,6 +12,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 
+
 import QGroundControl
 import QGroundControl.Controls
 import QGroundControl.Palette
@@ -161,9 +162,11 @@ Rectangle {
         anchors.top:            parent.top
         anchors.bottom:         parent.bottom
         anchors.margins:        5
-        source:                 "qrc:/qmlimages/F4/FoxFourTextLogo.svg"
+        source:                 _outdoorPalette? "qrc:/qmlimages/F4/darkLogo.svg":"qrc:/qmlimages/F4/lightLogo.svg"
         visible:                _activeVehicle && _currentComputer
         width:                  70
+
+        property bool   _outdoorPalette:        qgcPal.globalTheme === QGCPalette.Light
 
         MouseArea {
             anchors.fill: parent
