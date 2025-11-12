@@ -274,6 +274,14 @@ Rectangle {
             }
 
             ConfigButton {
+                id:                 vgmInfo
+                visible:            QGroundControl.multiVehicleManager.activeVehicle.onboardComputersManager.currCompIsVGM
+                text:               qsTr("VGM Info")
+                Layout.fillWidth:   true
+                onClicked:          showPanel(this,"VGMInfo.qml")
+            }
+
+            ConfigButton {
                 id:                 firmwareButton
                 icon.source:      "/qmlimages/FirmwareUpgradeIcon.png"
                 visible:            !ScreenTools.isMobile && _corePlugin.options.showFirmwareUpgrade

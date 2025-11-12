@@ -30,7 +30,8 @@ Rectangle {
     property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
     property bool   _communicationLost: _activeVehicle ? _activeVehicle.vehicleLinkManager.communicationLost : false
     property color  _mainStatusBGColor: qgcPal.brandingPurple
-    property int    _currentComputer :  _activeVehicle ? _activeVehicle.onboardComputersManager.currentComputer : 0
+
+    property var    _computersManager :  _activeVehicle ? _activeVehicle.onboardComputersManager : false
 
     function dropMainStatusIndicatorTool() {
         mainStatusIndicator.dropMainStatusIndicator();
@@ -163,7 +164,7 @@ Rectangle {
         anchors.bottom:         parent.bottom
         anchors.margins:        5
         source:                 _outdoorPalette? "qrc:/qmlimages/F4/darkLogo.svg":"qrc:/qmlimages/F4/lightLogo.svg"
-        visible:                _activeVehicle && _currentComputer
+        visible:                _computersManager && _computersManager.currCompIsVGM && x > (toolsFlickable.x + toolsFlickable.contentWidth + ScreenTools.defaultFontPixelWidth)
         width:                  70
 
         property bool   _outdoorPalette:        qgcPal.globalTheme === QGCPalette.Light
@@ -173,7 +174,7 @@ Rectangle {
             cursorShape: Qt.PointingHandCursor
             onClicked: {
                 let onboardCompStartIndex = 191
-                showVehicleConfigParametersPageComponent(qsTr("Component ") + (onboardCompStartIndex + _currentComputer - 1).toString())
+                showVehicleConfigParametersPageComponent(qsTr("Component ") + (onboardCompStartIndex + _computersManager.currentComputer - 1).toString())
             }
         }
     }

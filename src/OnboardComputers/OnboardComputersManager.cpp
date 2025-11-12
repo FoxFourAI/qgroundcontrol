@@ -16,6 +16,7 @@
 #include "QGCLoggingCategory.h"
 #include "Vehicle/Vehicle.h"
 #include "qtmetamacros.h"
+#include "f4_autonomy/version.h"
 
 QGC_LOGGING_CATEGORY(OnboardComputersManagerLog, "OnboardComputersManager")
 
@@ -39,21 +40,30 @@ OnboardComputersManager::OnboardComputersManager(Vehicle* vehicle) : _vehicle(ve
     _timeoutCheckTimer.start(_timeoutCheckInterval);
 }
 
+bool OnboardComputersManager::currCompIsVGM(){
+    if(!_onboardComputers.contains(_currentComputerIndex))return false;
+    return _onboardComputers[_currentComputerIndex].info.vendor_id == 0xF4;
+}
+
+
 void OnboardComputersManager::_vehicleReady(bool ready) { _vehicleReadyState = ready; }
 
 void OnboardComputersManager::_mavlinkMessageReceived(const mavlink_message_t& message) {
-    //-- Only pay attention to camera components, as identified by their compId
     if (message.sysid == _vehicle->id() &&
         (message.compid >= MAV_COMP_ID_ONBOARD_COMPUTER && message.compid <= MAV_COMP_ID_ONBOARD_COMPUTER4)) {
         switch (message.msgid) {
             case MAVLINK_MSG_ID_HEARTBEAT:
                 _handleHeartbeat(message);
                 break;
-            case MAVLINK_MSG_ID_ONBOARD_COMPUTER_STATUS:
-                // TODO
-                [[fallthrough]];
-            default:
-                break;
+        case MAVLINK_MSG_ID_COMPANION_VERSION:
+            _handleCompanionVersion(message);
+            break;
+        case MAVLINK_MSG_ID_ONBOARD_COMPUTER_STATUS:
+            // TODO
+            [[fallthrough]];
+
+        default:
+            break;
         }
     }
 }
@@ -76,8 +86,10 @@ void OnboardComputersManager::_checkTimeouts()
                 if (_onboardComputers.isEmpty()){
                     _currentComputerIndex = 0;
                     emit currentComputerChanged(0);
-                }else
+                    emit currentComputerInfoUpdated();
+                }else{
                     setCurrentComputer(_onboardComputers.first().compID);
+                }
             }
             emit onboardComputerTimeout(MAV_COMP_ID_ONBOARD_COMPUTER + compID - 1);
             continue;
@@ -92,28 +104,69 @@ void OnboardComputersManager::setCurrentComputer(int sel) {
     if (_onboardComputers.contains(sel)) {
         _currentComputerIndex = sel;
         emit currentComputerChanged(_onboardComputers[sel].compID);
+        emit currentComputerInfoUpdated();
     }
 }
 
 void OnboardComputersManager::_handleHeartbeat(const mavlink_message_t& message) {
     // Get the ID of the computer from 1 to 4
+
     uint8_t computerId = message.compid - MAV_COMP_ID_ONBOARD_COMPUTER + 1;
     if (_onboardComputers.contains(computerId)) {
         // If we already know that onboard computer, just reset the hearbeat timer
-        _onboardComputers[computerId].lastHeartbeat.start();
+        auto &computer = _onboardComputers[computerId];
+        computer.lastHeartbeat.start();
+
+        //if we do not have vendor_id, asking for that
+        if(0 == computer.info.vendor_id){
+            if(computer.infoRequestCnt < _companionVersionMaxRetryCount){
+                qCDebug(OnboardComputersManagerLog) << "CompId:" << computerId << "Retry COMPANION_VERSION request #" << computer.infoRequestCnt;
+                computer.vehicle->sendMavCommand(computerId + MAV_COMP_ID_ONBOARD_COMPUTER - 1, MAV_CMD_REQUEST_MESSAGE, true,
+                                         MAVLINK_MSG_ID_COMPANION_VERSION, //first param set id of message
+                                         0, 0, 0, 0, 0,
+                                         0);
+                computer.infoRequestCnt++;
+            }else if(computer.infoRequestCnt == _companionVersionMaxRetryCount){
+                qCDebug(OnboardComputersManagerLog) << "CompId:" << computerId << "Stop COMPANION_VERSION request due to retry limit";
+                emit onboardComputerInfoRecievedError(computerId);
+                computer.infoRequestCnt++;
+            }
+        }
     } else {
         // If we see this computer for the first time, add it to the existing list
         _onboardComputers[computerId] = OnboardComputerStruct(message.compid, _vehicle);
         _onboardComputers[computerId].lastHeartbeat.start();
-
+        qCDebug(OnboardComputersManagerLog) << "CompId:" << computerId << "Request COMPANION_VERSION form VGM.";
+        _vehicle->sendMavCommand(computerId, MAV_CMD_REQUEST_MESSAGE, true,
+                                          MAVLINK_MSG_ID_COMPANION_VERSION, //first param set id of message
+                                          0, 0, 0, 0, 0, 0); // do not touch other params
         // If current computer index is not set (is 0, while set is 1-4), we set it to this computer
         setCurrentComputer(computerId);
     }
 }
 
+void OnboardComputersManager::_handleCompanionVersion(const mavlink_message_t &message)
+{
+    uint8_t computerId = message.compid - MAV_COMP_ID_ONBOARD_COMPUTER + 1;
+    qCDebug(OnboardComputersManagerLog) << "CompId:" << computerId << "Handling COMPANION_VERSION message";
+    if(!_onboardComputers.contains(computerId)){
+        qCDebug(OnboardComputersManagerLog) << "CompId:" << computerId << "Get COMPANION_VERSION of non existing onboardComputerId";
+        return;
+    }
+
+    mavlink_msg_companion_version_decode(&message, &_onboardComputers[computerId].info);
+    if(computerId == _currentComputerIndex){
+        emit currentComputerInfoUpdated();
+    }else{
+        emit onboardComputerInfoUpdated(computerId);
+    }
+}
+
+
+
 void OnboardComputersManager::rebootAllOnboardComputers() {
     for (const auto& computer : _onboardComputers) {
-        qDebug(OnboardComputersManagerLog) << "Rebooting all available onboard computers";
+        qCDebug(OnboardComputersManagerLog) << "Rebooting all available onboard computers";
         _vehicle->sendMavCommand(computer.compID, MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN,
                                  false,           // do not show errors
                                  0,               // do nothing to autopilot
