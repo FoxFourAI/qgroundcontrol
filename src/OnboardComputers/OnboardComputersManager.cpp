@@ -122,8 +122,9 @@ QVariantMap OnboardComputersManager::computerInfo(uint8_t compId)
     auto &info=computer.info;
     QVariantMap infoMap;
     infoMap["Component Id"].setValue(computer.compId);
-    if(info.vendor_id == 0)
+    if(info.vendor_id == 0){
         return infoMap;
+    }
     infoMap["Capabilities"].setValue(info.capabilities);
     infoMap["UID"].setValue(info.uid);
     infoMap["Flight Version"].setValue(info.flight_sw_version);

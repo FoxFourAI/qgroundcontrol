@@ -170,7 +170,7 @@ Rectangle {
         mipmap:                 true
         fillMode:               Image.PreserveAspectFit
 
-        property bool   _outdoorPalette:        qgcPal.global2Theme === QGCPalette.Light
+        property bool   _outdoorPalette:        qgcPal.globalTheme === QGCPalette.Light
 
         MouseArea {
             anchors.fill: parent
