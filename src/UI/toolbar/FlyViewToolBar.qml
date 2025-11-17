@@ -162,19 +162,22 @@ Rectangle {
         anchors.right:          parent.right
         anchors.top:            parent.top
         anchors.bottom:         parent.bottom
-        anchors.margins:        5
-        source:                 _outdoorPalette? "qrc:/qmlimages/F4/darkLogo.svg":"qrc:/qmlimages/F4/lightLogo.svg"
-        visible:                _computersManager && _computersManager.currCompIsVGM && x > (toolsFlickable.x + toolsFlickable.contentWidth + ScreenTools.defaultFontPixelWidth)
-        width:                  70
+        anchors.margins:        ScreenTools.defaultFontPixelHeight * 0.66
+        source:                 _outdoorPalette ? "qrc:/qmlimages/F4/darkLogo.svg" : "qrc:/qmlimages/F4/lightLogo.svg"
+        visible:                _computersManager &&
+                                checkForVGM(_computersManager.computersInfo) &&
+                                x > (toolsFlickable.x + toolsFlickable.contentWidth + ScreenTools.defaultFontPixelWidth)
+        mipmap:                 true
+        fillMode:               Image.PreserveAspectFit
 
-        property bool   _outdoorPalette:        qgcPal.globalTheme === QGCPalette.Light
+        property bool   _outdoorPalette:        qgcPal.global2Theme === QGCPalette.Light
 
         MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
             onClicked: {
-                let onboardCompStartIndex = 191
-                showVehicleConfigParametersPageComponent(qsTr("Component ") + (onboardCompStartIndex + _computersManager.currentComputer - 1).toString())
+                console.log(qsTr("Component ") + _computersManager.currentComputerComponent)
+                showVehicleConfigParametersPageComponent(qsTr("Component ") + _computersManager.currentComputerComponent)
             }
         }
     }

@@ -274,11 +274,13 @@ Rectangle {
             }
 
             ConfigButton {
+                property var vehicle: QGroundControl.multiVehicleManager.activeVehicle
+                property var ocMngr : vehicle ? vehicle.onboardComputersManager : 0
                 id:                 vgmInfo
-                visible:            QGroundControl.multiVehicleManager.activeVehicle.onboardComputersManager.currCompIsVGM
-                text:               qsTr("VGM Info")
+                visible:            ocMngr && checkForVGM(ocMngr.computersInfo)
+                text:               qsTr("Onboard Computers Info")
                 Layout.fillWidth:   true
-                onClicked:          showPanel(this,"VGMInfo.qml")
+                onClicked:          showPanel(this,"OnboardComputersInfo.qml")
             }
 
             ConfigButton {
