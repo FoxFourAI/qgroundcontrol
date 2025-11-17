@@ -121,16 +121,16 @@ ApplicationWindow {
     }
 
     function checkForVGM(compsInfo){
-            for (let i = 0; i < compsInfo.length; i++) {
-                let item = compsInfo[i];  // each item is a QVariantMap
+        for (let i = 0; i < compsInfo.length; i++) {
+            let item = compsInfo[i];  // each item is a QVariantMap
 
-                let vendor = item["Vendor Id"];
+            let vendor = item["Vendor Id"];
 
-                if (vendor === 0xf4) {
-                    return true;
-                }
+            if (vendor === 0xf4) {
+                return true;
             }
-            return false;
+        }
+        return false;
     }
 
     function showPlanView() {

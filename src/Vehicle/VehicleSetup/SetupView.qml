@@ -77,7 +77,7 @@ Rectangle {
                 panelLoader.setSourceComponent(messagePanelComponent)
             } else {
                 panelLoader.setSource(vehicleComponent.setupSource, vehicleComponent)
-                for(var i = 0; i < componentRepeater.count; i++) {
+                for (var i = 0; i < componentRepeater.count; i++) {
                     var obj = componentRepeater.itemAt(i);
                     if (obj.text === vehicleComponent.name) {
                         obj.checked = true
