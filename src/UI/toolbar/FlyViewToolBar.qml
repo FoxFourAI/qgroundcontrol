@@ -165,7 +165,7 @@ Rectangle {
         anchors.margins:        ScreenTools.defaultFontPixelHeight * 0.66
         source:                 _outdoorPalette ? "qrc:/qmlimages/F4/darkLogo.svg" : "qrc:/qmlimages/F4/lightLogo.svg"
         visible:                _computersManager &&
-                                checkForVGM(_computersManager.computersInfo) &&
+                                // checkForVGM(_computersManager.computersInfo) &&
                                 x > (toolsFlickable.x + toolsFlickable.contentWidth + ScreenTools.defaultFontPixelWidth)
         mipmap:                 true
         fillMode:               Image.PreserveAspectFit
