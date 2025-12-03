@@ -101,7 +101,7 @@ jobs:
         run: hdiutil attach QGroundControl.dmg
 
       - name: Sanity check DMG executable
-        working-directory: /Volumes/GroundControl/QGroundControl.app/Contents/MacOS
+        working-directory: /Volumes/QGroundControl/QGroundControl.app/Contents/MacOS
         run: ./QGroundControl --simple-boot-test
 
       - name: Upload Build File
