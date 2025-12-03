@@ -37,7 +37,7 @@ jobs:
         os: [ubuntu-22.04]
         include:
           - os: ubuntu-22.04
-            package: QGroundControl-x86_64
+            package: FoxFour-QGroundControl
             host: linux
             arch: linux_gcc_64
 
@@ -105,7 +105,7 @@ jobs:
       - name: Verify Executable
         if: matrix.build_type == 'Release'
         working-directory: ${{ runner.temp }}/build/${{ matrix.build_type }}
-        run: xvfb-run -a ./QGroundControl --simple-boot-test
+        run: xvfb-run -a ./${{ matrix.package }} --simple-boot-test
 
       - name: Create AppImage
         working-directory: ${{ runner.temp }}/build
