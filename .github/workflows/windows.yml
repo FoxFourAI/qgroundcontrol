@@ -17,6 +17,7 @@ on:
       - CMakeLists.txt
       - cmake/**
       - tools/setup/*windows*
+      - custom/**
 
 # concurrency:
 #   group: ${{ github.workflow }}-${{ github.ref }}

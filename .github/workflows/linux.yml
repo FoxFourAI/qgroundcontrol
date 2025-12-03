@@ -4,21 +4,22 @@ on:
   push:
     branches:
       - master
-      - 'Stable*'
+      - Stable*
     tags:
-      - 'v*'
+      - v*
     paths-ignore:
-      - 'docs/**' # Do not trigger for any changes under docs
+      - docs/** # Do not trigger for any changes under docs
   pull_request:
     paths:
-      - '.github/workflows/linux.yml'
-      - '.github/actions/**'
-      - 'deploy/linux/**'
-      - 'src/**'
-      - 'test/**'
-      - 'CMakeLists.txt'
-      - 'cmake/**'
-      - 'tools/setup/*debian*'
+      - .github/workflows/linux.yml
+      - .github/actions/**
+      - deploy/linux/**
+      - src/**
+      - test/**
+      - CMakeLists.txt
+      - cmake/**
+      - tools/setup/*debian*
+      - custom/**
 
 # concurrency:
 #   group: ${{ github.workflow }}-${{ github.ref }}
@@ -33,13 +34,8 @@ jobs:
       fail-fast: false
       matrix:
         build_type: [Debug, Release]
-        os: [ubuntu-24.04-arm, ubuntu-22.04]
+        os: [ubuntu-22.04]
         include:
-          - os: ubuntu-24.04-arm
-            package: QGroundControl-aarch64
-            host: linux_arm64
-            arch: linux_gcc_arm64
-
           - os: ubuntu-22.04
             package: QGroundControl-x86_64
             host: linux

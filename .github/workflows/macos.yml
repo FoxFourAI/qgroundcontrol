@@ -4,18 +4,19 @@ on:
   push:
     branches:
       - master
-      - 'Stable*'
+      - Stable*
     tags:
-      - 'v*'
+      - v*
     paths-ignore:
-      - 'docs/**' # Do not trigger for any changes under docs
+      - docs/** # Do not trigger for any changes under docs
   pull_request:
     paths:
-      - '.github/workflows/macos.yml'
-      - 'deploy/macos/**'
-      - 'src/**'
-      - 'CMakeLists.txt'
-      - 'cmake/**'
+      - .github/workflows/macos.yml
+      - deploy/macos/**
+      - src/**
+      - CMakeLists.txt
+      - cmake/**
+      - custom/**
 
 # concurrency:
 #   group: ${{ github.workflow }}-${{ github.ref }}
