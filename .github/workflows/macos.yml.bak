@@ -90,7 +90,7 @@ jobs:
 
       - name: Sanity check dev build executable
         working-directory: ${{ runner.temp }}/build/Release/${{ matrix.package }}.app/Contents/MacOS
-        run: ./QGroundControl --simple-boot-test
+        run: ./${{ matrix.package }} --simple-boot-test
 
       - name: Create DMG
         working-directory: ${{ runner.temp }}/build
@@ -98,15 +98,15 @@ jobs:
 
       - name: Mount DMG
         working-directory: ${{ runner.temp }}/build
-        run: hdiutil attach QGroundControl.dmg
+        run: hdiutil attach ${{ matrix.package }}.dmg
 
       - name: Sanity check DMG executable
-        working-directory: /Volumes/QGroundControl/QGroundControl.app/Contents/MacOS
-        run: ./QGroundControl --simple-boot-test
+        working-directory: /Volumes/${{ matrix.package }}/${{ matrix.package }}.app/Contents/MacOS
+        run: ./${{ matrix.package }} --simple-boot-test
 
       - name: Upload Build File
         if: matrix.BuildType == 'Release'
         uses: ./.github/actions/upload
         with:
-          artifact_name: QGroundControl.dmg
-          package_name: QGroundControl
+          artifact_name: ${{ matrix.package }}.dmg
+          package_name: ${{ matrix.package }}
