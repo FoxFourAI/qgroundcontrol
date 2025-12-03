@@ -37,7 +37,7 @@ jobs:
         os: [ubuntu-22.04]
         include:
           - os: ubuntu-22.04
-            package: FoxFour-QGroundControl
+            package: QGroundControl
             host: linux
             arch: linux_gcc_64
 

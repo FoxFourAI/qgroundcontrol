@@ -29,7 +29,6 @@ jobs:
     strategy:
       matrix:
         BuildType: [Release]
-        package: FoxFour-QGroundControl
 
     defaults:
       run:
@@ -90,7 +89,7 @@ jobs:
         run: cmake --build . --target all --config ${{ matrix.BuildType }} --parallel
 
       - name: Sanity check dev build executable
-        working-directory: ${{ runner.temp }}/build/Release/${{ matrix.package }}.app/Contents/MacOS
+        working-directory: ${{ runner.temp }}/build/Release/QGroundControl.app/Contents/MacOS
         run: ./QGroundControl --simple-boot-test
 
       - name: Create DMG
@@ -102,7 +101,7 @@ jobs:
         run: hdiutil attach QGroundControl.dmg
 
       - name: Sanity check DMG executable
-        working-directory: /Volumes/QGroundControl/QGroundControl.app/Contents/MacOS
+        working-directory: /Volumes/GroundControl/QGroundControl.app/Contents/MacOS
         run: ./QGroundControl --simple-boot-test
 
       - name: Upload Build File

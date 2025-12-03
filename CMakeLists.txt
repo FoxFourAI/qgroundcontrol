@@ -243,8 +243,7 @@ qt_add_executable(${CMAKE_PROJECT_NAME}
 )
 
 
-target_link_libraries(FoxFour-QGroundControl PRIVATE Qt6::Core)
-target_link_libraries(FoxFour-QGroundControl PRIVATE Qt6::Core)
+target_link_libraries(QGroundControl PRIVATE Qt6::Core)
 # ----------------------------------------------------------------------------
 # Platform-Specific Configuration
 # ----------------------------------------------------------------------------

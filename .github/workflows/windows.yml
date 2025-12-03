@@ -119,7 +119,7 @@ jobs:
       - name: Verify Executable
         if: matrix.build_type == 'Release' && matrix.arch != 'win64_msvc2022_arm64_cross_compiled'
         working-directory: ${{ runner.temp }}\build\${{ matrix.build_type }}
-        run: FoxFour-QGroundControl.exe --simple-boot-test
+        run: QGroundControl.exe --simple-boot-test
 
       - name: Create Installer
         working-directory: ${{ runner.temp }}\build

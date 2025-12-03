@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------------------
 # Application Branding
 # ----------------------------------------------------------------------------
-set(QGC_APP_NAME "FoxFour-QGroundControl" CACHE STRING "App Name" FORCE)
+# set(QGC_APP_NAME "FoxFour-QGroundControl" CACHE STRING "App Name" FORCE)
 
 # ----------------------------------------------------------------------------
 # Custom Icons and Graphics
