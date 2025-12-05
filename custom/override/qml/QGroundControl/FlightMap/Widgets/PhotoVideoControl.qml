@@ -108,7 +108,7 @@ Rectangle {
                 from:               1
                 value:              _camera.zoomLevel
                 live:               true
-                onValueChanged: () => {_camera.zoomLevel = zoomSlider.value}
+                onMoved:            _camera.zoomLevel = value
             }
 
             // Zoom button

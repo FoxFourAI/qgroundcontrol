@@ -9,11 +9,11 @@
 
 #pragma once
 
-#include "APMFirmwarePlugin.h"
+#include "ArduCopterFirmwarePlugin.h"
 class AutoPilotPlugin;
 class Vehicle;
 
-class FoxFourFirmwarePlugin : public APMFirmwarePlugin
+class FoxFourFirmwarePlugin : public ArduCopterFirmwarePlugin
 {
     Q_OBJECT
 public:
@@ -21,8 +21,5 @@ public:
 
     AutoPilotPlugin *autopilotPlugin(Vehicle *vehicle) const final;
     MavlinkCameraControl *createCameraControl(const mavlink_camera_information_t *info, Vehicle *vehicle, int compID, QObject *parent) const;
-
-private:
-    QVariantList _toolIndicatorList;
 
 };

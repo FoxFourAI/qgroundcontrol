@@ -261,7 +261,7 @@ FlightMap {
         Connections {
             target:                 QGroundControl.multiVehicleManager
             function onActiveVehicleChanged(activeVehicle) {
-                gpsTrajectoryPolyline.path = _activeVehicle ? _activeVehicle.trajectoryPoints.list(_src) : []
+                gpsTrajectoryPolyline.path = _activeVehicle ? _activeVehicle.trajectoryPoints.list(trajectoryPolyline._src) : []
             }
         }
 
@@ -284,7 +284,7 @@ FlightMap {
         Connections {
             target:                 QGroundControl.multiVehicleManager
             function onActiveVehicleChanged(activeVehicle) {
-                trajectoryPolyline.path = _activeVehicle ? _activeVehicle.trajectoryPoints.list(_src) : []
+                trajectoryPolyline.path = _activeVehicle ? _activeVehicle.trajectoryPoints.list(trajectoryPolyline._src) : []
             }
         }
 

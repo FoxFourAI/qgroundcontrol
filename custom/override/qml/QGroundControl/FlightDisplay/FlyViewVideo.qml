@@ -143,13 +143,13 @@ Item {
 
         onPressed: {
                         // Set starting point and make the selection rectangle visible
-                        startX = mouse.x
-                        startY = mouse.y
+                        startX = mouseX
+                        startY = mouseY
                         selectionRect.visible = true
-                        selectionRect.x = Math.min(mouse.x, startX);
-                        selectionRect.y = Math.min(mouse.y, startY);
-                        selectionRect.width = Math.abs(mouse.x - startX)
-                        selectionRect.height = Math.abs(mouse.y - startY)
+                        selectionRect.x = mouseX;
+                        selectionRect.y = mouseY;
+                        selectionRect.width = Math.abs(mouseX - startX)
+                        selectionRect.height = Math.abs(mouseY - startY)
                     }
 
         onReleased: (mouse) => {
@@ -188,7 +188,6 @@ Item {
             let latestFrameTimestamp = QGroundControl.videoManager.lastKlvTimestamp;
             videoStreaming._camera.startTracking(rec, latestFrameTimestamp, true);
             videoStreaming._camera.zoomLevel = Math.min(1.0/(x1-x0), 1.0/(y1-y0))
-            videoStreaming._camera.zoomEnabled = true
         }
 
         onDoubleClicked: QGroundControl.videoManager.fullScreen = !QGroundControl.videoManager.fullScreen
