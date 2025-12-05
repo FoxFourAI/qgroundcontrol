@@ -219,7 +219,7 @@ Rectangle {
 
             ConfigButton {
                 id:                 summaryButton
-                icon.source:        "/qmlimages/VehicleSummaryIcon.png"
+                icon.source:        "qrc:/qmlimages/PaperPlane.svg"
                 checked:            true
                 text:               qsTr("Summary")
                 Layout.fillWidth:   true
