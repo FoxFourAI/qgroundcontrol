@@ -12,7 +12,7 @@ Rectangle {
     readonly property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
     readonly property var _onboardCompManager: _activeVehicle ? _activeVehicle.autopilotPlugin.onboardComputersManager : 0
 
-    anchors.centerIn: paent
+    anchors.centerIn: parent
     // anchors.fill:   parent
     anchors.rightMargin: ScreenTools.defaultFontPixelWidth
     anchors.leftMargin:  ScreenTools.defaultFontPixelWidth

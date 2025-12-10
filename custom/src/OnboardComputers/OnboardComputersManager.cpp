@@ -58,8 +58,7 @@ void OnboardComputersManager::_mavlinkMessageReceived(const mavlink_message_t& m
             break;
         case MAVLINK_MSG_ID_ONBOARD_COMPUTER_STATUS:
             // TODO
-            [[fallthrough]];
-
+            break;
         default:
             break;
         }
@@ -182,6 +181,7 @@ void OnboardComputersManager::_handleHeartbeat(const mavlink_message_t& message)
             setCurrentComputerComponent(computerId);
         }
         emit computersListChanged();
+        _vehicle->parameterManager()->refreshAllParameters();
     }
 }
 
