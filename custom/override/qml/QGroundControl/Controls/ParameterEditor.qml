@@ -74,6 +74,7 @@ Item {
         QGCMenuItem {
             text:           qsTr("Refresh")
             onTriggered:	controller.refresh()
+
         }
         QGCMenuItem {
             text:           qsTr("Reset all to firmware's defaults")
@@ -121,9 +122,10 @@ Item {
         }
         QGCMenuSeparator { }
         QGCMenuItem {
-            text:           qsTr("Reboot Onboard Computers")
-            onTriggered:    mainWindow.showMessageDialog(qsTr("Reboot Onboard Computers"),
-                                                         qsTr("Select Ok to reboot all the onboard computers"),
+            text:           qsTr("Reboot VGM")
+            visible:        _activeVehicle && checkForVGM(_activeVehicle.autopilotPlugin.onboardComuterManager.computersInfo)
+            onTriggered:    mainWindow.showMessageDialog(qsTr("Reboot VGM"),
+                                                         qsTr("Select Ok to reboot VGM"),
                                                          Dialog.Cancel | Dialog.Ok,
                                                          function() { _activeVehicle.autopilotPlugin.rebootOnboardComputers() })
         }
