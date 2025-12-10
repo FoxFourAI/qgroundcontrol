@@ -58,7 +58,7 @@ FoxFourCameraControl::FoxFourCameraControl(const mavlink_camera_information_t *i
     _cameraMode      = CAM_MODE_VIDEO;
     connect(VideoManager::instance(), &VideoManager::recordingChanged,this,&FoxFourCameraControl::_processRecordingChanged);
     qCDebug(CameraControlLog)<< "FoxFour camera control initialized";
-
+    _info.flags |= CAMERA_CAP_FLAGS_HAS_VIDEO_STREAM;
 }
 
 //-----------------------------------------------------------------------------

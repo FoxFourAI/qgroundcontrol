@@ -1,9 +1,6 @@
 /****************************************************************************
  *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
+ * FoxFour GStreamer Video Receiver Header
  *
  ****************************************************************************/
 
@@ -12,80 +9,92 @@
 #include "GstVideoReceiver.h"
 #include "KLVMetadata.h"
 
-class FoxFourGstVideoReceiver : public VideoReceiver
+#include <QtCore/QTimer>
+#include <gst/gst.h>
+
+class FoxFourGstVideoReceiver : public GstVideoReceiver
 {
     Q_OBJECT
 
 public:
     explicit FoxFourGstVideoReceiver(QObject *parent = nullptr);
-    ~FoxFourGstVideoReceiver();
+    ~FoxFourGstVideoReceiver() override;
 
-signals:
-    void klvMetadataReceived(KLVMetadata data);
-
-public slots:
-    void start(uint32_t timeout) override;
+    // VideoReceiver interface implementation
+    void start(uint32_t timeout = 4) override;
     void stop() override;
     void startDecoding(void *sink) override;
     void stopDecoding() override;
     void startRecording(const QString &videoFile, FILE_FORMAT format) override;
     void stopRecording() override;
     void takeScreenshot(const QString &imageFile) override;
+    QSize videoSize() {return _videoSize;}
+signals:
+    void klvMetadataReceived(const KLVMetadata &metadata);
 
 private slots:
     void _watchdog();
-    void _handleEOS();
+
+    void setVideoSize(QSize newSize) {
+        if(newSize != _videoSize){
+            emit videoSizeChanged(newSize);
+        }
+        _videoSize = newSize;
+    }
 
 private:
-    GstElement *_makeSource(const QString &input);
-    GstElement *_makeDecoder(GstCaps *caps = nullptr, GstElement *videoSink = nullptr);
-    GstElement *_makeFileSink(const QString &videoFile, FILE_FORMAT format);
+    // Pipeline creation methods
+    bool _createSource();
+    bool _createRtspSource();
+    bool _createMpegtsSource();
+    bool _createRtpSource();
+    bool _buildPipeline();
 
-    void _onNewSourcePad(GstPad *pad);
-    void _onNewDecoderPad(GstPad *pad);
-    bool _addDecoder(GstElement *src);
-    bool _addVideoSink(GstPad *pad);
-    void _noteTeeFrame();
-    void _noteVideoSinkFrame();
-    void _noteEndOfStream();
-    /// -Unlink the branch from the src pad
-    /// -Send an EOS event at the beginning of that branch
-    bool _unlinkBranch(GstElement *from);
-    void _shutdownDecodingBranch();
-    void _shutdownRecordingBranch();
+    // Callback methods
+    static GstPadProbeReturn _teeProbe(GstPad *pad, GstPadProbeInfo *info, gpointer user_data);
+    static GstPadProbeReturn _videoSinkProbe(GstPad *pad, GstPadProbeInfo *info, gpointer user_data);
+    static GstPadProbeReturn _keyframeWatch(GstPad *pad, GstPadProbeInfo *info, gpointer user_data);
 
+    static void _onRtspPadAdded(GstElement *element, GstPad *pad, gpointer data);
+    static void _onDemuxPadAdded(GstElement *element, GstPad *pad, gpointer data);
+    static gboolean _onBusMessage(GstBus *bus, GstMessage *msg, gpointer data);
+    static GstFlowReturn _onNewMetadata(GstElement *sink, gpointer user_data);
+
+
+    // Helper methods
+    void _setupMetadataBranch(GstPad *pad);
+    void _cleanup();
     bool _needDispatch();
     void _dispatchSignal(Task emitter);
 
-    static gboolean _onBusMessage(GstBus *bus, GstMessage *message, gpointer user_data);
-    static void _onNewPad(GstElement *element, GstPad *pad, gpointer data);
-    static void _wrapWithGhostPad(GstElement *element, GstPad *pad, gpointer data);
-    static void _linkVideoPad(GstElement* element, GstPad* pad, gpointer data);
-    static void _linkMedatadaPad(GstElement* element, GstPad* pad, gpointer data);
-    static gboolean _padProbe(GstElement *element, GstPad *pad, gpointer user_data);
-    static gboolean _filterParserCaps(GstElement *bin, GstPad *pad, GstElement *element, GstQuery *query, gpointer data);
-    static GstPadProbeReturn _teeProbe(GstPad *pad, GstPadProbeInfo *info, gpointer user_data);
-    static GstPadProbeReturn _videoSinkProbe(GstPad *pad, GstPadProbeInfo *info, gpointer user_data);
-    static GstPadProbeReturn _eosProbe(GstPad *pad, GstPadProbeInfo *info, gpointer user_data);
-    static GstPadProbeReturn _keyframeWatch(GstPad *pad, GstPadProbeInfo *info, gpointer user_data);
-    static gboolean _padHasMetadataCaps(GstPad* pad);
-    static GstFlowReturn _onNewMedatada(GstElement *sink, gpointer user_data);
-
-    GstElement *_decoder = nullptr;
-    GstElement *_decoderValve = nullptr;
-    GstElement *_fileSink = nullptr;
+    // GStreamer elements
     GstElement *_pipeline = nullptr;
-    GstElement *_recorderValve = nullptr;
     GstElement *_source = nullptr;
-    GstElement *_tee = nullptr;
+    GstElement *_demux = nullptr;
+    GstElement *_queue = nullptr;
+    GstElement *_depay = nullptr;
+    GstElement *_parser = nullptr;
+    GstElement *_decoder = nullptr;
     GstElement *_videoSink = nullptr;
-    GstVideoWorker *_worker = nullptr;
-    gulong _teeProbeId = 0;
-    gulong _videoSinkProbeId = 0;
+    GstElement *_decoderQueue = nullptr;
+    GstElement *_recorderQueue = nullptr;
 
-    static constexpr const char *_kFileMux[FILE_FORMAT_MAX + 1] = {
-        "matroskamux",
-        "qtmux",
-        "mp4mux"
-    };
+
+    // Worker thread
+    GstVideoWorker *_worker = nullptr;
+
+    // Timers
+    QTimer _watchdogTimer;
+
+    // State flags
+    bool _streaming = false;
+    bool _decoding = false;
+    bool _endOfStream = false;
+    bool _isRtsp = false;
+    bool _isMpegts = false;
+    bool _isRtp = false;
+    QSize _videoSize{};
+
+    // Settings
+    uint32_t _timeout = 4;
 };
