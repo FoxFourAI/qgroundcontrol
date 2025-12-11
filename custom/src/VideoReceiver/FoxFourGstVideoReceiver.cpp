@@ -182,8 +182,8 @@ bool FoxFourGstVideoReceiver::_createSource()
     QUrl sourceUrl(_uri);
 
     _isRtsp = sourceUrl.scheme().startsWith("rtsp", Qt::CaseInsensitive);
-    _isMpegts = _uri.contains("mpegts://", Qt::CaseInsensitive);
-    _isRtp = _uri.contains("udp://", Qt::CaseInsensitive) && !_isMpegts;
+    _isMpegts = _uri.startsWith("mpegts://", Qt::CaseInsensitive);
+    _isRtp = _uri.startsWith("udp://", Qt::CaseInsensitive);
 
     if (_isRtsp) {
         return _createRtspSource();
@@ -233,8 +233,7 @@ bool FoxFourGstVideoReceiver::_createMpegtsSource()
         return false;
     }
 
-    QUrl sourceUrl(_uri.replace("mpegts://", "udp://"));
-    QString uri = QString("udp://%1:%2").arg(sourceUrl.host()).arg(sourceUrl.port());
+    QString uri = QString("udp://0.0.0.0:%1").arg(_uri.split('/').last());
 
     g_object_set(_source,
                  "uri", uri.toUtf8().constData(),
@@ -267,8 +266,8 @@ bool FoxFourGstVideoReceiver::_createRtpSource()
         return false;
     }
 
-    QUrl sourceUrl(_uri);
-    QString uri = QString("udp://%1:%2").arg(sourceUrl.host()).arg(sourceUrl.port());
+
+    QString uri = QString("udp://0.0.0.0:%1").arg(_uri.split('/').last())/*.arg(sourceUrl.port())*/;
 
     g_object_set(_source,
                  "uri", uri.toUtf8().constData(),

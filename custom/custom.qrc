@@ -8,6 +8,7 @@
     </qresource>
     <qresource prefix="/Custom/qml">
         <file alias="QGroundControl/Controls/ParameterEditor.qml">override/qml/QGroundControl/Controls/ParameterEditor.qml</file>
+        <file alias="QGroundControl/AppSettings/VideoSettings.qml">override/qml/QGroundControl/AppSettings/VideoSettings.qml</file>
         <file alias="QGroundControl/Controls/FlyViewToolBar.qml">override/qml/QGroundControl/Controls/FlyViewToolBar.qml</file>
         <file alias="QGroundControl/MainWindow.qml">override/qml/MainWindow.qml</file>
         <file alias="QGroundControl/Controls/ParameterEditor.qml">override/qml/QGroundControl/Controls/ParameterEditor.qml</file>
@@ -19,7 +20,5 @@
         <file alias="QGroundControl/AppSettings/FlyViewSettings.qml">override/qml/QGroundControl/AppSettings/FlyViewSettings.qml</file>
         <file alias="QGroundControl/AppSettings/SettingsPage.qml">override/qml/QGroundControl/AppSettings/SettingsPage.qml</file>
         <file alias="OnboardComputers/OnboardComputersInfo.qml">res/Custom/OnboardComputers/OnboardComputersInfo.qml</file>
-    </qresource>
-    <qresource prefix="/Custom/res">
     </qresource>
 </RCC>

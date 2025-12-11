@@ -13,9 +13,9 @@
 {
     "name":             "udpUrl",
     "shortDesc": "Video UDP Url",
-    "longDesc":  "UDP url address and port to bind to for video stream. Example: 0.0.0.0:5600",
+    "longDesc":  "UDP url address and port to bind to for video stream. Example: 8081",
     "type":             "string",
-    "default":     "0.0.0.0:5600"
+    "default":     "8081"
 },
 {
     "name":             "rtspUrl",
