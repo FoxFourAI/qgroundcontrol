@@ -142,7 +142,7 @@ Rectangle {
         anchors.margins:        ScreenTools.defaultFontPixelHeight * 0.66
         source:                 _outdoorPalette ? "/custom/img/FoxFourTextLogo_dark.svg" : "/custom/img/FoxFourTextLogo_light.svg"
         visible:                _computersManager &&
-                                checkForVGM(_computersManager.computersInfo) &&
+                                // checkForVGM(_computersManager.computersInfo) &&
                                 x > (indicatorsFlickable.x + indicatorsFlickable.contentWidth + ScreenTools.defaultFontPixelWidth)
         mipmap:                 true
         fillMode:               Image.PreserveAspectFit
