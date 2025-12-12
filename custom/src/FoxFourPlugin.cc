@@ -16,7 +16,7 @@ FoxFourPlugin::FoxFourPlugin(QObject *parent)
     : QGCCorePlugin(parent)
     , _options(new QGCOptions(this))
 {
-
+    _version = QString(QGC_CUSTOM_VERSION);
     _showAdvancedUI = true;
     (void) connect(this, &FoxFourPlugin::showAdvancedUIChanged, this, &FoxFourPlugin::_advancedChanged);
 }

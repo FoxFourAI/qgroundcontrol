@@ -38,11 +38,10 @@ OnboardComputersManager::OnboardComputersManager(Vehicle* vehicle, QObject *pare
     connect(MultiVehicleManager::instance(), &MultiVehicleManager::parameterReadyVehicleAvailableChanged, this,
             &OnboardComputersManager::_vehicleReady);
     connect(_vehicle, &Vehicle::mavlinkMessageReceived, this, &OnboardComputersManager::_mavlinkMessageReceived);
-
+    connect(_vehicle,&Vehicle::textMessageReceived,this, &OnboardComputersManager::_vehicleMessageReceived);
     connect(&_timeoutCheckTimer, &QTimer::timeout, this, &OnboardComputersManager::_checkTimeouts);
     _timeoutCheckTimer.start(_timeoutCheckInterval);
 }
-
 
 void OnboardComputersManager::_vehicleReady(bool ready) { _vehicleReadyState = ready; }
 
@@ -144,6 +143,27 @@ QVariantMap OnboardComputersManager::computerInfo(uint8_t compId)
 
 }
 
+void OnboardComputersManager::_vehicleMessageReceived(int sysid, int componentid, int severity, QString text, QString description)
+{
+    // While we do not have osVersion or trying to request it, we reading logs, in case we get version from it.
+    if(!_onboardComputers.contains(componentid) ||
+        _onboardComputers[componentid].osVersion.toUint32() != 0 ||
+        _onboardComputers[componentid].infoRequestCnt >= _companionVersionMaxRetryCount ||
+        !text.contains("F4 software version")){
+        return;
+    }
+    auto &computer = _onboardComputers[componentid];
+    static const QRegularExpression expr("v(\\d+)\\.(\\d+)\\.(\\d+)-\\w*(\\d+)");
+    QRegularExpressionMatch match(expr.match(text));
+    if(match.hasMatch()){
+        computer.osVersion.major = match.captured(1).toInt(),
+        computer.osVersion.minor = match.captured(2).toInt(),
+        computer.osVersion.patch = match.captured(3).toInt(),
+        computer.osVersion.firmwareVersion = match.captured(4).toInt();
+    }
+
+}
+
 void OnboardComputersManager::_handleHeartbeat(const mavlink_message_t& message) {
     // Get the ID of the computer from 191 to 194
 
@@ -155,16 +175,29 @@ void OnboardComputersManager::_handleHeartbeat(const mavlink_message_t& message)
 
         //if we do not have vendor_id, asking for that
         if (0 == computer.info.vendor_id) {
+
+            // if still have pending message to answer, ignore...
+            if(_vehicle->isMavCommandPending(computerId,MAV_CMD_REQUEST_MESSAGE)){
+                return;
+            }
+
             if (computer.infoRequestCnt < _companionVersionMaxRetryCount) {
                 qCDebug(OnboardComputersManagerLog) << "CompId:" << computerId << "Retry COMPANION_VERSION request #" << computer.infoRequestCnt;
-                computer.vehicle->sendMavCommand(computerId, MAV_CMD_REQUEST_MESSAGE, true,
+                _vehicle->sendMavCommand(computerId, MAV_CMD_REQUEST_MESSAGE, true,
                                                  MAVLINK_MSG_ID_COMPANION_VERSION, //first param set id of message
                                                  0, 0, 0, 0, 0,
                                                  0);
                 computer.infoRequestCnt++;
-            }else if (computer.infoRequestCnt == _companionVersionMaxRetryCount) {
+            } else if (computer.infoRequestCnt == _companionVersionMaxRetryCount) {
                 qCDebug(OnboardComputersManagerLog) << "CompId:" << computerId << "Stop COMPANION_VERSION request due to retry limit";
                 emit onboardComputerInfoRecieveError(computerId);
+                if(computer.osVersion.toUint32() == 0){
+                    qgcApp()->showAppMessage(tr("WARNING:\nCan't receive VGM firmaware version from dialect! Try to restart VGM."));
+                } else {
+                    qgcApp()->showAppMessage(tr("INFO:\nCan't receive VGM firmaware version from dialect! Using version from boot message."));
+                    computer.info.vendor_id = 0xf4;
+                    computer.info.os_sw_version = computer.osVersion.toUint32();
+                }
                 computer.infoRequestCnt++;
             }
         }
@@ -176,7 +209,7 @@ void OnboardComputersManager::_handleHeartbeat(const mavlink_message_t& message)
         _vehicle->sendMavCommand(computerId, MAV_CMD_REQUEST_MESSAGE, true,
                                  MAVLINK_MSG_ID_COMPANION_VERSION, //first param set id of message
                                  0, 0, 0, 0, 0, 0); // do not touch other params
-        // If current computer index is not set (is 0, while set is 191-194), we set it to this computer
+        // If current computer index is not set (is 0, while onboard computers has id 191-194), we set it to this computer
         if (_currentComputerComponent == 0) {
             setCurrentComputerComponent(computerId);
         }
@@ -194,18 +227,29 @@ void OnboardComputersManager::_handleCompanionVersion(const mavlink_message_t &m
         return;
     }
 
+    auto &comp = _onboardComputers[computerId];
     //TODO: CUSTOM MAV_LINK DIALECT
-    mavlink_msg_companion_version_decode(&message, &_onboardComputers[computerId].info);
+    mavlink_msg_companion_version_decode(&message, &comp.info);
+
+    if( comp.osVersion.toUint32() != 0 &&
+        comp.osVersion.toUint32() != comp.info.os_sw_version){
+        qCWarning(OnboardComputersManagerLog)<<"VGM version from dialect and boot msg are not similar!";
+    }
+    if(comp.info.os_sw_version != 0){
+        comp.osVersion.fromUint32(comp.info.os_sw_version);
+    } else {
+        qCWarning(OnboardComputersManagerLog)<< "VGM response with 0x0 OS version code.";
+        comp.info.os_sw_version = comp.osVersion.toUint32();
+    }
 
     // if current computer do not have vendor_id (not VGM), then changing it to VGM
-    if (_onboardComputers[_currentComputerComponent].info.vendor_id != 0xf4) {
+    if (comp.info.vendor_id != 0xf4) {
         setCurrentComputerComponent(computerId);
         return;
     }
     emit onboardComputerInfoUpdated(computerId);
     emit computersInfoChanged();
 }
-
 
 void OnboardComputersManager::rebootAllOnboardComputers() {
     for (const auto& computer : _onboardComputers) {
@@ -256,4 +300,22 @@ void OnboardComputersManager::sendExternalPositionEstimate(const QGeoCoordinate&
     _vehicle->sendMavCommandWithHandler(&externalPositionAckHandler, currentComputer.compId,
                                         MAV_CMD_EXTERNAL_POSITION_ESTIMATE, 0.0, 0.0, 0.0, 0.0, coord.latitude(),
                                         coord.longitude(), coord.altitude());
+}
+
+bool OnboardComputersManager::checkVersion(QString desctiption, int major, int minor, int patch)
+{
+    OnboardComputerStruct::OsVersion version{static_cast<uint8_t>(major),
+                                             static_cast<uint8_t>(minor),
+                                             static_cast<uint8_t>(patch)};
+    if(!version.isValid()){
+        return false;
+    }
+
+    for(auto &comp:_onboardComputers){
+        if( comp.osVersion.isValid() &&
+            comp.osVersion.compatible(version)){
+            return true;
+        }
+    }
+    return false;
 }

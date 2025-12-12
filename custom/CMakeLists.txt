@@ -123,9 +123,10 @@ set(CUSTOM_INCLUDE_DIRECTORIES
 # Custom compiler definitions
 set(CUSTOM_DEFINITIONS
     QGC_CUSTOM_BUILD
+    QGC_CUSTOM_VERSION="0.0.1"
     CUSTOMHEADER="FoxFourPlugin.h"
     CUSTOMCLASS=FoxFourPlugin
-    CACHE INTERNAL "setting custom QGCCorePlugin to FoxFourPlugin" FORCE
+    CACHE INTERNAL "setting custom definitions" FORCE
 )
 
 # Custom Qt components required

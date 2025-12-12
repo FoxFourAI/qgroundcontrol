@@ -112,6 +112,15 @@ Rectangle {
                 Layout.fillHeight:  true
                 visible:            _activeVehicle
             }
+
+            QGCLabel{
+                // Layout.fillHeight:  true
+                Layout.alignment:   Qt.AlignVCenter
+                font.pointSize:     ScreenTools.defaultFontPointSize
+                font.family:        ScreenTools.normalFontFamily
+                font.weight:        Font.Normal
+                text: qsTr("v"+QGroundControl.corePlugin.version)
+            }
         }
 
         QGCFlickable {
@@ -133,6 +142,8 @@ Rectangle {
             anchors.fill: parent
         }
     }
+
+
 
     Image {
         id:foxFourLogo
