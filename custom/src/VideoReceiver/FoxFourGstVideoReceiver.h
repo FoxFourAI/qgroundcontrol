@@ -78,6 +78,7 @@ private:
     GstElement *_videoSink = nullptr;
     GstElement *_decoderQueue = nullptr;
     GstElement *_recorderQueue = nullptr;
+    GstElement *_mux = nullptr;
 
 
     // Worker thread
