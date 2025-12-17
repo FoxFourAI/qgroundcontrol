@@ -727,6 +727,14 @@ void FoxFourGstVideoReceiver::startRecording(const QString &videoFile, FILE_FORM
         return;
     }
 
+    // Configure qtmux for better crash resistance
+    if (format == FILE_FORMAT_MOV) {
+        g_object_set(_mux,
+                     "fragment-duration", 1000,  // Write data every 1 second
+                     "streamable", TRUE,          // Make streamable format
+                     nullptr);
+    }
+
     // Create filesink
     _fileSink = gst_element_factory_make("filesink", "filesink");
     if (!_fileSink) {
@@ -745,48 +753,20 @@ void FoxFourGstVideoReceiver::startRecording(const QString &videoFile, FILE_FORM
 
     bool linkOk = false;
 
-    // Special linking logic for MOV (qtmux)
-    do{
-        if (format == FILE_FORMAT_MOV) {
-            GstPad *srcPad = gst_element_get_request_pad(_mux, "src");
-            if (!srcPad) {
-                qCCritical(GstVideoReceiverLog) << "qtmux: failed to request src pad";
-                break;
-            }
-
-            GstPad *sinkPad = gst_element_get_static_pad(_fileSink, "sink");
-            if (!sinkPad) {
-                qCCritical(GstVideoReceiverLog) << "filesink: failed to get sink pad";
-                gst_object_unref(srcPad);
-                break;
-            }
-
-            if (gst_pad_link(srcPad, sinkPad) != GST_PAD_LINK_OK) {
-                qCCritical(GstVideoReceiverLog) << "Failed to link qtmux → filesink";
-                gst_object_unref(srcPad);
-                gst_object_unref(sinkPad);
-                break;
-            }
-
-            gst_object_unref(srcPad);
-            gst_object_unref(sinkPad);
-            linkOk = true;
-
-        } else {
-            // MKV/MP4 path (normal static pads)
-            linkOk = gst_element_link(_mux, _fileSink);
-        }
-
-        if (!linkOk) {
-            qCCritical(GstVideoReceiverLog) << "Failed to link mux and filesink";
-            break;
-        }
-
-        // Link valve → mux
+    do {
+        // Link valve → mux (this will automatically request the appropriate pad)
         if (!gst_element_link(_recorderValve, _mux)) {
             qCCritical(GstVideoReceiverLog) << "Failed to link valve and mux";
             break;
         }
+
+        // Link mux → filesink
+        if (!gst_element_link(_mux, _fileSink)) {
+            qCCritical(GstVideoReceiverLog) << "Failed to link mux and filesink";
+            break;
+        }
+
+        linkOk = true;
 
         gst_element_sync_state_with_parent(_mux);
         gst_element_sync_state_with_parent(_fileSink);
@@ -812,13 +792,17 @@ void FoxFourGstVideoReceiver::startRecording(const QString &videoFile, FILE_FORM
 
         return;
 
-    }while(0);
+    } while(0);
 
     // Cleanup on failure
-    if (_mux) gst_bin_remove(GST_BIN(_pipeline), _mux);
-    if (_fileSink) gst_bin_remove(GST_BIN(_pipeline), _fileSink);
-    gst_clear_object(&_mux);
-    gst_clear_object(&_fileSink);
+    if (_mux) {
+        gst_bin_remove(GST_BIN(_pipeline), _mux);
+        _mux = nullptr;
+    }
+    if (_fileSink) {
+        gst_bin_remove(GST_BIN(_pipeline), _fileSink);
+        _fileSink = nullptr;
+    }
 
     _dispatchSignal([this]() { emit onStartRecordingComplete(STATUS_FAIL); });
 }

@@ -126,8 +126,8 @@ SettingsPage {
             Layout.fillWidth:   true
             label:              qsTr("Record File Format")
             fact:               _videoSettings.recordingFormat
-            // visible:            _videoSettings.recordingFormat.visible
-            visible:            false
+            visible:            _videoSettings.recordingFormat.visible
+            // visible:            false
         }
 
         FactCheckBoxSlider {
