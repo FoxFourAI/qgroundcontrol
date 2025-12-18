@@ -13,12 +13,8 @@ import QtQuick.Dialogs
 import QtQuick.Layouts
 
 import QGroundControl
-
 import QGroundControl.FactControls
-
 import QGroundControl.Controls
-
-
 
 /// Page for sensor calibration. This control is used within the SensorsComponent control and can also be used
 /// standalone for custom uis. When using standadalone you can use the various show* bools to show/hide what you want.
@@ -395,7 +391,7 @@ Item {
                 id:             airspeedButton
                 width:          _buttonWidth
                 text:           qsTr("Airspeed")
-                visible:        vehicleComponent.airspeedCalSupported && 
+                visible:        vehicleComponent.airspeedCalSupported &&
                                     QGroundControl.corePlugin.options.showSensorCalibrationAirspeed &&
                                     showSensorCalibrationAirspeed
                 indicatorGreen: sens_dpres_off.value !== 0

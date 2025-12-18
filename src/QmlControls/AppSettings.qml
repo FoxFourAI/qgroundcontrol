@@ -13,9 +13,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import QGroundControl
-
 import QGroundControl.Controls
-
 import QGroundControl.AppSettings
 
 Rectangle {
@@ -27,7 +25,6 @@ Rectangle {
     readonly property real _defaultTextWidth:   ScreenTools.defaultFontPixelWidth
     readonly property real _horizontalMargin:   _defaultTextWidth / 2
     readonly property real _verticalMargin:     _defaultTextHeight / 2
-    readonly property real _buttonHeight:       ScreenTools.isTinyScreen ? ScreenTools.defaultFontPixelHeight * 3 : ScreenTools.defaultFontPixelHeight * 2
 
     property bool _first: true
 
@@ -35,9 +32,9 @@ Rectangle {
 
     function showSettingsPage(settingsPage) {
         for (var i=0; i<buttonRepeater.count; i++) {
-            var button = buttonRepeater.itemAt(i)
-            if (button.text === settingsPage) {
-                button.clicked()
+            var loader = buttonRepeater.itemAt(i)
+            if (loader && loader.item && loader.item.text === settingsPage) {
+                loader.item.clicked()
                 break
             }
         }
@@ -60,8 +57,9 @@ Rectangle {
         }
     }
 
-
     SettingsPagesModel { id: settingsPagesModel }
+
+    ButtonGroup { id: buttonGroup }
 
     QGCFlickable {
         id:                 buttonList
@@ -77,24 +75,29 @@ Rectangle {
 
         ColumnLayout {
             id:         buttonColumn
-            spacing:    ScreenTools.defaultFontPixelHeight / 4
+            spacing:    0
 
             property real _maxButtonWidth: 0
 
-            Repeater {
-                id:     buttonRepeater
-                model:  settingsPagesModel
+            Component {
+                id: dividerComponent
+
+                Item { height: ScreenTools.defaultFontPixelHeight / 2 }
+            }
+
+            Component {
+                id: buttonComponent
 
                 SettingsButton {
-                    Layout.fillWidth:   true
-                    text:               name
-                    icon.source:        iconUrl
-                    visible:            pageVisible()
+                    text:               modelName
+                    icon.source:        modelIconUrl
+                    visible:            modelPageVisible()
+                    ButtonGroup.group:  buttonGroup
 
                     onClicked: {
                         if (mainWindow.allowViewSwitch()) {
-                            if (rightPanel.source !== url) {
-                                rightPanel.source = url
+                            if (rightPanel.source !== modelUrl) {
+                                rightPanel.source = modelUrl
                             }
                             checked = true
                         }
@@ -111,9 +114,34 @@ Rectangle {
                         if (_commingFromRIDSettings) {
                             checked = false
                             _commingFromRIDSettings = false
-                            if (modelData.url == "qrc:/qml/QGroundControl/AppSettings/RemoteIDSettings.qml") {
+                            if (modelUrl == "qrc:/qml/QGroundControl/AppSettings/RemoteIDSettings.qml") {
                                 checked = true
                             }
+                        }
+                    }
+                }
+            }
+
+            Repeater {
+                id:     buttonRepeater
+                model:  settingsPagesModel
+
+                Loader {
+                    Layout.fillWidth: true
+                    sourceComponent: _sourceComponent()
+
+                    property var modelName: name
+                    property var modelIconUrl: iconUrl
+                    property var modelUrl: url
+                    property var modelPageVisible: pageVisible
+
+                    function _sourceComponent() {
+                        if (name === "Divider") {
+                            return dividerComponent
+                        } else if (pageVisible()) {
+                            return buttonComponent
+                        } else {
+                            return undefined
                         }
                     }
                 }
@@ -146,4 +174,3 @@ Rectangle {
         anchors.bottom:         parent.bottom
     }
 }
-

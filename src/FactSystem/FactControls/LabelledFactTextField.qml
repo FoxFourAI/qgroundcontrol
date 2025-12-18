@@ -12,8 +12,6 @@ import QtQuick.Layouts
 
 import QGroundControl
 import QGroundControl.Controls
-
-
 import QGroundControl.FactControls
 
 RowLayout {
@@ -30,6 +28,7 @@ RowLayout {
     QGCLabel {
         Layout.fillWidth:   true
         text:               label
+        visible:            label !== ""
     }
 
     FactTextField {
@@ -37,4 +36,3 @@ RowLayout {
         Layout.preferredWidth:  textFieldPreferredWidth
     }
 }
-

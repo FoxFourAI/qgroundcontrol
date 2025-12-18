@@ -12,9 +12,6 @@ import QtQuick
 import QGroundControl
 import QGroundControl.Controls
 
-
-
-
 Rectangle {
     id:     root
     width:  size
@@ -59,7 +56,7 @@ Rectangle {
 
     function translateCenterToAngleX(radius, angle) {
         return radius * Math.sin(angle * (Math.PI / 180))
-    } 
+    }
 
     function translateCenterToAngleY(radius, angle) {
         return -radius * Math.cos(angle * (Math.PI / 180))

@@ -13,8 +13,6 @@ import QtLocation
 import QtPositioning
 
 import QGroundControl
-
-
 import QGroundControl.Controls
 
 /// Marker for displaying a vehicle location on the map
@@ -56,10 +54,10 @@ MapQuickItem {
             blurMax: 32
             blurMultiplier: .1
         }
-            
+
         Repeater {
-            model: vehicle ? vehicle.gimbalController.gimbals : [] 
-            
+            model: vehicle ? vehicle.gimbalController.gimbals : []
+
             Item {
                 id:                           canvasItem
                 anchors.centerIn:             vehicleItem

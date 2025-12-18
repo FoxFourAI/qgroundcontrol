@@ -14,8 +14,6 @@ import QtQuick.Controls
 import QGroundControl
 import QGroundControl.Controls
 
-
-
 ColumnLayout {
     property var    instrumentValueData:            null
     property bool   settingsUnlocked:               false
@@ -43,7 +41,7 @@ ColumnLayout {
             if (instrumentValueData.fact) {
                 return instrumentValueData.fact.enumOrValueString + (instrumentValueData.showUnits ? " " + instrumentValueData.fact.units : "")
             } else {
-                return qsTr("--.--")
+                return qsTr("–")
             }
         }
     }

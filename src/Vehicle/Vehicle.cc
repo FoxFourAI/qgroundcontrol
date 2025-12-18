@@ -77,7 +77,7 @@ QGC_LOGGING_CATEGORY(VehicleLog, "Vehicle.Vehicle")
 #define SET_HOME_TERRAIN_ALT_MIN -500
 
 // After a second GCS has requested control and we have given it permission to takeover, we will remove takeover permission automatically after this timeout
-// If the second GCS didn't get control 
+// If the second GCS didn't get control
 #define REQUEST_OPERATOR_CONTROL_ALLOW_TAKEOVER_TIMEOUT_MSECS 10000
 
 const QString guided_mode_not_supported_by_vehicle = QObject::tr("Guided mode not supported by Vehicle.");
@@ -119,8 +119,6 @@ Vehicle::Vehicle(LinkInterface*             link,
 {
     connect(JoystickManager::instance(), &JoystickManager::activeJoystickChanged, this, &Vehicle::_loadJoystickSettings);
     connect(MultiVehicleManager::instance(), &MultiVehicleManager::activeVehicleChanged, this, &Vehicle::_activeVehicleChanged);
-
-    qCDebug(VehicleLog) << "Link started with Mavlink " << (MAVLinkProtocol::instance()->getCurrentVersion() >= 200 ? "V2" : "V1");
 
     connect(MAVLinkProtocol::instance(), &MAVLinkProtocol::messageReceived,        this, &Vehicle::_mavlinkMessageReceived);
     connect(MAVLinkProtocol::instance(), &MAVLinkProtocol::mavlinkMessageStatus,   this, &Vehicle::_mavlinkMessageStatus);
@@ -200,8 +198,6 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
     , _vehicleType                      (vehicleType)
     , _defaultCruiseSpeed               (SettingsManager::instance()->appSettings()->offlineEditingCruiseSpeed()->rawValue().toDouble())
     , _defaultHoverSpeed                (SettingsManager::instance()->appSettings()->offlineEditingHoverSpeed()->rawValue().toDouble())
-    , _mavlinkProtocolRequestComplete   (true)
-    , _maxProtoVersion                  (200)
     , _capabilityBitsKnown              (true)
     , _capabilityBits                   (MAV_PROTOCOL_CAPABILITY_MISSION_FENCE | MAV_PROTOCOL_CAPABILITY_MISSION_RALLY)
     , _trajectoryPoints                 (new TrajectoryPoints(this, this))
@@ -256,9 +252,6 @@ void Vehicle::_commonInit(LinkInterface* link)
     connect(this, &Vehicle::homePositionChanged,    this, &Vehicle::_updateDistanceHeadingHome);
     connect(this, &Vehicle::hobbsMeterChanged,      this, &Vehicle::_updateHobbsMeter);
     connect(this, &Vehicle::coordinateChanged,      this, &Vehicle::_updateAltAboveTerrain);
-    // Initialize alt above terrain to Nan so frontend can display it correctly in case the terrain query had no response
-    _altitudeAboveTerrFact.setRawValue(qQNaN());
-
     connect(this, &Vehicle::vehicleTypeChanged,     this, &Vehicle::inFwdFlightChanged);
     connect(this, &Vehicle::vtolInFwdFlightChanged, this, &Vehicle::inFwdFlightChanged);
 
@@ -351,8 +344,6 @@ void Vehicle::_commonInit(LinkInterface* link)
         }
     }
 
-    _flightDistanceFact.setRawValue(0);
-    _flightTimeFact.setRawValue(0);
     _flightTimeUpdater.setInterval(1000);
     _flightTimeUpdater.setSingleShot(false);
     connect(&_flightTimeUpdater, &QTimer::timeout, this, &Vehicle::_updateFlightTime);
@@ -445,13 +436,6 @@ void Vehicle::resetCounters()
 
 void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message)
 {
-    // If the link is already running at Mavlink V2 set our max proto version to it.
-    unsigned mavlinkVersion = MAVLinkProtocol::instance()->getCurrentVersion();
-    if (_maxProtoVersion != mavlinkVersion && mavlinkVersion >= 200) {
-        _maxProtoVersion = mavlinkVersion;
-        qCDebug(VehicleLog) << "_mavlinkMessageReceived Link already running Mavlink v2. Setting _maxProtoVersion" << _maxProtoVersion;
-    }
-
     if (message.sysid != _id && message.sysid != 0) {
         // We allow RADIO_STATUS messages which come from a link the vehicle is using to pass through and be handled
         if (!(message.msgid == MAVLINK_MSG_ID_RADIO_STATUS && _vehicleLinkManager->containsLink(link))) {
@@ -643,7 +627,7 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
     }
     case MAVLINK_MSG_ID_CONTROL_STATUS:
         _handleControlStatus(message);
-        break;   
+        break;
     case MAVLINK_MSG_ID_COMMAND_LONG:
         _handleCommandLong(message);
         break;
@@ -725,9 +709,8 @@ void Vehicle::_handleGpsRawInt(mavlink_message_t& message)
     _gpsRawIntMessageAvailable = true;
 
     if (gpsRawInt.fix_type >= GPS_FIX_TYPE_3D_FIX) {
-        QGeoCoordinate newPosition(gpsRawInt.lat  / (double)1E7, gpsRawInt.lon / (double)1E7, gpsRawInt.alt  / 1000.0);
-        emit updateTrajectory(newPosition, MAVLINK_MSG_ID_GPS_RAW_INT);
         if (!_globalPositionIntMessageAvailable) {
+            QGeoCoordinate newPosition(gpsRawInt.lat  / (double)1E7, gpsRawInt.lon / (double)1E7, gpsRawInt.alt  / 1000.0);
             if (newPosition != _coordinate) {
                 _coordinate = newPosition;
                 emit coordinateChanged(_coordinate);
@@ -761,7 +744,6 @@ void Vehicle::_handleGlobalPositionInt(mavlink_message_t& message)
     if (newPosition != _coordinate) {
         _coordinate = newPosition;
         emit coordinateChanged(_coordinate);
-        emit updateTrajectory(newPosition, MAVLINK_MSG_ID_GLOBAL_POSITION_INT);
     }
 }
 
@@ -888,31 +870,6 @@ void Vehicle::_setCapabilities(uint64_t capabilityBits)
     qCDebug(VehicleLog) << QString("Vehicle %1 GeoFence").arg(_capabilityBits & MAV_PROTOCOL_CAPABILITY_MISSION_FENCE ? supports : doesNotSupport);
     qCDebug(VehicleLog) << QString("Vehicle %1 RallyPoints").arg(_capabilityBits & MAV_PROTOCOL_CAPABILITY_MISSION_RALLY ? supports : doesNotSupport);
     qCDebug(VehicleLog) << QString("Vehicle %1 Terrain").arg(_capabilityBits & MAV_PROTOCOL_CAPABILITY_TERRAIN ? supports : doesNotSupport);
-
-    _setMaxProtoVersionFromBothSources();
-}
-
-void Vehicle::_setMaxProtoVersion(unsigned version) {
-
-    // Set only once or if we need to reduce the max version
-    if (_maxProtoVersion == 0 || version < _maxProtoVersion) {
-        qCDebug(VehicleLog) << "_setMaxProtoVersion before:after" << _maxProtoVersion << version;
-        _maxProtoVersion = version;
-        emit requestProtocolVersion(_maxProtoVersion);
-    }
-}
-
-void Vehicle::_setMaxProtoVersionFromBothSources()
-{
-    if (_mavlinkProtocolRequestComplete && _capabilityBitsKnown) {
-        if (_mavlinkProtocolRequestMaxProtoVersion != 0) {
-            qCDebug(VehicleLog) << "_setMaxProtoVersionFromBothSources using protocol version message";
-            _setMaxProtoVersion(_mavlinkProtocolRequestMaxProtoVersion);
-        } else {
-            qCDebug(VehicleLog) << "_setMaxProtoVersionFromBothSources using capability bits";
-            _setMaxProtoVersion(capabilityBits() & MAV_PROTOCOL_CAPABILITY_MAVLINK2 ? 200 : 100);
-        }
-    }
 }
 
 QString Vehicle::vehicleUIDStr()
@@ -1460,17 +1417,18 @@ void Vehicle::_handleRCChannels(mavlink_message_t& message)
     }
 
     for (int i=0; i<QGCMAVLink::maxRcChannels; i++) {
-        uint16_t channelValue = *_rgChannelvalues[i];
+        int channelValue = *_rgChannelvalues[i];
 
         if (i < channels.chancount) {
-            pwmValues[i] = channelValue == UINT16_MAX ? -1 : channelValue;
+            // Radio cal can only handle pwm values in the 1000:2000 range, so constrain to that
+            pwmValues[i] = channelValue == UINT16_MAX ? -1 : std::min(std::max(channelValue, 1000), 2000);
         } else {
             pwmValues[i] = -1;
         }
     }
 
     emit remoteControlRSSIChanged(channels.rssi);
-    emit rcChannelsChanged(channels.chancount, pwmValues);
+    emit rcChannelsChanged(std::min(channels.chancount, QGCMAVLink::maxRcChannels), pwmValues);
 }
 
 bool Vehicle::sendMessageOnLinkThreadSafe(LinkInterface* link, mavlink_message_t message)
@@ -2126,8 +2084,8 @@ double Vehicle::minimumEquivalentAirspeed()
     return _firmwarePlugin->minimumEquivalentAirspeed(this);
 }
 
-bool Vehicle::hasGripper()  const 
-{ 
+bool Vehicle::hasGripper()  const
+{
     return _firmwarePlugin->hasGripper(this);
 }
 
@@ -2599,7 +2557,6 @@ bool Vehicle::_sendMavCommandShouldRetry(MAV_CMD command)
         // links where commands could be lost. Also these commands tend to just be requesting status so if they end up being delayed
         // there are no safety concerns that could occur.
     case MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES:
-    case MAV_CMD_REQUEST_PROTOCOL_VERSION:
     case MAV_CMD_REQUEST_MESSAGE:
     case MAV_CMD_PREFLIGHT_STORAGE:
     case MAV_CMD_RUN_PREARM_CHECKS:
@@ -2626,12 +2583,12 @@ bool Vehicle::_commandCanBeDuplicated(MAV_CMD command)
 }
 
 void Vehicle::_sendMavCommandWorker(
-    bool        commandInt, 
-    bool        showError, 
+    bool        commandInt,
+    bool        showError,
     const MavCmdAckHandlerInfo_t* ackHandlerInfo,
-    int         targetCompId, 
-    MAV_CMD     command, 
-    MAV_FRAME   frame, 
+    int         targetCompId,
+    MAV_CMD     command,
+    MAV_FRAME   frame,
     float param1, float param2, float param3, float param4, double param5, double param6, float param7)
 {
     // We can't send commands to compIdAll using this method. The reason being that we would get responses back possibly from multiple components
@@ -2795,20 +2752,28 @@ void Vehicle::_sendMavCommandResponseTimeoutCheck(void)
 
 void Vehicle::showCommandAckError(const mavlink_command_ack_t& ack)
 {
-    QString rawCommandName  = MissionCommandTree::instance()->rawName(static_cast<MAV_CMD>(ack.command));
+    QString rawName  = MissionCommandTree::instance()->rawName(static_cast<MAV_CMD>(ack.command));
+    QString friendlyName = MissionCommandTree::instance()->friendlyName(static_cast<MAV_CMD>(ack.command));
+    QString commandStr;
+
+    if (friendlyName.isEmpty()) {
+        commandStr = rawName;
+    } else {
+        commandStr = QStringLiteral("%1 (%2)").arg(friendlyName).arg(rawName);
+    }
 
     switch (ack.result) {
         case MAV_RESULT_TEMPORARILY_REJECTED:
-            qgcApp()->showAppMessage(tr("%1 command temporarily rejected").arg(rawCommandName));
+            qgcApp()->showAppMessage(tr("%1 command temporarily rejected").arg(commandStr));
             break;
         case MAV_RESULT_DENIED:
-            qgcApp()->showAppMessage(tr("%1 command denied").arg(rawCommandName));
+            qgcApp()->showAppMessage(tr("%1 command denied").arg(commandStr));
             break;
         case MAV_RESULT_UNSUPPORTED:
-            qgcApp()->showAppMessage(tr("%1 command not supported").arg(rawCommandName));
+            qgcApp()->showAppMessage(tr("%1 command not supported").arg(commandStr));
             break;
         case MAV_RESULT_FAILED:
-            qgcApp()->showAppMessage(tr("%1 command failed").arg(rawCommandName));
+            qgcApp()->showAppMessage(tr("%1 command failed").arg(commandStr));
             break;
         default:
             // Do nothing
@@ -2925,7 +2890,7 @@ void Vehicle::_waitForMavlinkMessageMessageReceivedHandler(const mavlink_message
         // We use any incoming message as a trigger to check timeouts on message requests
 
         for (auto& compIdEntry : _requestMessageInfoMap) {
-            for (auto requestMessageInfo : compIdEntry) {    
+            for (auto requestMessageInfo : compIdEntry) {
                 if (requestMessageInfo->messageWaitElapsedTimer.isValid() && requestMessageInfo->messageWaitElapsedTimer.elapsed() > (qgcApp()->runningUnitTests() ? 50 : 1000)) {
                     auto resultHandler      = requestMessageInfo->resultHandler;
                     auto resultHandlerData  = requestMessageInfo->resultHandlerData;
@@ -3645,8 +3610,8 @@ void Vehicle::doSetHome(const QGeoCoordinate& coord)
             disconnect(_currentDoSetHomeTerrainAtCoordinateQuery, &TerrainAtCoordinateQuery::terrainDataReceived, this, &Vehicle::_doSetHomeTerrainReceived);
             _currentDoSetHomeTerrainAtCoordinateQuery = nullptr;
         }
-        // Save the coord for using when our terrain data arrives. If there was a pending terrain query paired with an older coordinate it is safe to 
-        // Override now, as we just disconnected the signal that would trigger the command sending 
+        // Save the coord for using when our terrain data arrives. If there was a pending terrain query paired with an older coordinate it is safe to
+        // Override now, as we just disconnected the signal that would trigger the command sending
         _doSetHomeCoordinate = coord;
         // Now setup and trigger the new terrain query
         _currentDoSetHomeTerrainAtCoordinateQuery = new TerrainAtCoordinateQuery(true /* autoDelet */);
@@ -3979,7 +3944,7 @@ void Vehicle::startTimerRevertAllowTakeover()
     _timerRevertAllowTakeover.setInterval(operatorControlTakeoverTimeoutMsecs());
     // Disconnect any previous connections to avoid multiple handlers
     disconnect(&_timerRevertAllowTakeover, &QTimer::timeout, nullptr, nullptr);
-    
+
     connect(&_timerRevertAllowTakeover, &QTimer::timeout, this, [this](){
         if (MAVLinkProtocol::instance()->getSystemId() == _sysid_in_control) {
             this->requestOperatorControl(false);
@@ -4033,12 +3998,12 @@ void Vehicle::_requestOperatorControlAckHandler(void* resultHandlerData, int com
         default:
             break;
     }
-    
+
     Vehicle* vehicle = static_cast<Vehicle*>(resultHandlerData);
     if (!vehicle) {
         return;
     }
-    
+
     if (ack.result == MAV_RESULT_ACCEPTED) {
         qCDebug(VehicleLog) << "Operator control request accepted";
     } else {
@@ -4229,9 +4194,9 @@ QString Vehicle::mavCmdResultFailureCodeToString(MavCmdResultFailureCode_t failu
     case MavCmdResultCommandResultOnly:
         return QStringLiteral("Command Result Only");
     case MavCmdResultFailureNoResponseToCommand:
-        return QStringLiteral("No Response To Command");    
+        return QStringLiteral("No Response To Command");
     case MavCmdResultFailureDuplicateCommand:
-        return QStringLiteral("Duplicate Command"); 
+        return QStringLiteral("Duplicate Command");
     default:
         return QStringLiteral("Unknown (%1)").arg(failureCode);
     }

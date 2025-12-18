@@ -14,8 +14,6 @@ import QtQuick.Dialogs
 import QGroundControl
 import QGroundControl.Controls
 
-
-
 SetupPage {
     id:             motorPage
     pageComponent:  pageComponent
@@ -56,7 +54,7 @@ SetupPage {
                 id:         motorSlider
                 enabled:    safetySwitch.checked
                 spacing:    ScreenTools.defaultFontPixelWidth * 4
-                
+
                 ValueSlider {
                     id:                 sliderThrottle
                     width:              motorButtons.width

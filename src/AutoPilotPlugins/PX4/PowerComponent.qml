@@ -13,11 +13,8 @@ import QtQuick.Dialogs
 import QtQuick.Layouts
 
 import QGroundControl
-
 import QGroundControl.FactControls
 import QGroundControl.Controls
-
-
 import QGroundControl.AutoPilotPlugins.PX4
 
 // Note: Only the _SOURCE parameter can be assumed to be always available. The remainder of the parameters
@@ -289,14 +286,14 @@ SetupPage {
                                 visible:                battNumCellsAvailable && battLowVoltAvailable && battHighVoltAvailable
                             }
 
-                            Item { 
+                            Item {
                                 width:              1
                                 height:             1
                                 Layout.columnSpan:  battImage.visible ? 2 : 3
                             }
 
-                            QGCLabel { 
-                                text:  qsTr("Number of Cells (in Series)") 
+                            QGCLabel {
+                                text:  qsTr("Number of Cells (in Series)")
                                 visible: battNumCellsAvailable
                             }
                             FactTextField {
@@ -305,23 +302,23 @@ SetupPage {
                                 showUnits:  true
                                 visible:    battNumCellsAvailable
                             }
-                            QGCLabel { 
+                            QGCLabel {
                                 text:       qsTr("Battery Max:")
-                                visible:    battImage.visible 
+                                visible:    battImage.visible
                             }
-                            QGCLabel { 
+                            QGCLabel {
                                 text:       visible ? (battNumCells.value * battHighVolt.value).toFixed(1) + ' V' : ""
-                                visible:    battImage.visible 
+                                visible:    battImage.visible
                             }
-                            Item { 
+                            Item {
                                 width:              1
                                 height:             1
                                 Layout.columnSpan:  3
                                 visible:            !battImage.visible
                             }
 
-                            QGCLabel { 
-                                text:       qsTr("Empty Voltage (per cell)") 
+                            QGCLabel {
+                                text:       qsTr("Empty Voltage (per cell)")
                                 visible:    battLowVoltAvailable
                             }
                             FactTextField {
@@ -330,23 +327,23 @@ SetupPage {
                                 showUnits:  true
                                 visible:    battLowVoltAvailable
                             }
-                            QGCLabel { 
-                                text:       qsTr("Battery Min:") 
+                            QGCLabel {
+                                text:       qsTr("Battery Min:")
                                 visible:    battImage.visible
                             }
-                            QGCLabel { 
+                            QGCLabel {
                                 text:       visible ? (battNumCells.value * battLowVolt.value).toFixed(1) + ' V' : ""
                                 visible:    battImage.visible
                             }
-                            Item { 
+                            Item {
                                 width:              1
                                 height:             1
                                 Layout.columnSpan:  3
                                 visible:            battLowVoltAvailable && !battImage.visible
                             }
 
-                            QGCLabel { 
-                                text:       qsTr("Full Voltage (per cell)") 
+                            QGCLabel {
+                                text:       qsTr("Full Voltage (per cell)")
                                 visible:    battHighVoltAvailable
                             }
                             FactTextField {
@@ -355,7 +352,7 @@ SetupPage {
                                 showUnits:  true
                                 visible:    battHighVoltAvailable
                             }
-                            Item { 
+                            Item {
                                 width:              1
                                 height:             1
                                 Layout.columnSpan:  battImage.visible ? 2 : 3

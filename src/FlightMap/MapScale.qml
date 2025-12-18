@@ -13,26 +13,17 @@ import QtQuick.Controls
 import QGroundControl
 import QGroundControl.Controls
 
-
-
 /// Map scale control
 Item {
     id:     control
-    width:  buttonsOnLeft || !_zoomButtonsVisible ? rightEnd.x + rightEnd.width : zoomDownButton.x + zoomDownButton.width
+    width:  rightEnd.x + rightEnd.width
     height: rightEnd.y + rightEnd.height
 
     property var    mapControl                      ///< Map control for which this scale control is being used
-    property bool   terrainButtonVisible:   false
-    property alias  terrainButtonChecked:   terrainButton.checked
-    property bool   zoomButtonsVisible:     true
-    property bool   buttonsOnLeft:          true    ///< Buttons to left/right of scale bar
     property bool   autoHide:               false   ///< true: disappears after a timeout on scale change
-
-    signal terrainButtonClicked
 
     property var    _scaleLengthsMeters:    [5, 10, 25, 50, 100, 150, 250, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000]
     property var    _scaleLengthsFeet:      [10, 25, 50, 100, 250, 500, 1000, 2000, 3000, 4000, 5280, 5280*2, 5280*5, 5280*10, 5280*25, 5280*50, 5280*100, 5280*250, 5280*500, 5280*1000]
-    property bool   _zoomButtonsVisible:    zoomButtonsVisible && !ScreenTools.isMobile
     property var    _color:                 mapControl.isSatelliteMap ? "white" : "black"
 
     function formatDistanceMeters(meters) {
@@ -139,7 +130,6 @@ Item {
         }
     }
 
-
     Component.onCompleted: calculateScale()
 
     Connections {
@@ -149,13 +139,13 @@ Item {
         function onZoomLevelChanged() { triggerRecalc() }
     }
 
-    PropertyAnimation { 
+    PropertyAnimation {
         id:         autoHideAnimation
         target:     control
         property:   "opacity"
         from:       1
         to:         0
-        duration:   500 
+        duration:   500
     }
 
     Timer {
@@ -177,10 +167,7 @@ Item {
     Rectangle {
         id:                 leftEnd
         anchors.top:        scaleText.bottom
-        anchors.leftMargin: buttonsOnLeft && (_zoomButtonsVisible || terrainButtonVisible) ? ScreenTools.defaultFontPixelWidth / 2 : 0
-        anchors.left:       buttonsOnLeft ?
-                                (_zoomButtonsVisible ? zoomDownButton.right : (terrainButtonVisible ? terrainButton.right : parent.left)) :
-                                parent.left
+        anchors.left:       parent.left
         width:              2
         height:             ScreenTools.defaultFontPixelHeight
         color:              _color
@@ -202,45 +189,5 @@ Item {
         width:              2
         height:             ScreenTools.defaultFontPixelHeight
         color:              _color
-    }
-
-    QGCButton {
-        id:                 terrainButton
-        anchors.top:        scaleText.top
-        anchors.bottom:     rightEnd.bottom
-        anchors.leftMargin: buttonsOnLeft ? 0 : ScreenTools.defaultFontPixelWidth / 2
-        anchors.left:       buttonsOnLeft ? parent.left : rightEnd.right
-        leftPadding:        topPadding
-        iconSource:         "/res/terrain.svg"
-        width:              height
-        opacity:            0.75
-        visible:            terrainButtonVisible
-        onClicked:          terrainButtonClicked()
-    }
-
-    QGCButton {
-        id:                 zoomUpButton
-        anchors.top:        scaleText.top
-        anchors.bottom:     rightEnd.bottom
-        anchors.leftMargin: terrainButton.visible ? ScreenTools.defaultFontPixelWidth / 2 : 0
-        anchors.left:       terrainButton.visible ? terrainButton.right : terrainButton.left
-        text:               qsTr("+")
-        width:              height
-        opacity:            0.75
-        visible:            _zoomButtonsVisible
-        onClicked:          mapControl.zoomLevel += 0.5
-    }
-
-    QGCButton {
-        id:                 zoomDownButton
-        anchors.top:        scaleText.top
-        anchors.bottom:     rightEnd.bottom
-        anchors.leftMargin: ScreenTools.defaultFontPixelWidth / 2
-        anchors.left:       zoomUpButton.right
-        text:               qsTr("-")
-        width:              height
-        opacity:            0.75
-        visible:            _zoomButtonsVisible
-        onClicked:          mapControl.zoomLevel -= 0.5
     }
 }

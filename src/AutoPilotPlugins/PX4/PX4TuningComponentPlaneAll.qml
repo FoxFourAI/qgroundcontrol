@@ -14,17 +14,15 @@ import QtQuick.Layouts
 import QGroundControl
 import QGroundControl.Controls
 
-
-
 PX4TuningComponent {
     model: ListModel {
-        ListElement { 
+        ListElement {
             buttonText: qsTr("Rate Controller")
-            tuningPage: "PX4TuningComponentPlaneRate.qml" 
+            tuningPage: "PX4TuningComponentPlaneRate.qml"
         }
-        ListElement { 
+        ListElement {
             buttonText: qsTr("Rate Controller")
-            tuningPage: "PX4TuningComponentPlaneAttitude.qml" 
+            tuningPage: "PX4TuningComponentPlaneAttitude.qml"
         }
     }
 }

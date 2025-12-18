@@ -30,7 +30,7 @@ class RallyPointController : public PlanElementController
 public:
     explicit RallyPointController(PlanMasterController* masterController, QObject* parent = nullptr);
     ~RallyPointController();
-    
+
     Q_PROPERTY(QmlObjectListModel*  points                  READ points                                             CONSTANT)
     Q_PROPERTY(QString              editorQml               READ editorQml                                          CONSTANT)
     Q_PROPERTY(QObject*             currentRallyPoint       READ currentRallyPoint      WRITE setCurrentRallyPoint  NOTIFY currentRallyPointChanged)
@@ -68,7 +68,6 @@ private slots:
     void _managerSendComplete       (bool error);
     void _managerRemoveAllComplete  (bool error);
     void _setFirstPointCurrent      (void);
-    void _updateContainsItems       (void);
     void _managerVehicleChanged     (Vehicle* managerVehicle);
 
 private:

@@ -13,10 +13,7 @@ import QtQuick.Layouts
 
 import QGroundControl
 import QGroundControl.Controls
-
 import QGroundControl.FactControls
-
-
 
 ColumnLayout {
     property real _availableHeight:     availableHeight
@@ -161,4 +158,3 @@ ColumnLayout {
         }
     }
 }
-

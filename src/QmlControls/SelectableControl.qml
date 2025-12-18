@@ -13,8 +13,6 @@ import QtQuick.Layouts
 
 import QGroundControl
 import QGroundControl.Controls
-
-
 import QGroundControl.FactControls
 
 /// Controt that allows the user to select from a list of controls to display.
@@ -29,7 +27,7 @@ Control {
     bottomPadding:  0
     leftPadding:    0
     rightPadding:   0
-    
+
     property Fact selectedControl               ///< Fact which has enumStrings/Values where values are the qml file for the control
     property bool selectionUIRightAnchor: false
     property var  innerControl:           loader.item

@@ -14,8 +14,6 @@ import QtPositioning
 import QtQuick.Dialogs
 
 import QGroundControl
-
-
 import QGroundControl.Controls
 import QGroundControl.FlightMap
 
@@ -376,4 +374,3 @@ Item {
         }
     }
 }
-

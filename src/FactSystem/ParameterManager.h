@@ -117,6 +117,12 @@ signals:
     void _paramRequestReadSuccess(int componentId, const QString &paramName, int paramIndex);
     void _paramRequestReadFailure(int componentId, const QString &paramName, int paramIndex);
 
+    // These signals are used to verify unit tests
+    void _paramSetSuccess(int componentId, const QString &paramName);
+    void _paramSetFailure(int componentId, const QString &paramName);
+    void _paramRequestReadSuccess(int componentId, const QString &paramName, int paramIndex);
+    void _paramRequestReadFailure(int componentId, const QString &paramName, int paramIndex);
+
 private slots:
     void _factRawValueUpdated(const QVariant &rawValue);
 

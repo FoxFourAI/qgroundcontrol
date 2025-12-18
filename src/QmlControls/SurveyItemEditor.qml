@@ -4,12 +4,8 @@ import QtQuick.Dialogs
 import QtQuick.Layouts
 
 import QGroundControl
-
-
 import QGroundControl.Controls
-
 import QGroundControl.FactControls
-
 import QGroundControl.FlightMap
 
 TransectStyleComplexItemEditor {
@@ -47,7 +43,6 @@ TransectStyleComplexItemEditor {
                 from:           0
                 to:           359
                 stepSize:               1
-                tickmarksEnabled:       false
                 Layout.fillWidth:       true
                 Layout.columnSpan:      2
                 Layout.preferredHeight: ScreenTools.defaultFontPixelHeight * 1.5

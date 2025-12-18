@@ -13,10 +13,6 @@ import QtQuick.Layouts
 
 import QGroundControl
 import QGroundControl.Controls
-
-
-
-
 import QGroundControl.FactControls
 
 RowLayout {
@@ -135,7 +131,7 @@ RowLayout {
 
                 RowLayout {
                     Layout.fillWidth:   true
-                    visible:            _mpcLandSpeedFact && controller.vehicle && !controller.vehicle.fixedWing 
+                    visible:            _mpcLandSpeedFact && controller.vehicle && !controller.vehicle.fixedWing
 
                     QGCLabel { Layout.fillWidth: true; text: qsTr("Land Descent Rate:") }
                     FactTextField {

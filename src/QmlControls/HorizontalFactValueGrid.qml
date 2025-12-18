@@ -13,9 +13,6 @@ import QtQuick.Controls
 import QtQml
 
 import QGroundControl.Controls
-
-
-
 import QGroundControl.FlightMap
 import QGroundControl
 
@@ -116,7 +113,7 @@ HorizontalFactValueGridTemplate {
                 QGCButton {
                     Layout.preferredWidth:  ScreenTools.minTouchPixels
                     Layout.fillHeight:      true
-                    topPadding:             0                
+                    topPadding:             0
                     bottomPadding:          0
                     leftPadding:            0
                     rightPadding:           0
@@ -128,7 +125,7 @@ HorizontalFactValueGridTemplate {
                 QGCButton {
                     Layout.preferredWidth:  ScreenTools.minTouchPixels
                     Layout.fillHeight:      true
-                    topPadding:             0                
+                    topPadding:             0
                     bottomPadding:          0
                     leftPadding:            0
                     rightPadding:           0
@@ -147,7 +144,7 @@ HorizontalFactValueGridTemplate {
             QGCButton {
                 Layout.fillWidth:       true
                 Layout.preferredHeight: ScreenTools.minTouchPixels
-                topPadding:             0                
+                topPadding:             0
                 bottomPadding:          0
                 leftPadding:            0
                 rightPadding:           0
@@ -159,7 +156,7 @@ HorizontalFactValueGridTemplate {
             QGCButton {
                 Layout.fillWidth:       true
                 Layout.preferredHeight: parent.height
-                topPadding:             0                
+                topPadding:             0
                 bottomPadding:          0
                 leftPadding:            0
                 rightPadding:           0

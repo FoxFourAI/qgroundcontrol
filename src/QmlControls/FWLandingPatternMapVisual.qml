@@ -14,8 +14,6 @@ import QtPositioning
 import QtQuick.Layouts
 
 import QGroundControl
-
-
 import QGroundControl.Controls
 import QGroundControl.FlightMap
 
@@ -246,7 +244,7 @@ Item {
             itemCoordinate: _missionItem.landingCoordinate
             visible:        _root.interactive
 
-            onItemCoordinateChanged: _missionItem.moveLandingPosition(itemCoordinate)
+            onItemCoordinateChanged: _missionItem.coordinate = itemCoordinate
         }
     }
 

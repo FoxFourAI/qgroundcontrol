@@ -3,10 +3,7 @@ import QtQuick.Controls
 import QtQuick.Dialogs
 
 import QGroundControl
-
-
 import QGroundControl.Controls
-
 
 QGCTextField {
     id:                 control
@@ -21,7 +18,7 @@ QGCTextField {
     property Fact fact: null
 
     onEditingFinished: _onEditingFinished()
-    
+
     function _onEditingFinished() {
         var errorString = fact.validate(text, false /* convertOnly */)
         if (errorString === "") {

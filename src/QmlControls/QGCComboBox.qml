@@ -13,8 +13,6 @@ import QtQuick.Controls
 import QtQuick.Templates as T
 
 import QGroundControl
-
-
 import QGroundControl.Controls
 
 T.ComboBox {
@@ -38,6 +36,7 @@ T.ComboBox {
     property real   _popupWidth:    width
     property bool   _onCompleted:   false
     property bool   _showBorder:    qgcPal.globalTheme === QGCPalette.Light
+    property bool   _showHighlight: enabled && pressed
 
     QGCPalette { id: qgcPal; colorGroupEnabled: enabled }
 
@@ -77,7 +76,7 @@ T.ComboBox {
         width:  _popupWidth
         height: Math.round(popupItemMetrics.height * 1.75)
 
-        property string _text: control.textRole ? 
+        property string _text: control.textRole ?
                                     (model.hasOwnProperty(control.textRole) ? model[control.textRole] : modelData[control.textRole]) :
                                     modelData
 
@@ -125,7 +124,14 @@ T.ComboBox {
         color:          qgcPal.button
         border.color:   qgcPal.buttonBorder
         border.width:   _showBorder ? 1 : 0
-        radius:         ScreenTools.buttonBorderRadius
+        radius:         ScreenTools.defaultBorderRadius
+
+        Rectangle {
+            anchors.fill:   parent
+            color:          qgcPal.buttonHighlight
+            opacity:        _showHighlight ? 1 : control.enabled && control.hovered ? .2 : 0
+            radius:         parent.radius
+        }
     }
 
     popup: T.Popup {

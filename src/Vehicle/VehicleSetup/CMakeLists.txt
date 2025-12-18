@@ -25,6 +25,8 @@ if(NOT QGC_NO_SERIAL_LINK)
             FirmwareUpgradeController.h
             PX4FirmwareUpgradeThread.cc
             PX4FirmwareUpgradeThread.h
+            RemoteControlCalibrationController.cc
+            RemoteControlCalibrationController.h
     )
 endif()
 
@@ -45,6 +47,7 @@ qt_add_qml_module(VehicleSetupModule
         JoystickConfigCalibration.qml
         JoystickConfigGeneral.qml
         OpticalFlowSensor.qml
+        RemoteControlCalibration.qml
         SetupParameterEditor.qml
         SetupView.qml
         VehicleSummary.qml

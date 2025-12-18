@@ -13,11 +13,8 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 
 import QGroundControl
-
 import QGroundControl.Controls
 import QGroundControl.FactControls
-
-
 
 QGCPopupDialog {
     id:         root
@@ -47,7 +44,7 @@ QGCPopupDialog {
             id:                 coordinateSystemCombo
             Layout.fillWidth:   true
             label:              qsTr("Coordinate System")
-            model:              showSetPositionFromVehicle && globals.activeVehicle ? 
+            model:              showSetPositionFromVehicle && globals.activeVehicle ?
                                     [ qsTr("Geographic"), qsTr("Universal Transverse Mercator"), qsTr("Military Grid Reference"), qsTr("Vehicle Position") ] :
                                     [ qsTr("Geographic"), qsTr("Universal Transverse Mercator"), qsTr("Military Grid Reference") ]
         }

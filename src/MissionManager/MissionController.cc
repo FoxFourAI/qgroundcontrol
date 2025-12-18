@@ -179,7 +179,9 @@ void MissionController::_newMissionItemsAvailableFromVehicle(bool removeAllReque
             i = 1;
         }
 
+        bool weHaveItemsFromVehicle = false;
         for (; i < newMissionItems.count(); i++) {
+            weHaveItemsFromVehicle = true;
             const MissionItem* missionItem = newMissionItems[i];
             SimpleMissionItem* simpleItem = new SimpleMissionItem(_masterController, _flyView, *missionItem);
             if (TakeoffMissionItem::isTakeoffCommand(static_cast<MAV_CMD>(simpleItem->command()))) {
@@ -195,8 +197,8 @@ void MissionController::_newMissionItemsAvailableFromVehicle(bool removeAllReque
         _visualItems = newControllerMissionItems;
         _settingsItem = settingsItem;
 
-        // We set Altitude mode to mixed, otherwise if we need a non relative altitude frame we won't be able to change it 
-        setGlobalAltitudeMode(QGroundControlQmlGlobal::AltitudeModeMixed);
+        // We set Altitude mode to mixed, otherwise if we need a non relative altitude frame we won't be able to change it
+        setGlobalAltitudeMode(weHaveItemsFromVehicle ? QGroundControlQmlGlobal::AltitudeModeMixed : QGroundControlQmlGlobal::AltitudeModeRelative);
 
         MissionController::_scanForAdditionalSettings(_visualItems, _masterController);
 
@@ -966,8 +968,7 @@ bool MissionController::_loadTextMissionFile(QTextStream& stream, QmlObjectListM
                 } else {
                     if (TakeoffMissionItem::isTakeoffCommand(static_cast<MAV_CMD>(item->command()))) {
                         // This needs to be a TakeoffMissionItem
-                        TakeoffMissionItem* takeoffItem = new TakeoffMissionItem(_masterController, _flyView, settingsItem, true /* forLoad */);
-                        takeoffItem->load(stream);
+                        TakeoffMissionItem* takeoffItem = new TakeoffMissionItem(item->missionItem(), _masterController, _flyView, settingsItem, false /* forLoad */);
                         item->deleteLater();
                         item = takeoffItem;
                     }
@@ -1933,7 +1934,7 @@ void MissionController::_initAllVisualItems(void)
     connect(_visualItems, &QmlObjectListModel::countChanged, this, &MissionController::_updateContainsItems);
 
     emit visualItemsChanged();
-    emit containsItemsChanged(containsItems());
+    emit containsItemsChanged();
     emit plannedHomePositionChanged(plannedHomePosition());
 
     if (!_flyView) {
@@ -2240,7 +2241,7 @@ void MissionController::_scanForAdditionalSettings(QmlObjectListModel* visualIte
 
 void MissionController::_updateContainsItems(void)
 {
-    emit containsItemsChanged(containsItems());
+    emit containsItemsChanged();
 }
 
 bool MissionController::containsItems(void) const

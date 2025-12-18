@@ -14,11 +14,7 @@ import QtQuick.Controls
 
 import QGroundControl
 import QGroundControl.Controls
-
-
 import QGroundControl.FactControls
-
-
 
 QGCPopupDialog {
     id:         root
@@ -161,16 +157,16 @@ QGCPopupDialog {
                             QGCTextField {
                                 enabled:                textRadio.checked
                                 Layout.minimumWidth:    iconOptionInputs.width
-                                text:                   textRadio.checked 
+                                text:                   textRadio.checked
                                                             ? instrumentValueData.text
                                                             : instrumentValueData.fact ? instrumentValueData.fact.shortDescription : qsTr("Label")
-                                onEditingFinished:      instrumentValueData.text = text 
+                                onEditingFinished:      instrumentValueData.text = text
                             }
                         }
                     }
 
                     LabelledComboBox {
-                        label:          qsTr("Size") 
+                        label:          qsTr("Size")
                         model:          instrumentValueData.factValueGrid.fontSizeNames
                         currentIndex:   instrumentValueData.factValueGrid.fontSize
                         onActivated:    (index) => { instrumentValueData.factValueGrid.fontSize = index }
@@ -178,7 +174,7 @@ QGCPopupDialog {
 
                     QGCCheckBoxSlider {
                         Layout.fillWidth: true
-                        text:       qsTr("Show Units") 
+                        text:       qsTr("Show Units")
                         checked:    instrumentValueData.showUnits
                         onClicked:  instrumentValueData.showUnits = checked
                     }
@@ -198,7 +194,7 @@ QGCPopupDialog {
 
                         QGCLabel {
                             Layout.fillWidth:       true
-                            text:                   qsTr("Type") 
+                            text:                   qsTr("Type")
                         }
 
                         QGCComboBox {
