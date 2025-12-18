@@ -93,7 +93,11 @@ void ParameterTableModel::insert(int row, Fact* fact)
     }
 
     ColumnData colData(_tableViewColCount, QString());
-    colData[NameColumn] = fact->name();
+    QString name = fact->name();
+    if( _showComponent ){
+        name = QString::number(fact->componentId()).rightJustified(3,'0')+" : "+name;
+    }
+    colData[NameColumn] = name;
     colData[ValueColumn] = QVariant::fromValue(fact);
     colData[DescriptionColumn] = fact->shortDescription();
 
@@ -132,6 +136,11 @@ Fact* ParameterTableModel::factAt(int row) const
     return _tableData[row][ValueColumn].value<Fact*>();
 }
 
+void ParameterTableModel::setShowComponent(bool show)
+{
+    _showComponent = show;
+}
+
 
 ParameterEditorGroup::ParameterEditorGroup(QObject* parent)
     : QObject(parent)
@@ -149,6 +158,7 @@ ParameterEditorController::ParameterEditorController(QObject *parent)
 
     _searchTimer.setSingleShot(true);
     _searchTimer.setInterval(300);
+    _searchParameters.setShowComponent(true);
 
     connect(this, &ParameterEditorController::currentCategoryChanged,   this, &ParameterEditorController::_currentCategoryChanged);
     connect(this, &ParameterEditorController::currentGroupChanged,      this, &ParameterEditorController::_currentGroupChanged);
@@ -156,6 +166,7 @@ ParameterEditorController::ParameterEditorController(QObject *parent)
     connect(this, &ParameterEditorController::showModifiedOnlyChanged,  this, &ParameterEditorController::_searchTextChanged);
     connect(&_searchTimer, &QTimer::timeout,                            this, &ParameterEditorController::_performSearch);
     connect(_parameterMgr, &ParameterManager::factAdded,                this, &ParameterEditorController::_factAdded);
+    connect(_parameterMgr, &ParameterManager::removeCategory,           this, &ParameterEditorController::_removeCategory);
 
     ParameterEditorCategory* category = _categories.count() ? _categories.value<ParameterEditorCategory*>(0) : nullptr;
     setCurrentCategory(category);
@@ -305,6 +316,18 @@ void ParameterEditorController::_factAdded(int compId, Fact* fact)
         }
     }
     facts.append(fact);
+}
+
+void ParameterEditorController::_removeCategory(QString categoryName)
+{
+    auto *cat = _mapCategoryName2Category[categoryName];
+    if(cat == nullptr){
+        return;
+    }
+    QString catName = cat->name;
+    _categories.removeOne(cat);
+    delete _mapCategoryName2Category.take(categoryName);
+    setCurrentCategory(_mapCategoryName2Category.first());
 }
 
 void ParameterEditorController::saveToFile(const QString& filename)
@@ -495,31 +518,33 @@ void ParameterEditorController::_performSearch(void)
         _searchParameters.beginReset();
         _searchParameters.clear();
 
-        for (const QString &paraName: _parameterMgr->parameterNames(_vehicle->defaultComponentId())) {
-            Fact* fact = _parameterMgr->getParameter(_vehicle->defaultComponentId(), paraName);
-            bool matched = _shouldShow(fact);
-            // All of the search items must match in order for the parameter to be added to the list
-            if (matched) {
-                for (int i = 0; i < rgSearchStrings.size(); ++i) {
-                    const QRegularExpression &re = regexList.at(i);
-                    if (re.isValid()) {
-                        if (!fact->name().contains(re) &&
-                                !fact->shortDescription().contains(re) &&
-                                !fact->longDescription().contains(re)) {
-                            matched = false;
-                        }
-                    } else {
-                        const QString &searchItem = rgSearchStrings.at(i);
-                        if (!fact->name().contains(searchItem, Qt::CaseInsensitive) &&
-                                !fact->shortDescription().contains(searchItem, Qt::CaseInsensitive) &&
-                                !fact->longDescription().contains(searchItem, Qt::CaseInsensitive)) {
-                            matched = false;
+        for (const uint8_t component: _parameterMgr->componentIds()) {
+            for(const QString &paraName : _parameterMgr->parameterNames(component)){
+                Fact* fact = _parameterMgr->getParameter(component, paraName);
+                bool matched = _shouldShow(fact);
+                // All of the search items must match in order for the parameter to be added to the list
+                if (matched) {
+                    for (int i = 0; i < rgSearchStrings.size(); ++i) {
+                        const QRegularExpression &re = regexList.at(i);
+                        if (re.isValid()) {
+                            if (!fact->name().contains(re) &&
+                                    !fact->shortDescription().contains(re) &&
+                                    !fact->longDescription().contains(re)) {
+                                matched = false;
+                            }
+                        } else {
+                            const QString &searchItem = rgSearchStrings.at(i);
+                            if (!fact->name().contains(searchItem, Qt::CaseInsensitive) &&
+                                    !fact->shortDescription().contains(searchItem, Qt::CaseInsensitive) &&
+                                    !fact->longDescription().contains(searchItem, Qt::CaseInsensitive)) {
+                                matched = false;
+                            }
                         }
                     }
                 }
-            }
-            if (matched) {
-                _searchParameters.append(fact);
+                if (matched) {
+                    _searchParameters.append(fact);
+                }
             }
         }
 

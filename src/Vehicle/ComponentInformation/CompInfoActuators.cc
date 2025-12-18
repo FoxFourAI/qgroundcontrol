@@ -22,3 +22,4 @@ void CompInfoActuators::setJson(const QString& metadataJsonFileName)
         vehicle->setActuatorsMetadata(compId, metadataJsonFileName);
     }
 }
+

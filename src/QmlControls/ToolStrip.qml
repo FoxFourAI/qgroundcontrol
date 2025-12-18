@@ -11,6 +11,8 @@ import QtQuick
 import QtQuick.Controls
 
 import QGroundControl
+
+
 import QGroundControl.Controls
 
 Rectangle {
@@ -27,6 +29,7 @@ Rectangle {
     property var _dropPanel: dropPanel
 
     function simulateClick(buttonIndex) {
+        buttonIndex = buttonIndex + 1 // skip over title label
         var button = toolStripColumn.children[buttonIndex]
         if (button.checkable) {
             button.checked = !button.checked
@@ -43,7 +46,10 @@ Rectangle {
     QGCFlickable {
         id:                 flickable
         anchors.margins:    ScreenTools.defaultFontPixelWidth * 0.4
-        anchors.fill:       parent
+        anchors.top:        parent.top
+        anchors.left:       parent.left
+        anchors.right:      parent.right
+        height:             parent.height - anchors.margins * 2
         contentHeight:      toolStripColumn.height
         flickableDirection: Flickable.VerticalFlick
         clip:               true

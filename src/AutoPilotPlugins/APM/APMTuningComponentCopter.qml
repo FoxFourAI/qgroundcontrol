@@ -13,8 +13,12 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import QGroundControl
+
 import QGroundControl.FactControls
+
 import QGroundControl.Controls
+
+
 
 SetupPage {
     id:             tuningPage
@@ -191,7 +195,7 @@ SetupPage {
                         fact:              _motSpinArm
                     }
                 }
-
+ 
                 Flow {
                     id:                 flowLayout
                     Layout.fillWidth:   true
@@ -229,7 +233,7 @@ SetupPage {
 
                     SettingsGroupLayout {
                         heading: qsTr("In Flight Tuning")
-
+                        
                         ColumnLayout {
                             id:     channel6TuningOptColumn
                             spacing: ScreenTools.defaultFontPixelHeight

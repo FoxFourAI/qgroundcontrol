@@ -12,6 +12,7 @@ import QtQuick.Layouts
 
 import QGroundControl
 import QGroundControl.Controls
+
 import QGroundControl.FactControls
 
 RowLayout {
@@ -33,3 +34,4 @@ RowLayout {
         Layout.preferredWidth:  labelPreferredWidth
     }
 }
+

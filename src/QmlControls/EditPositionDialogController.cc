@@ -106,3 +106,4 @@ void EditPositionDialogController::setFromVehicle()
 {
     setCoordinate(MultiVehicleManager::instance()->activeVehicle()->coordinate());
 }
+

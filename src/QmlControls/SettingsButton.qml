@@ -14,6 +14,8 @@ import QtQuick.Layouts
 import QGroundControl
 import QGroundControl.Controls
 
+
+
 Button {
     id:             control
     padding:        ScreenTools.defaultFontPixelWidth * 0.75

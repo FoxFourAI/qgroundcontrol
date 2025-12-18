@@ -321,29 +321,16 @@ QStringList Fact::selectedBitmaskStrings() const
 
 QString Fact::_variantToString(const QVariant &variant, int decimalPlaces) const
 {
-    if (!variant.isValid()) {
-        return invalidValueString(decimalPlaces);
-    }
-
     QString valueString;
-
-    const auto stripNegativeZero = [](QString &candidate) {
-        static const QRegularExpression reNegativeZero(QStringLiteral("^-0\\.0+$"));
-        const auto match = reNegativeZero.match(candidate);
-        if (match.hasMatch() || candidate == QStringLiteral("-0")) {
-            candidate = candidate.mid(1);
-        }
-    };
 
     switch (type()) {
     case FactMetaData::valueTypeFloat:
     {
         const float fValue = variant.toFloat();
         if (qIsNaN(fValue)) {
-            valueString = invalidValueString(decimalPlaces);
+            valueString = QStringLiteral("--.--");
         } else {
             valueString = QStringLiteral("%1").arg(fValue, 0, 'f', decimalPlaces);
-            stripNegativeZero(valueString);
         }
     }
         break;
@@ -351,10 +338,9 @@ QString Fact::_variantToString(const QVariant &variant, int decimalPlaces) const
     {
         const double dValue = variant.toDouble();
         if (qIsNaN(dValue)) {
-            valueString = invalidValueString(decimalPlaces);
+            valueString = QStringLiteral("--.--");
         } else {
             valueString = QStringLiteral("%1").arg(dValue, 0, 'f', decimalPlaces);
-            stripNegativeZero(valueString);
         }
         break;
     }
@@ -365,7 +351,7 @@ QString Fact::_variantToString(const QVariant &variant, int decimalPlaces) const
     {
         const double dValue = variant.toDouble();
         if (qIsNaN(dValue)) {
-            valueString = invalidValueString(decimalPlaces);
+            valueString = QStringLiteral("--:--:--");
         } else {
             QTime time(0, 0, 0, 0);
             time = time.addSecs(dValue);
@@ -379,22 +365,6 @@ QString Fact::_variantToString(const QVariant &variant, int decimalPlaces) const
     }
 
     return valueString;
-}
-
-QString Fact::invalidValueString(int decimalPlaces) const {
-    switch (type()) {
-    case FactMetaData::valueTypeFloat:
-    case FactMetaData::valueTypeDouble:
-        if (decimalPlaces <= 0) {
-            return QStringLiteral("–");
-        }
-        return QStringLiteral("–.") +
-               QString(decimalPlaces, QChar(u'–'));
-    case FactMetaData::valueTypeElapsedTimeInSeconds:
-        return QStringLiteral("––:––:––");
-    default:
-        return QStringLiteral("–");
-    }
 }
 
 QString Fact::rawValueStringFullPrecision() const
@@ -503,34 +473,9 @@ QVariant Fact::cookedMin() const
     }
 }
 
-QVariant Fact::rawUserMin() const
-{
-    if (_metaData) {
-        return _metaData->rawUserMin();
-    }
-
-    qCWarning(FactLog) << kMissingMetadata << name();
-    return QVariant(0);
-}
-
-QVariant Fact::cookedUserMin() const
-{
-    if (_metaData) {
-        return _metaData->cookedUserMin();
-    }
-
-    qCWarning(FactLog) << kMissingMetadata << name();
-    return QVariant(0);
-}
-
 QString Fact::cookedMinString() const
 {
     return _variantToString(cookedMin(), decimalPlaces());
-}
-
-QString Fact::cookedUserMinString() const
-{
-    return _variantToString(cookedUserMin(), decimalPlaces());
 }
 
 QVariant Fact::rawMax() const
@@ -553,34 +498,9 @@ QVariant Fact::cookedMax() const
     }
 }
 
-QVariant Fact::rawUserMax() const
-{
-    if (_metaData) {
-        return _metaData->rawUserMax();
-    }
-
-    qCWarning(FactLog) << kMissingMetadata << name();
-    return QVariant(0);
-}
-
-QVariant Fact::cookedUserMax() const
-{
-    if (_metaData) {
-        return _metaData->cookedUserMax();
-    }
-
-    qCWarning(FactLog) << kMissingMetadata << name();
-    return QVariant(0);
-}
-
 QString Fact::cookedMaxString() const
 {
     return _variantToString(cookedMax(), decimalPlaces());
-}
-
-QString Fact::cookedUserMaxString() const
-{
-    return _variantToString(cookedUserMax(), decimalPlaces());
 }
 
 bool Fact::minIsDefaultForType() const

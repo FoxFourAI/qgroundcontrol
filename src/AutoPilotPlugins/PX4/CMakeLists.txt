@@ -52,7 +52,11 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_
 # ----------------------------------------------------------------------------
 # PX4 QML Module
 # ----------------------------------------------------------------------------
+find_package(Qt6 REQUIRED COMPONENTS Core)
+
 qt_add_library(AutoPilotPluginsPX4Module STATIC)
+
+target_link_libraries(AutoPilotPluginsPX4Module PRIVATE Qt6::Core)
 
 qt_add_qml_module(AutoPilotPluginsPX4Module
     URI QGroundControl.AutoPilotPlugins.PX4
@@ -98,4 +102,5 @@ qt_add_qml_module(AutoPilotPluginsPX4Module
         SensorsComponentSummaryFixedWing.qml
         SensorsSetup.qml
     NO_PLUGIN
+    SOURCES
 )

@@ -13,8 +13,12 @@ import QtQuick.Dialogs
 import QtQuick.Layouts
 
 import QGroundControl
+
+
 import QGroundControl.Controls
+
 import QGroundControl.FactControls
+
 
 // Editor for Fixed Wing Landing Pattern complex mission item
 Rectangle {

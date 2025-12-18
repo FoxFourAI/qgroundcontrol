@@ -22,7 +22,7 @@
 
 MissionCommandTreeEditorTest::MissionCommandTreeEditorTest(void)
 {
-
+    
 }
 
 void MissionCommandTreeEditorTest::_testEditorsWorker(QGCMAVLink::FirmwareClass_t firmwareClass, QGCMAVLink::VehicleClass_t vehicleClass)
@@ -68,3 +68,4 @@ void MissionCommandTreeEditorTest::testEditors(void)
         }
     }
 }
+

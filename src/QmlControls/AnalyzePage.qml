@@ -11,7 +11,9 @@ import QtQuick
 import QtQuick.Controls
 
 import QGroundControl
+
 import QGroundControl.Controls
+
 
 /// Base view control for all Analyze pages
 Item {

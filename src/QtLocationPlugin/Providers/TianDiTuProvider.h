@@ -52,3 +52,4 @@ public:
             AVERAGE_TIANDITU_SAT_MAP,
             QGeoMapType::SatelliteMapDay) {}
 };
+

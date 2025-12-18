@@ -13,9 +13,10 @@ import QtQuick
 
 import QGroundControl
 import QGroundControl.Controls
+
+
 import QGroundControl.FlightMap
 import Qt5Compat.GraphicalEffects
-
 Item {
     id: root
 

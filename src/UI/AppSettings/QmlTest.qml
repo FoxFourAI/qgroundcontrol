@@ -3,7 +3,9 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import QGroundControl
+
 import QGroundControl.Controls
+
 
 Rectangle {
     id: _root
@@ -13,6 +15,7 @@ Rectangle {
 
     QGCPalette { id: qgcPal }
 
+    property var palette:           QGCPalette { colorGroupEnabled: true }
     property var enabledPalette:    QGCPalette { colorGroupEnabled: true }
     property var disabledPalette:   QGCPalette { colorGroupEnabled: false }
 
@@ -38,14 +41,14 @@ Rectangle {
 
         qgcPal.globalTheme = QGCPalette.Light
         qgcPal.colorGroupEnabled = true
-        themeObj.light["enabled"] = exportPaletteColors(qgcPal);
+        themeObj.light["enabled"] = exportPaletteColors(palette);
         qgcPal.colorGroupEnabled = false
-        themeObj.light["disabled"] = exportPaletteColors(qgcPal);
+        themeObj.light["disabled"] = exportPaletteColors(palette);
         qgcPal.globalTheme = QGCPalette.Dark
         qgcPal.colorGroupEnabled = true
-        themeObj.dark["enabled"] = exportPaletteColors(qgcPal);
+        themeObj.dark["enabled"] = exportPaletteColors(palette);
         qgcPal.colorGroupEnabled = false
-        themeObj.dark["disabled"] = exportPaletteColors(qgcPal);
+        themeObj.dark["disabled"] = exportPaletteColors(palette);
 
         qgcPal.globalTheme = oldTheme;
         qgcPal.colorGroupEnabled = true;
@@ -60,7 +63,7 @@ Rectangle {
         for(var i = 0; i < qgcPal.colors.length; i++) {
             var cs = qgcPal.colors[i]
             var csc = cs + 'Colors'
-            palToExport += 'DECLARE_QGC_COLOR(' + cs + ', \"' + qgcPal[csc][1] + '\", \"' + qgcPal[csc][0] + '\", \"' + qgcPal[csc][3] + '\", \"' + qgcPal[csc][2] + '\")\n'
+            palToExport += 'DECLARE_QGC_COLOR(' + cs + ', \"' + palette[csc][1] + '\", \"' + palette[csc][0] + '\", \"' + palette[csc][3] + '\", \"' + palette[csc][2] + '\")\n'
         }
         themeImportExportEdit.text = palToExport
     }
@@ -75,10 +78,10 @@ Rectangle {
             }
             palToExport +=
             'if (colorName == QStringLiteral(\"' + cs + '\")) {\n' +
-            '    colorInfo[QGCPalette::Dark][QGCPalette::ColorGroupEnabled]   = QColor(\"' + qgcPal[csc][2] + '\");\n' +
-            '    colorInfo[QGCPalette::Dark][QGCPalette::ColorGroupDisabled]  = QColor(\"' + qgcPal[csc][3] + '\");\n' +
-            '    colorInfo[QGCPalette::Light][QGCPalette::ColorGroupEnabled]  = QColor(\"' + qgcPal[csc][0] + '\");\n' +
-            '    colorInfo[QGCPalette::Light][QGCPalette::ColorGroupDisabled] = QColor(\"' + qgcPal[csc][1] + '\");\n' +
+            '    colorInfo[QGCPalette::Dark][QGCPalette::ColorGroupEnabled]   = QColor(\"' + palette[csc][2] + '\");\n' +
+            '    colorInfo[QGCPalette::Dark][QGCPalette::ColorGroupDisabled]  = QColor(\"' + palette[csc][3] + '\");\n' +
+            '    colorInfo[QGCPalette::Light][QGCPalette::ColorGroupEnabled]  = QColor(\"' + palette[csc][0] + '\");\n' +
+            '    colorInfo[QGCPalette::Light][QGCPalette::ColorGroupDisabled] = QColor(\"' + palette[csc][1] + '\");\n' +
             '}'
         }
         themeImportExportEdit.text = palToExport
@@ -91,14 +94,14 @@ Rectangle {
 
         qgcPal.globalTheme = QGCPalette.Light
         qgcPal.colorGroupEnabled = true
-        fillPalette(qgcPal, jsonObj.light.enabled)
+        fillPalette(palette, jsonObj.light.enabled)
         qgcPal.colorGroupEnabled = false
-        fillPalette(qgcPal, jsonObj.light.disabled);
+        fillPalette(palette, jsonObj.light.disabled);
         qgcPal.globalTheme = QGCPalette.Dark
         qgcPal.colorGroupEnabled = true
-        fillPalette(qgcPal, jsonObj.dark.enabled);
+        fillPalette(palette, jsonObj.dark.enabled);
         qgcPal.colorGroupEnabled = false
-        fillPalette(qgcPal, jsonObj.dark.disabled);
+        fillPalette(palette, jsonObj.dark.disabled);
 
         qgcPal.globalTheme = oldTheme;
         qgcPal.colorGroupEnabled = true;
@@ -308,8 +311,8 @@ Rectangle {
 
                     // Populate the model with all color names in the global palette
                     Component.onCompleted: {
-                        for(var colorNameStr in enabledPalette) {
-                            if(enabledPalette[colorNameStr].r !== undefined) {
+                        for(var colorNameStr in palette) {
+                            if(palette[colorNameStr].r !== undefined) {
                                 paletteColorList.append({ colorName: colorNameStr });
                             }
                         }
@@ -564,33 +567,6 @@ Rectangle {
                                 anchors.fill: parent
                                 anchors.margins: 5
                                 text: qsTr("Check Box")
-                                enabled: false
-                            }
-                        }
-
-                        // QGCCheckBoxSlider
-                        Loader {
-                            sourceComponent: ctlRowHeader
-                            property string text: "QGCCheckBoxSlider"
-                        }
-                        Rectangle {
-                            width: ctlPrevColumn._colWidth
-                            height: ctlPrevColumn._height
-                            color: ctlPrevColumn._bkColor
-                            QGCCheckBoxSlider {
-                                anchors.fill: parent
-                                anchors.margins: 5
-                                text: qsTr("Check Box Slider")
-                            }
-                        }
-                        Rectangle {
-                            width: ctlPrevColumn._colWidth
-                            height: ctlPrevColumn._height
-                            color: ctlPrevColumn._bkColor
-                            QGCCheckBoxSlider {
-                                anchors.fill: parent
-                                anchors.margins: 5
-                                text: qsTr("Check Box Slider")
                                 enabled: false
                             }
                         }

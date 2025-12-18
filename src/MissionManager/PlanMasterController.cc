@@ -192,7 +192,7 @@ void PlanMasterController::_activeVehicleChanged(Vehicle* activeVehicle)
     }
 
     // Vehicle changed so we need to signal everything
-    emit containsItemsChanged();
+    emit containsItemsChanged(containsItems());
     emit syncInProgressChanged();
     emit dirtyChanged(dirty());
 
@@ -509,7 +509,6 @@ void PlanMasterController::removeAll(void)
         _currentPlanFile.clear();
         emit currentPlanFileChanged();
     }
-    setManualCreation(false);
 }
 
 void PlanMasterController::removeAllFromVehicle(void)
@@ -526,7 +525,6 @@ void PlanMasterController::removeAllFromVehicle(void)
     } else {
         qWarning() << "PlanMasterController::removeAllFromVehicle called while offline";
     }
-    setManualCreation(false);
 }
 
 bool PlanMasterController::containsItems(void) const
@@ -617,7 +615,7 @@ void PlanMasterController::_updateOverallDirty(void)
     if(_previousOverallDirty != dirty()){
         _previousOverallDirty = dirty();
         emit dirtyChanged(_previousOverallDirty);
-    }
+    }    
 }
 
 void PlanMasterController::_updatePlanCreatorsList(void)
@@ -653,13 +651,5 @@ void PlanMasterController::showPlanFromManagerVehicle(void)
         // We have a new active vehicle, show the plan from that
         qCDebug(PlanMasterControllerLog) << "showPlanFromManagerVehicle: Plan View - New vehicle available, show plan from new manager vehicle";
         _showPlanFromManagerVehicle();
-    }
-}
-
-void PlanMasterController::setManualCreation(bool manualCreation)
-{
-    if (_manualCreation != manualCreation) {
-        _manualCreation = manualCreation;
-        emit manualCreationChanged();
     }
 }

@@ -13,6 +13,7 @@ import QtQuick.Layouts
 
 import QGroundControl
 import QGroundControl.Controls
+
 import QGroundControl.FactControls
 
 Item {
@@ -86,7 +87,7 @@ Item {
             QGCLabel {
                 id:                     statusLabel
                 font.pointSize:         ScreenTools.smallFontPointSize
-                text:                   activeGimbal && activeGimbal.retracted ?
+                text:                   activeGimbal && activeGimbal.retracted ? 
                                             qsTr("Retracted") :
                                             (activeGimbal && activeGimbal.yawLock ? qsTr("Yaw locked") : qsTr("Yaw follow"))
                 color:                  qgcPal.windowTransparentText
@@ -96,7 +97,7 @@ Item {
             QGCLabel {
                 id:             pitchLabel
                 font.pointSize: ScreenTools.smallFontPointSize
-                text:           activeGimbal ? qsTr("P: ") + activeGimbal.absolutePitch.valueString : ""
+                text:           activeGimbal ? qsTr("P: ") + activeGimbal.absolutePitch.rawValue.toFixed(1) : ""
                 color:          qgcPal.windowTransparentText
             }
             QGCLabel {
@@ -104,8 +105,8 @@ Item {
                 font.pointSize: ScreenTools.smallFontPointSize
                 text:           activeGimbal ?
                                     (showAzimuth ?
-                                        (qsTr("Az: ") + activeGimbal.absoluteYaw.valueString) :
-                                        (qsTr("Y: ") + activeGimbal.bodyYaw.valueString)) :
+                                        (qsTr("Az: ") + activeGimbal.absoluteYaw.rawValue.toFixed(1)) :
+                                        (qsTr("Y: ") + activeGimbal.bodyYaw.rawValue.toFixed(1))) :
                                     ""
                 color:          qgcPal.windowTransparentText
             }

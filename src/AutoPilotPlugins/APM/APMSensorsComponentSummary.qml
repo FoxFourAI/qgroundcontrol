@@ -3,8 +3,10 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import QGroundControl
+
 import QGroundControl.FactControls
 import QGroundControl.Controls
+
 
 /*
     IMPORTANT NOTE: Any changes made here must also be made to SensorsComponentSummary.qml

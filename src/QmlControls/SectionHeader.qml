@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import QGroundControl
 import QGroundControl.Controls
 
+
 CheckBox {
     id:             control
     focusPolicy:    Qt.ClickFocus

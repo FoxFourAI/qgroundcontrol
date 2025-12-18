@@ -11,7 +11,9 @@ import QtQuick
 import QtCharts
 
 import QGroundControl
+
 import QGroundControl.Controls
+
 
 Rectangle {
     id:         root

@@ -114,3 +114,4 @@ private:
 
     static constexpr uint8_t _sessionId = 1;    ///< We only support a single fixed session
 };
+

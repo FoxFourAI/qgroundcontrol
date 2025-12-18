@@ -3,8 +3,10 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import QGroundControl
+
 import QGroundControl.Controls
 import QGroundControl.FactControls
+
 
 // Camera calculator "Grid" section for mission item editors
 Column {

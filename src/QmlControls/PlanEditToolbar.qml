@@ -12,7 +12,9 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import QGroundControl
+
 import QGroundControl.Controls
+
 
 /// Toolbar used for things like Polygon editing tools
 Item {

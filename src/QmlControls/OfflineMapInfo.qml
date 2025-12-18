@@ -14,6 +14,7 @@ import QtQuick.Layouts
 import QGroundControl
 import QGroundControl.Controls
 
+
 RowLayout {
     id:                 control
     Layout.fillWidth:   true
@@ -27,7 +28,7 @@ RowLayout {
 
     QGCLabel {
         Layout.fillWidth:   true
-        text:               tileSet.name
+        text:               tileSet.name 
     }
 
     QGCLabel {

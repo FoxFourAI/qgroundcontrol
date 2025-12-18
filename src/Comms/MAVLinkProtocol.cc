@@ -24,7 +24,6 @@
 #include <QtCore/QMetaType>
 #include <QtCore/QSettings>
 #include <QtCore/QStandardPaths>
-#include <QtCore/QTimer>
 
 QGC_LOGGING_CATEGORY(MAVLinkProtocolLog, "Comms.MAVLinkProtocol")
 
@@ -58,6 +57,16 @@ void MAVLinkProtocol::init()
     (void) connect(MultiVehicleManager::instance(), &MultiVehicleManager::vehicleRemoved, this, &MAVLinkProtocol::_vehicleCountChanged);
 
     _initialized = true;
+}
+
+void MAVLinkProtocol::setVersion(unsigned version)
+{
+    const QList<SharedLinkInterfacePtr> sharedLinks = LinkManager::instance()->links();
+    for (const SharedLinkInterfacePtr &interface : sharedLinks) {
+        mavlink_set_proto_version(interface.get()->mavlinkChannel(), version / 100);
+    }
+
+    _currentVersion = version;
 }
 
 void MAVLinkProtocol::resetMetadataForLink(LinkInterface *link)
@@ -110,14 +119,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
             continue;
         }
 
-        // It's ok to get v1 HEARTBEAT messages on a v2 link:
-        //  PX4 defaults to sending V1 then switches to V2 after receiving a V2 message from GCS
-        //  ArduPilot always sends both versions
-        if (message.msgid != MAVLINK_MSG_ID_HEARTBEAT && (status.flags & MAVLINK_STATUS_FLAG_IN_MAVLINK1)) {
-            link->reportMavlinkV1Traffic();
-            continue;
-        }
-
+        _updateVersion(link, mavlinkChannel);
         _updateCounters(mavlinkChannel, message);
         if (!linkPtr->linkConfiguration()->isForwarding()) {
             _forward(message);
@@ -128,6 +130,25 @@ void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
         if (!_updateStatus(link, linkPtr, mavlinkChannel, message)) {
             break;
         }
+    }
+}
+
+void MAVLinkProtocol::_updateVersion(LinkInterface *link, uint8_t mavlinkChannel)
+{
+    if (link->decodedFirstMavlinkPacket()) {
+        return;
+    }
+
+    link->setDecodedFirstMavlinkPacket(true);
+    const mavlink_status_t *const mavlinkStatus = mavlink_get_channel_status(mavlinkChannel);
+
+    if (mavlinkStatus->flags & MAVLINK_STATUS_FLAG_IN_MAVLINK1) {
+        return;
+    }
+
+    if (mavlink_get_proto_version(mavlinkChannel) == 1) {
+        qCDebug(MAVLinkProtocolLog) << "Switching outbound to mavlink 2.0 due to incoming mavlink 2.0 packet:" << mavlinkChannel;
+        setVersion(200);
     }
 }
 

@@ -12,6 +12,8 @@ import QtQuick.Layouts
 
 import QGroundControl
 import QGroundControl.Controls
+
+
 import QGroundControl.FactControls
 
 RowLayout {
@@ -26,7 +28,7 @@ RowLayout {
     signal activated(int index)
 
     QGCLabel {
-        id:                 label
+        id:                 label  
         Layout.fillWidth:   true
     }
 
@@ -34,7 +36,8 @@ RowLayout {
         id:                     _comboBox
         Layout.preferredWidth:  comboBoxPreferredWidth
         sizeToContents:         true
-
+        
         onActivated: (index) => { parent.activated(index) }
     }
 }
+

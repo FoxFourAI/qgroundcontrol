@@ -13,7 +13,10 @@ import QtQuick.Layouts
 
 import QGroundControl
 import QGroundControl.Controls
+
+
 import QGroundControl.FactControls
+
 
 SetupPage {
     pageComponent:  pageComponent
@@ -30,7 +33,7 @@ SetupPage {
             GridLayout {
                 id:               elementsRow
                 columns:          2
-
+                
                 anchors.left:           parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.margins:        ScreenTools.defaultFontPixelWidth

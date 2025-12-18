@@ -12,8 +12,12 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import QGroundControl
+
 import QGroundControl.FactControls
+
+
 import QGroundControl.Controls
+
 
 ColumnLayout {
     spacing: ScreenTools.defaultFontPixelHeight

@@ -186,6 +186,7 @@ private:
     void _handleParamMapRC(const mavlink_message_t &msg);
     void _handleRequestMessage(const mavlink_command_long_t &request, bool &accepted, bool &noAck);
     void _handleRequestMessageAutopilotVersion(const mavlink_command_long_t &request, bool &accepted);
+    void _handleRequestMessageProtocolVersion(const mavlink_command_long_t &request, bool &accepted);
     void _handleRequestMessageDebug(const mavlink_command_long_t &request, bool &accepted, bool &noAck);
     void _handleRequestMessageAvailableModes(const mavlink_command_long_t &request, bool &accepted);
     void _handleRequestMessageGimbalManagerInformation(const mavlink_command_long_t &request, bool &accepted);

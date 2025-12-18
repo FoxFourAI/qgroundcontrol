@@ -15,6 +15,7 @@ import QtQuick.Window
 import QtCharts
 
 import QGroundControl
+
 import QGroundControl.Controls
 
 AnalyzePage {

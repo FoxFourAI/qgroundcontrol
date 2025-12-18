@@ -16,6 +16,8 @@ import QtQuick.Dialogs
 import QGroundControl
 import QGroundControl.Controls
 
+
+
 QGCPopupDialog {
     id:         root
     title:      qsTr("Select Mission Command")

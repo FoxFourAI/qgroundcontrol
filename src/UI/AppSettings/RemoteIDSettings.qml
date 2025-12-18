@@ -13,8 +13,12 @@ import QtQuick.Dialogs
 import QtQuick.Layouts
 
 import QGroundControl
+
 import QGroundControl.FactControls
 import QGroundControl.Controls
+
+
+
 
 SettingsPage {
 
@@ -369,7 +373,7 @@ SettingsPage {
                                 operatorIDTextField.clearValidationError(false /* preventViewSwitch */)
                             }
                         }
-
+                        
                         onTextChanged: {
                             operatorIDFact.value = text
                             if (_activeVehicle) {

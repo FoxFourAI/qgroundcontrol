@@ -13,6 +13,10 @@ import QtQuick.Layouts
 
 import QGroundControl
 import QGroundControl.Controls
+
+
+
+
 import QGroundControl.FactControls
 
 ToolIndicatorPage {
@@ -35,14 +39,14 @@ ToolIndicatorPage {
     }
 
     contentComponent: Component {
-        SettingsGroupLayout {
+        SettingsGroupLayout { 
             heading: qsTr("Select Link to Connect")
 
             QGCLabel {
                 text:       qsTr("No Links Configured")
                 visible:    noLinks
             }
-
+        
             Repeater {
                 model: linkConfigs
 

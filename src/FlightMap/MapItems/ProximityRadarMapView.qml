@@ -12,8 +12,10 @@ import QtLocation
 import QtPositioning
 
 import QGroundControl
+
+
 import QGroundControl.Controls
-import QGroundControl.FlyView
+import QGroundControl.FlightDisplay
 
 MapQuickItem {
     id:             _root
@@ -119,3 +121,4 @@ MapQuickItem {
 
     }
 }
+

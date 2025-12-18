@@ -114,12 +114,6 @@
     "shortDesc": "Show GPS_RAW_INT trajectory on map",
     "type":             "bool",
     "default":     true
-},
-{
-    "name":         "enableAutomaticMissionPopups",
-    "shortDesc":    "Enable automatic mission start/resume popups",
-    "type":         "bool",
-    "default":      true
 }
 ]
 }

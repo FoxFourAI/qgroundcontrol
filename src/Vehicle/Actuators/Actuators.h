@@ -124,3 +124,4 @@ private:
     Vehicle* _vehicle{nullptr};
     QMap<int, QString> _usedMixerLabels;
 };
+

@@ -78,7 +78,6 @@ qt_add_qml_module(QGroundControlControlsModule
     VERSION 1.0
     RESOURCE_PREFIX /qml
     QML_FILES
-        AltModeCombo.qml
         AltModeDialog.qml
         AppSettings.qml
         APMSubMotorDisplay.qml
@@ -152,6 +151,7 @@ qt_add_qml_module(QGroundControlControlsModule
         QGCSimpleMessageDialog.qml
         QGCSlider.qml
         QGCSwipeView.qml
+        QGCSwitch.qml
         QGCTabBar.qml
         QGCTabButton.qml
         QGCTextField.qml
@@ -199,11 +199,9 @@ qt_add_qml_module(QGroundControlControlsModule
         MissionItemMapVisual.qml
         MissionItemStatus.qml
         MissionSettingsEditor.qml
-        MissionStats.qml
         PlanEditToolbar.qml
         PlanToolBarIndicators.qml
         PlanView.qml
-        PlanViewRightPanel.qml
         RallyPointEditorHeader.qml
         RallyPointItemEditor.qml
         RallyPointMapVisuals.qml

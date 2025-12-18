@@ -12,7 +12,10 @@ import QtQuick.Window
 import QtQuick.Controls
 
 import QGroundControl
+
 import QGroundControl.Controls
+
+
 
 Rectangle {
     id:     _root

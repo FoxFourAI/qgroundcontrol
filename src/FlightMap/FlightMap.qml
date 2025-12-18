@@ -15,8 +15,12 @@ import QtQuick.Dialogs
 import Qt.labs.animation
 
 import QGroundControl
+
 import QGroundControl.Controls
 import QGroundControl.FlightMap
+
+
+
 
 Map {
     id: _map
@@ -116,7 +120,7 @@ Map {
     signal mapPanStart
     signal mapPanStop
     signal mapClicked(var position)
-
+    
     PinchHandler {
         id:     pinchHandler
         target: null

@@ -17,6 +17,9 @@ import QtQuick.Window
 import QGroundControl
 import QGroundControl.Controls
 
+
+
+
 Item {
 
     Text {

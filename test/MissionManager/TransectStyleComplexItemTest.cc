@@ -272,3 +272,4 @@ void TestTransectStyleItem::adjustSurveAreaPolygon(void)
     vertex.setLatitude(vertex.latitude() + 1);
     surveyAreaPolygon()->adjustVertex(0, vertex);
 }
+

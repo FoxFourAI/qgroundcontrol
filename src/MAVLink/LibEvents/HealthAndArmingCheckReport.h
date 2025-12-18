@@ -92,3 +92,4 @@ private:
 
     QmlObjectListModel* _problemsForCurrentMode = nullptr; ///< list of HealthAndArmingCheckProblem*
 };
+

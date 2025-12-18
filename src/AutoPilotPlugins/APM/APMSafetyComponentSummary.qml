@@ -2,8 +2,10 @@ import QtQuick
 import QtQuick.Controls
 
 import QGroundControl
+
 import QGroundControl.FactControls
 import QGroundControl.Controls
+
 
 Item {
     anchors.fill:   parent
@@ -145,7 +147,7 @@ Item {
             valueText:  fact ? (fact.value < 0 ? qsTr("current") : fact.valueString + " " + fact.units) : ""
             visible:    controller.vehicle.fixedWing
 
-            property Fact fact: controller.getParameterFact(-1, "r.RTL_ALTITUDE", false /* reportMissing */)
+            property Fact fact: controller.getParameterFact(-1, "ALT_HOLD_RTL", false /* reportMissing */)
         }
     }
 }

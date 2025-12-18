@@ -13,6 +13,7 @@ import QtQuick.Layouts
 import QGroundControl
 import QGroundControl.Controls
 
+
 RowLayout {
     property alias label:                   _labelLabel.text
     property alias labelText:              _label.text
@@ -20,9 +21,9 @@ RowLayout {
 
     spacing: ScreenTools.defaultFontPixelWidth * 2
 
-    QGCLabel {
+    QGCLabel { 
         id:                 _labelLabel
-        Layout.fillWidth:   true
+        Layout.fillWidth:   true 
     }
 
     QGCLabel {
@@ -30,3 +31,4 @@ RowLayout {
         Layout.preferredWidth:  labelPreferredWidth
     }
 }
+

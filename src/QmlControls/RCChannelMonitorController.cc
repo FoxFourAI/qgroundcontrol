@@ -19,7 +19,7 @@ RCChannelMonitorController::RCChannelMonitorController(QObject *parent)
 {
     // qCDebug(RCChannelMonitorControllerLog) << Q_FUNC_INFO << this;
 
-    (void) connect(_vehicle, &Vehicle::rcChannelsChanged, this, &RCChannelMonitorController::channelValuesChanged);
+    (void) connect(_vehicle, &Vehicle::rcChannelsChanged, this, &RCChannelMonitorController::_rcChannelsChanged);
 }
 
 RCChannelMonitorController::~RCChannelMonitorController()
@@ -27,7 +27,7 @@ RCChannelMonitorController::~RCChannelMonitorController()
     // qCDebug(RCChannelMonitorControllerLog) << Q_FUNC_INFO << this;
 }
 
-void RCChannelMonitorController::channelValuesChanged(int channelCount, int pwmValues[QGCMAVLink::maxRcChannels])
+void RCChannelMonitorController::_rcChannelsChanged(int channelCount, int pwmValues[QGCMAVLink::maxRcChannels])
 {
     for (int channel = 0; channel < channelCount; channel++) {
         const int channelValue = pwmValues[channel];
@@ -38,7 +38,7 @@ void RCChannelMonitorController::channelValuesChanged(int channelCount, int pwmV
         }
 
         if (channelValue != -1) {
-            emit channelValueChanged(channel, channelValue);
+            emit channelRCValueChanged(channel, channelValue);
         }
     }
 }

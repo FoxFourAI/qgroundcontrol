@@ -11,7 +11,8 @@ import QtQuick
 
 import QGroundControl
 import QGroundControl.Controls
-import QGroundControl.FlyView
+
+import QGroundControl.FlightDisplay
 import QGroundControl.FlightMap
 
 Item {

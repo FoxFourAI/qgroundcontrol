@@ -32,10 +32,10 @@ public:
 
 signals:
     void channelCountChanged(int channelCount);
-    void channelValueChanged(int channel, int rcValue);
+    void channelRCValueChanged(int channel, int rcValue);
 
 private slots:
-    void channelValuesChanged(int channelCount, int pwmValues[QGCMAVLink::maxRcChannels]);
+    void _rcChannelsChanged(int channelCount, int pwmValues[QGCMAVLink::maxRcChannels]);
 
 private:
     int _chanCount = 0;

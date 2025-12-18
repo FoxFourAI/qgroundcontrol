@@ -13,6 +13,7 @@ import QtQuick.Layouts
 import QGroundControl
 import QGroundControl.Controls
 
+
 RowLayout {
     property alias label:                   _label.text
     property alias buttonText:              _button.text
@@ -23,9 +24,9 @@ RowLayout {
     id:         _root
     spacing:    ScreenTools.defaultFontPixelWidth * 2
 
-    QGCLabel {
+    QGCLabel { 
         id:                 _label
-        Layout.fillWidth:   true
+        Layout.fillWidth:   true 
     }
 
     QGCButton {
@@ -34,3 +35,4 @@ RowLayout {
         onClicked:              _root.clicked()
     }
 }
+

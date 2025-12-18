@@ -11,7 +11,9 @@ import QtQuick
 import QtQuick.Window
 
 import QGroundControl
+
 import QGroundControl.Controls
+
 
 Item {
     id:         _root

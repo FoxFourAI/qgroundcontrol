@@ -20,13 +20,12 @@ class MissionController;
 class PlanCreator : public QObject
 {
     Q_OBJECT
-
+    
 public:
     PlanCreator(PlanMasterController* planMasterController, QString name, QString imageResource, QObject* parent = nullptr);
 
     Q_PROPERTY(QString  name            MEMBER _name            CONSTANT)
     Q_PROPERTY(QString  imageResource   MEMBER _imageResource   CONSTANT)
-    Q_PROPERTY(bool     blankPlan       MEMBER _blankPlan       CONSTANT)
 
     Q_INVOKABLE virtual void createPlan(const QGeoCoordinate& mapCenterCoord) = 0;
 
@@ -35,5 +34,4 @@ protected:
     MissionController*      _missionController;
     QString                 _name;
     QString                 _imageResource;
-    bool                    _blankPlan = false;
 };

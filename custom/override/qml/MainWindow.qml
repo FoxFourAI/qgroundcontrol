@@ -14,31 +14,18 @@ import QtQuick.Layouts
 import QtQuick.Window
 
 import QGroundControl
-<<<<<<<< HEAD:custom/override/qml/MainWindow.qml
 
 import QGroundControl.Controls
 import QGroundControl.FactControls
 
 import QGroundControl.FlightDisplay
-========
-import QGroundControl.Controls
-import QGroundControl.FactControls
-import QGroundControl.FlyView
->>>>>>>> upstream/master:src/UI/MainWindow.qml
 import QGroundControl.FlightMap
 
 /// @brief Native QML top level window
 /// All properties defined here are visible to all QML pages.
 ApplicationWindow {
-<<<<<<<< HEAD:custom/override/qml/MainWindow.qml
     id:             mainWindow
     visible:        true
-========
-    id:         mainWindow
-    visible:    true
-    // The special casing for android prevents white bars from showing up on the edges of the screen with newer android versions
-    flags:      Qt.Window | (ScreenTools.isAndroid ? Qt.ExpandedClientAreaHint | Qt.NoTitleBarBackgroundHint : 0)
->>>>>>>> upstream/master:src/UI/MainWindow.qml
 
     property bool   _utmspSendActTrigger
 
@@ -94,7 +81,7 @@ ApplicationWindow {
         readonly property var       guidedControllerFlyView:        flyView.guidedController
 
         // Number of QGCTextField's with validation errors. Used to prevent closing panels with validation errors.
-        property int                validationErrorCount:           0
+        property int                validationErrorCount:           0 
 
         // Property to manage RemoteID quick access to settings page
         property bool               commingFromRIDIndicator:        false
@@ -290,7 +277,7 @@ ApplicationWindow {
         color:          QGroundControl.globalPalette.window
     }
 
-    FlyView {
+    FlyView { 
         id:                     flyView
         anchors.fill:           parent
     }
@@ -419,12 +406,7 @@ ApplicationWindow {
                         height:             toolSelectDialog._toolButtonHeight
                         Layout.fillWidth:   true
                         text:               qsTr("Close %1").arg(QGroundControl.appName)
-<<<<<<<< HEAD:custom/override/qml/MainWindow.qml
                         imageResource:      "/res/cancel.svg"
-========
-                        imageResource:      "/res/XDeleteBlack.svg"
-                        imageColor:         QGroundControl.globalPalette.brandingPurple
->>>>>>>> upstream/master:src/UI/MainWindow.qml
                         visible:            mainWindow.visibility === Window.FullScreen
                         onClicked: {
                             if (mainWindow.allowViewSwitch()) {
@@ -750,7 +732,7 @@ ApplicationWindow {
                     anchors.centerIn:   parent
                     text:               ">"
                     color:              QGroundControl.globalPalette.buttonText
-                }
+                }  
 
                 QGCMouseArea {
                     fillItem: parent

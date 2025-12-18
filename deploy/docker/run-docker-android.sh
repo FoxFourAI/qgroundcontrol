@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SOURCE_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+# Define variables for better maintainability
+DOCKERFILE_PATH="./deploy/docker/Dockerfile-build-android"
 IMAGE_NAME="qgc-android-docker"
-BUILD_TYPE="${1:-Release}"
+SOURCE_DIR="$(pwd)"
+BUILD_DIR="${SOURCE_DIR}/build"
 
-docker build \
-  --file "${SCRIPT_DIR}/Dockerfile-build-android" \
-  -t "${IMAGE_NAME}" \
-  "${SOURCE_DIR}"
+# Build the Docker image for Android
+docker build --file "${DOCKERFILE_PATH}" -t "${IMAGE_NAME}" "${SOURCE_DIR}"
 
-SOURCE_DIR="${SOURCE_DIR}" "${SCRIPT_DIR}/docker-run.sh" "${IMAGE_NAME}" "${BUILD_TYPE}"
+# Run the Docker container with adjusted mount points
+docker run \
+  --rm \
+  -v "${SOURCE_DIR}:/project/source" \
+  -v "${BUILD_DIR}:/project/build" \
+  "${IMAGE_NAME}"

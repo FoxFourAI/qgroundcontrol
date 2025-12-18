@@ -144,3 +144,4 @@ void ComplexMissionItem::_segmentTerrainCollisionChanged(bool terrainCollision)
     }
     emit terrainCollisionChanged(_cTerrainCollisionSegments != 0);
 }
+

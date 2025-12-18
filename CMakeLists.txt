@@ -190,6 +190,8 @@ find_package(Qt6
 
 if(LINUX)
     find_package(Qt6 COMPONENTS WaylandClient)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 endif()
 
 qt_standard_project_setup(
@@ -197,15 +199,6 @@ qt_standard_project_setup(
     SUPPORTS_UP_TO ${QGC_QT_MAXIMUM_VERSION}
     I18N_SOURCE_LANGUAGE en
 )
-
-# ----------------------------------------------------------------------------
-# QML Linting Configuration
-# ----------------------------------------------------------------------------
-if(QGC_ENABLE_QMLLINT)
-    set(QT_QML_GENERATE_QMLLINT ON CACHE BOOL "Enable automatic QML linting" FORCE)
-else()
-    set(QT_QML_GENERATE_QMLLINT OFF CACHE BOOL "Disable automatic QML linting" FORCE)
-endif()
 
 # ----------------------------------------------------------------------------
 # Qt Policies (Enable modern Qt6 behaviors)
@@ -249,6 +242,8 @@ qt_add_executable(${CMAKE_PROJECT_NAME}
     ${QGC_RESOURCES}
 )
 
+
+target_link_libraries(QGroundControl PRIVATE Qt6::Core)
 # ----------------------------------------------------------------------------
 # Platform-Specific Configuration
 # ----------------------------------------------------------------------------

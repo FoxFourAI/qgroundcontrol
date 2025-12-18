@@ -15,8 +15,9 @@ import QtQuick.Layouts
 import QGroundControl
 import QGroundControl.Controls
 
+
 QGCPopupDialog {
-    title:   qsTr("Global Altitude Mode")
+    title:   qsTr("Select Altitude Mode")
     buttons: Dialog.Close
 
     property var rgRemoveModes
@@ -39,6 +40,7 @@ QGCPopupDialog {
             }
         }
 
+
         buttonRepeater.model = buttonModel
     }
 
@@ -46,39 +48,34 @@ QGCPopupDialog {
         id: buttonModel
 
         ListElement {
-            modeName:   qsTr("Relative To Launch (Rel)")
-            help:       qsTr("Altitudes are relative to the launch point.")
+            modeName:   qsTr("Relative To Launch")
+            help:       qsTr("Specified altitudes are relative to launch position height.")
             modeValue:  QGroundControl.AltitudeModeRelative
         }
         ListElement {
             modeName:   qsTr("AMSL")
-            help:       qsTr("Altitudes are absolute above mean sea level.")
+            help:       qsTr("Specified altitudes are Above Mean Sea Level.")
             modeValue:  QGroundControl.AltitudeModeAbsolute
         }
         ListElement {
-            modeName:   qsTr("Calculated Above Terrain (TerrC)")
-            help:       qsTr("Altitudes are terrain-relative; converting to AMSL before upload.")
+            modeName:   qsTr("Calculated Above Terrain")
+            help:       qsTr("Specified altitudes are distance above terrain. Actual altitudes sent to vehicle are calculated from terrain data and sent as AMSL values.")
             modeValue:  QGroundControl.AltitudeModeCalcAboveTerrain
         }
         ListElement {
-            modeName:   qsTr("Above Terrain (Terr)")
-            help:       qsTr("Vehicle maintains a terrain-relative height using onboard data.")
+            modeName:   qsTr("Terrain Frame")
+            help:       qsTr("Specified altitudes are distance above terrain. The actual altitude flown is controlled by the vehicle either from terrain height maps being sent to vehicle or a distance sensor.")
             modeValue:  QGroundControl.AltitudeModeTerrainFrame
         }
         ListElement {
-            modeName:   qsTr("Mixed Modes (Mix)")
-            help:       qsTr("Each mission item can choose its own altitude mode.")
+            modeName:   qsTr("Mixed Modes")
+            help:       qsTr("The altitude mode can differ for each individual item.")
             modeValue:  QGroundControl.AltitudeModeMixed
         }
     }
 
     Column {
         spacing: ScreenTools.defaultFontPixelWidth
-
-        QGCLabel {
-            text: qsTr("Altitude mode for all mission items.")
-            font.pointSize: ScreenTools.smallFontPointSize
-        }
 
         Repeater {
             id: buttonRepeater

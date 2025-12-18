@@ -14,6 +14,8 @@ import QtQuick.Controls
 
 import QGroundControl.Controls
 
+
+
 Button {
     id:                             button
     height:                         _infoCol.height * 1.25

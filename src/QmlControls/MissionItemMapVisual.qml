@@ -13,7 +13,10 @@ import QtLocation
 import QtPositioning
 
 import QGroundControl
+
+
 import QGroundControl.Controls
+
 
 /// Mission item map visual
 Item {

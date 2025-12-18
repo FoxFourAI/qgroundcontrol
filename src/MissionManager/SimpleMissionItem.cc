@@ -153,7 +153,7 @@ void SimpleMissionItem::_connectSignals(void)
     // For NAV_LOITER_X commands, they must emit a radiusChanged signal
     connect(&_missionItem._param2Fact,          &Fact::valueChanged,                        this, &SimpleMissionItem::_possibleRadiusChanged);
     connect(&_missionItem._param3Fact,          &Fact::valueChanged,                        this, &SimpleMissionItem::_possibleRadiusChanged);
-
+    
     // Exit coordinate is the same as entrance coordinate
     connect(this,                               &SimpleMissionItem::coordinateChanged,      this, &SimpleMissionItem::exitCoordinateChanged);
 
@@ -203,9 +203,7 @@ void SimpleMissionItem::_setupMetaData(void)
         _altitudeMetaData = new FactMetaData(FactMetaData::valueTypeDouble);
         _altitudeMetaData->setRawUnits("m");
         _altitudeMetaData->setRawIncrement(1);
-        _altitudeMetaData->setDecimalPlaces(1);
-        _altitudeMetaData->setRawUserMin(0.0);
-        _altitudeMetaData->setRawUserMax(121.92); // 400 feet
+        _altitudeMetaData->setDecimalPlaces(2);
 
         enumStrings.clear();
         enumValues.clear();
@@ -247,7 +245,7 @@ void SimpleMissionItem::_setupMetaData(void)
 }
 
 SimpleMissionItem::~SimpleMissionItem()
-{
+{    
 }
 
 void SimpleMissionItem::save(QJsonArray&  missionItems)
@@ -302,7 +300,7 @@ bool SimpleMissionItem::load(const QJsonObject& json, int sequenceNumber, QStrin
             QList<JsonHelper::KeyValidateInfo> keyInfoList = {
                 { _jsonAltitudeModeKey,         QJsonValue::Double, true },
                 { _jsonAltitudeKey,             QJsonValue::Double, true },
-                { _jsonAMSLAltAboveTerrainKey,  QJsonValue::Null, true },
+                { _jsonAMSLAltAboveTerrainKey,  QJsonValue::Double, true },
             };
             if (!JsonHelper::validateKeys(json, keyInfoList, errorString)) {
                 return false;
@@ -408,7 +406,7 @@ QString SimpleMissionItem::abbreviation() const
 void SimpleMissionItem::_rebuildTextFieldFacts(void)
 {
     _textFieldFacts.clear();
-
+    
     if (rawEdit()) {
         _missionItem._param1Fact.setName("Param1");
         _missionItem._param1Fact.setMetaData(_defaultParamMetaData);
@@ -461,15 +459,6 @@ void SimpleMissionItem::_rebuildTextFieldFacts(void)
                     paramMetaData->setRawDefaultValue(paramInfo->defaultValue());
                     paramMetaData->setRawMin(paramInfo->min());
                     paramMetaData->setRawMax(paramInfo->max());
-                    const double userMin = paramInfo->userMin();
-                    const double userMax = paramInfo->userMax();
-                    // if user min/max are NaN, we leave them unchanged (invalid)
-                    if (!qIsNaN(userMin)) {
-                        paramMetaData->setRawUserMin(userMin);
-                    }
-                    if (!qIsNaN(userMax)) {
-                        paramMetaData->setRawUserMax(userMax);
-                    }
                     paramFact->setMetaData(paramMetaData);
                     _textFieldFacts.append(paramFact);
                 }
@@ -521,15 +510,6 @@ void SimpleMissionItem::_rebuildNaNFacts(void)
                     paramMetaData->setRawDefaultValue(paramInfo->defaultValue());
                     paramMetaData->setRawMin(paramInfo->min());
                     paramMetaData->setRawMax(paramInfo->max());
-                    const double userMin = paramInfo->userMin();
-                    const double userMax = paramInfo->userMax();
-                    // if user min/max are NaN, we leave them unchanged (invalid)
-                    if (!qIsNaN(userMin)) {
-                        paramMetaData->setRawUserMin(userMin);
-                    }
-                    if (!qIsNaN(userMax)) {
-                        paramMetaData->setRawUserMax(userMax);
-                    }
                     paramFact->setMetaData(paramMetaData);
                     _nanFacts.append(paramFact);
                 }
@@ -616,15 +596,6 @@ void SimpleMissionItem::_rebuildComboBoxFacts(void)
                 paramMetaData->setRawDefaultValue(paramInfo->defaultValue());
                 paramMetaData->setRawMin(paramInfo->min());
                 paramMetaData->setRawMax(paramInfo->max());
-                const double userMin = paramInfo->userMin();
-                const double userMax = paramInfo->userMax();
-                // if user min/max are NaN, we leave them unchanged (invalid)
-                if (!qIsNaN(userMin)) {
-                    paramMetaData->setRawUserMin(userMin);
-                }
-                if (!qIsNaN(userMax)) {
-                    paramMetaData->setRawUserMax(userMax);
-                }
                 paramFact->setMetaData(paramMetaData);
                 _comboboxFacts.append(paramFact);
             }

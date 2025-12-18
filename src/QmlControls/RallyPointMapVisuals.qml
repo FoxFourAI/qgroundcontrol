@@ -13,6 +13,8 @@ import QtLocation
 import QtPositioning
 
 import QGroundControl
+
+
 import QGroundControl.Controls
 import QGroundControl.FlightMap
 
@@ -68,7 +70,7 @@ Item {
             sourceItem: MissionItemIndexLabel {
                 id:                 itemIndexLabel
                 label:              qsTr("R", "rally point map item label")
-                checked:            _editingLayer == _layerRally ? rallyPointObject === myRallyPointController.currentRallyPoint : false
+                checked:            _editingLayer == _layerRallyPoints ? rallyPointObject === myRallyPointController.currentRallyPoint : false
                 highlightSelected:  true
                 onClicked:          myRallyPointController.currentRallyPoint = rallyPointObject
             }

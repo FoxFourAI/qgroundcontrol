@@ -13,8 +13,12 @@ import QtQuick.Dialogs
 import QtQuick.Layouts
 
 import QGroundControl
+
+
 import QGroundControl.FactControls
 import QGroundControl.Controls
+
+
 
 AnalyzePage {
     id:                 vibrationPage

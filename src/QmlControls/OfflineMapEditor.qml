@@ -17,7 +17,10 @@ import QtPositioning
 
 import QGroundControl
 import QGroundControl.Controls
+
+
 import QGroundControl.FlightMap
+
 import QGroundControl.FactControls
 
 FlightMap {
@@ -191,6 +194,7 @@ FlightMap {
         anchors.left:           parent.left
         anchors.bottom:         parent.bottom
         mapControl:             _map
+        buttonsOnLeft:          true
     }
 
     //-----------------------------------------------------------------
@@ -395,6 +399,7 @@ FlightMap {
                         anchors.left:           parent.left
                         anchors.bottom:         parent.bottom
                         mapControl:             parent
+                        zoomButtonsVisible:     false
                     }
 
                     Rectangle {
@@ -433,6 +438,7 @@ FlightMap {
                         anchors.left:           parent.left
                         anchors.bottom:         parent.bottom
                         mapControl:             parent
+                        zoomButtonsVisible:     false
                     }
 
                     Rectangle {
@@ -716,7 +722,7 @@ FlightMap {
                         }
                     }
                 }
-            }
+            } 
         }
     }
 
@@ -759,3 +765,4 @@ FlightMap {
         }
     }
 }
+

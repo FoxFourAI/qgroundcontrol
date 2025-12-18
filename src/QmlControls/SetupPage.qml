@@ -13,8 +13,12 @@ import QtQuick.Dialogs
 import QtQuick.Layouts
 
 import QGroundControl
+
 import QGroundControl.FactControls
+
 import QGroundControl.Controls
+
+
 
 /// Base view control for all Setup pages
 Item {

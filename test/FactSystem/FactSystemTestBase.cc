@@ -114,3 +114,4 @@ void FactSystemTestBase::_qmlUpdate_test(void)
     delete widget;
 #endif
 }
+

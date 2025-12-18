@@ -40,5 +40,4 @@ public:
     DEFINE_SETTINGFACT(requestControlTimeout)
     DEFINE_SETTINGFACT(showJoystickIndicatorInToolbar)
     DEFINE_SETTINGFACT(showGPSrawTrajectory)
-    DEFINE_SETTINGFACT(enableAutomaticMissionPopups)
 };

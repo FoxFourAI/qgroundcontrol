@@ -13,6 +13,7 @@ import QtQuick.Layouts
 import QGroundControl
 import QGroundControl.Controls
 
+
 RowLayout {
     property alias label:                   label.text
     property alias from:                    slider.from
@@ -22,7 +23,7 @@ RowLayout {
     spacing: ScreenTools.defaultFontPixelWidth * 2
 
     QGCLabel {
-        id:                 label
+        id:                 label  
         Layout.fillWidth:   true
     }
 
@@ -31,3 +32,4 @@ RowLayout {
         Layout.preferredWidth:  sliderPreferredWidth
     }
 }
+

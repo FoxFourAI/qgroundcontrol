@@ -82,3 +82,4 @@ std::string UTMSPAircraft::aircraftType(const mavlink_message_t &message)
 
     return "Unknown Type";
 }
+

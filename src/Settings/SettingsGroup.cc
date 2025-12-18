@@ -32,3 +32,4 @@ SettingsFact* SettingsGroup::_createSettingsFact(const QString& factName)
     }
     return new SettingsFact(_settingsGroup, m, this);
 }
+

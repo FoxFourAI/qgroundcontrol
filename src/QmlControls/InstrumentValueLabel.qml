@@ -14,6 +14,8 @@ import QtQuick.Controls
 import QGroundControl
 import QGroundControl.Controls
 
+
+
 ColumnLayout {
     property var    instrumentValueData:        null
 

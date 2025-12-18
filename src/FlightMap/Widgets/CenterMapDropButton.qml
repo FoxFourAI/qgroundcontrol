@@ -13,7 +13,9 @@ import QtQuick.Layouts
 import QtPositioning
 
 import QGroundControl
+
 import QGroundControl.Controls
+
 
 DropButton {
     id:                 dropButton

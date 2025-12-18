@@ -13,6 +13,7 @@ import QtQml.Models
 import QGroundControl
 import QGroundControl.Controls
 
+
 /// A PreFlightCheckGroup manages a set of PreFlightCheckButtons as a single entity.
 Column  {
     property string name

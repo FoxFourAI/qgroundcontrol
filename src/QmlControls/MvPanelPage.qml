@@ -4,6 +4,7 @@ import QtQuick.Controls
 import QGroundControl
 import QGroundControl.Controls
 
+
 Item {
     property bool showBorder:               true
     property real contentMargin:            ScreenTools.defaultFontPixelHeight

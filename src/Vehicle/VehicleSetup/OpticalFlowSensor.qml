@@ -15,6 +15,7 @@ import QtQuick.Dialogs
 import QGroundControl
 import QGroundControl.Controls
 
+
 Item {
     QGCLabel {
         text: qsTr("Optical Flow Camera")

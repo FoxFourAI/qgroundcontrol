@@ -20,3 +20,4 @@ void CompInfoEvents::setJson(const QString& metadataJsonFileName)
 {
     vehicle->setEventsMetadata(compId, metadataJsonFileName);
 }
+

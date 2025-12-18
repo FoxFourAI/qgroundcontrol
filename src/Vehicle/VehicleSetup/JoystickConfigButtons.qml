@@ -13,14 +13,18 @@ import QtQuick.Dialogs
 import QtQuick.Layouts
 
 import QGroundControl
+
 import QGroundControl.Controls
+
+
+
 import QGroundControl.FactControls
 
 ColumnLayout {
     width:                  availableWidth
     height:                 (globals.activeVehicle.supportsJSButton ? buttonCol.height : flowColumn.height) + (ScreenTools.defaultFontPixelHeight * 2)
     spacing:                ScreenTools.defaultFontPixelHeight
-
+    
     Connections {
         target: _activeJoystick
         onRawButtonPressedChanged: (index, pressed) => {
@@ -44,7 +48,7 @@ ColumnLayout {
             wrapMode:               Text.WordWrap
             text:                   qsTr(" Multiple buttons that have the same action must be pressed simultaneously to invoke the action.")
         }
-
+        
         Flow {
             id:                     buttonFlow
             Layout.preferredWidth:  parent.width
@@ -266,3 +270,5 @@ ColumnLayout {
         }
     }
 }
+
+

@@ -761,3 +761,4 @@ Qt6GLVideoItemInterface::invalidateRef()
   QMutexLocker locker(&lock);
   qt_item = NULL;
 }
+

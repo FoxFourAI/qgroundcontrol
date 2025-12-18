@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import QGroundControl
 import QGroundControl.Controls
 
+
 Column {
     property var channel
     property alias value:             channelSlider.value
@@ -44,6 +45,7 @@ Column {
         live:   true
         anchors.horizontalCenter:   parent.horizontalCenter
         height:                     ScreenTools.defaultFontPixelHeight * _sliderHeight
+        indicatorBarVisible:        sendTimer.running
 
         onValueChanged: {
             if (blockUpdates)
