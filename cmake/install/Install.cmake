@@ -93,7 +93,7 @@ elseif(LINUX)
     )
     # Pass variables to AppImage creation script
     install(CODE "
-        set(CMAKE_PROJECT_NAME ${CMAKE_PROJECT_NAME})
+        set(CMAKE_PROJECT_NAME ${CMAKE_PROJECT_NAME}-${QGC_CUSTOM_VERSION})
         set(CMAKE_PROJECT_VERSION ${CMAKE_PROJECT_VERSION})
         set(QGC_PACKAGE_NAME ${QGC_PACKAGE_NAME})
         set(CMAKE_SYSTEM_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
@@ -106,15 +106,15 @@ elseif(LINUX)
 elseif(WIN32)
     # Pass variables to Windows installer creation script
     install(CODE "
-        set(CMAKE_PROJECT_NAME ${CMAKE_PROJECT_NAME})
+        set(CMAKE_PROJECT_NAME ${CMAKE_PROJECT_NAME}-${QGC_CUSTOM_VERSION})
         set(CMAKE_PROJECT_VERSION ${CMAKE_PROJECT_VERSION})
         set(QGC_ORG_NAME ${QGC_ORG_NAME})
         set(QGC_WINDOWS_ICON_PATH \"${QGC_WINDOWS_ICON_PATH}\")
         set(QGC_WINDOWS_INSTALL_HEADER_PATH \"${QGC_WINDOWS_INSTALL_HEADER_PATH}\")
         if(CMAKE_CROSSCOMPILING)
-            set(QGC_WINDOWS_OUT \"${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-installer-${CMAKE_HOST_SYSTEM_PROCESSOR}-${CMAKE_SYSTEM_PROCESSOR}.exe\")
+            set(QGC_WINDOWS_OUT \"${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${QGC_CUSTOM_VERSION}-installer-${CMAKE_HOST_SYSTEM_PROCESSOR}-${CMAKE_SYSTEM_PROCESSOR}.exe\")
         else()
-            set(QGC_WINDOWS_OUT \"${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-installer-${CMAKE_SYSTEM_PROCESSOR}.exe\")
+            set(QGC_WINDOWS_OUT \"${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${QGC_CUSTOM_VERSION}-installer-${CMAKE_SYSTEM_PROCESSOR}.exe\")
         endif()
         set(QGC_WINDOWS_INSTALLER_SCRIPT \"${CMAKE_SOURCE_DIR}/deploy/windows/nullsoft_installer.nsi\")
     ")
@@ -125,7 +125,7 @@ elseif(WIN32)
 # ----------------------------------------------------------------------------
 elseif(MACOS)
     # Set bundle path for subsequent operations
-    install(CODE "set(QGC_STAGING_BUNDLE_PATH \"${CMAKE_BINARY_DIR}/staging/${CMAKE_PROJECT_NAME}.app\")")
+    install(CODE "set(QGC_STAGING_BUNDLE_PATH \"${CMAKE_BINARY_DIR}/staging/${CMAKE_PROJECT_NAME}-${QGC_CUSTOM_VERSION}.app\")")
 
     # Code signing
     if(QGC_MACOS_SIGN_WITH_IDENTITY)
