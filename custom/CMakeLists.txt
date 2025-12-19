@@ -120,15 +120,19 @@ set(CUSTOM_INCLUDE_DIRECTORIES
     CACHE INTERNAL "" FORCE
 )
 
+message(STATUS "QGC_CUSTOM_VERSION: ${QGC_CUSTOM_VERSION}")
+
+# Adding custom version for QGC
+set(QGC_CUSTOM_VERSION "0.0.1" CACHE STRING "Custom version of QGC")
 # Custom compiler definitions
 set(CUSTOM_DEFINITIONS
     QGC_CUSTOM_BUILD
-    QGC_CUSTOM_VERSION="0.0.1"
+    QGC_CUSTOM_VERSION="${QGC_CUSTOM_VERSION}"
     CUSTOMHEADER="FoxFourPlugin.h"
     CUSTOMCLASS=FoxFourPlugin
     CACHE INTERNAL "setting custom definitions" FORCE
 )
-
+message(STATUS "CUSTOM_DEFINITIONS: ${CUSTOM_DEFINITIONS}")
 # Custom Qt components required
 set(CUSTOM_QT_COMPONENTS
     Core
