@@ -81,7 +81,7 @@ ApplicationWindow {
         readonly property var       guidedControllerFlyView:        flyView.guidedController
 
         // Number of QGCTextField's with validation errors. Used to prevent closing panels with validation errors.
-        property int                validationErrorCount:           0 
+        property int                validationErrorCount:           0
 
         // Property to manage RemoteID quick access to settings page
         property bool               commingFromRIDIndicator:        false
@@ -99,6 +99,237 @@ ApplicationWindow {
     signal vtolTransitionToFwdFlightRequest
     signal vtolTransitionToMRFlightRequest
     signal showPreFlightChecklistIfNeeded
+    signal shortcutPressed(shortcut :string, result: string)
+
+    //-------------------------------------------------------------------------
+    //-- Global Scope Shortcuts
+
+    ListModel{
+        property var parameterSetter: QGroundControl.corePlugin.parameterSetter
+        property var onboardComputersManager: globals.activeVehicle.autopilotPlugin.onboardComputersManager
+        property var activeCamera: globals.activeVehicle.cameraManager.currentCameraInstance
+        property var currentComputerId: onboardComputersManager.currentComputerComponent
+        id:globalShortcuts
+        ListElement{
+            description:"Open Parameters"
+            sequence:"Ctrl+P"
+            action:function(){
+
+                if(globalShortcuts.onboardComputersManager == undefined){
+                    showVehicleConfigParametersPage()
+                } else {
+                    showVehicleConfigParametersPageComponent(qsTr("Component ")+ globalShortcuts.currentComputerId)
+                }
+                return ""
+            }
+        }
+        ListElement{
+            description:"Switch tracking selection"
+            sequence:"Ctrl+T"
+            action:function(){
+
+                if( globalShortcuts.activeCamera == undefined ||
+                        !globalShortcuts.activeCamera.hasTracking){
+                    return
+                }
+                let tracking = globalShortcuts.activeCamera.trackingEnabled
+                globalShortcuts.activeCamera.trackingEnabled = !globalShortcuts.activeCamera.trackingEnabled;
+                if(!globalShortcuts.activeCamera.trackingEnabled){
+                    globalShortcuts.activeCamera.stopTracking()
+                }
+                return (tracking + " -> " + !tracking)
+            }
+        }
+
+        ListElement{
+            description:"Zoom In"
+            sequence: "Ctrl+="
+            action:function(){
+                if(globalShortcuts.activeCamera == undefined){
+                    return
+                }
+                let zoom = globalShortcuts.activeCamera.zoomLevel
+                let newZoom = zoom +1
+                if (newZoom > 32 ){
+                    return
+                }
+
+                globalShortcuts.activeCamera.zoomLevel = newZoom
+                return (zoom + "->" + newZoom)
+            }
+        }
+
+        ListElement{
+            description:"Zoom Out"
+            sequence: "Ctrl+-"
+            action:function(){
+                if(globalShortcuts.activeCamera == undefined){
+                    return
+                }
+                let zoom = globalShortcuts.activeCamera.zoomLevel
+                let newZoom = zoom -1
+                if (newZoom < 0 ){
+                    return
+                }
+                globalShortcuts.activeCamera.zoomLevel = newZoom
+                return (zoom + "->" + newZoom)
+            }
+        }
+
+        ListElement{
+            description:"Reset zoom"
+            sequence:"Ctrl+Z"
+            action:function(){
+                if( globalShortcuts.activeCamera == undefined){
+                    return
+                }
+                let zoom = globalShortcuts.activeCamera.zoomLevel
+                globalShortcuts.activeCamera.zoomLevel = 1
+                return (zoom + "-> 1")
+            }
+        }
+        ListElement{
+            description:"Toggle recording"
+            sequence:"Ctrl+Space"
+            action:function(){
+                if( globalShortcuts.activeCamera === undefined){
+                    return;
+                }
+                globalShortcuts.activeCamera.toggleVideoRecording();
+                return ""
+            }
+        }
+
+        ListElement{
+            description:"Expousure Up"
+            sequence:"Ctrl+E"
+            action:function(){
+                let compId = globalShortcuts.currentComputerId
+                let paramSetter = globalShortcuts.parameterSetter
+                let exposure = Math.floor(paramSetter.getParameter(compId, "CAM_EXPOSURE"))
+                let newExposure = exposure + 100
+                if( newExposure > 20000){
+                    return
+                }
+                paramSetter.setParameter(compId, "CAM_EXPOSURE", newExposure)
+                return exposure + " -> " + newExposure
+
+            }
+        }
+
+        ListElement{
+            description:"Expousure Down"
+            sequence:"Ctrl+Shift+E"
+            action:function(){
+                let compId = globalShortcuts.currentComputerId
+                let paramSetter = globalShortcuts.parameterSetter
+                let exposure = Math.floor(paramSetter.getParameter(compId, "CAM_EXPOSURE"))
+                let newExposure = exposure - 100
+                if( newExposure < 0){
+                    return
+                }
+                paramSetter.setParameter(compId, "CAM_EXPOSURE", newExposure)
+                return exposure + " -> " + newExposure
+                // let expousure = globalShortcuts.parameterSetter.getParameter(globalShortcuts.currentComputerId,
+            }
+        }
+
+        ListElement{
+            description:"Guide type"
+            sequence:"Ctrl+g"
+            action:function(){
+                let compId = globalShortcuts.currentComputerId
+                let paramSetter = globalShortcuts.parameterSetter
+                let guideType = paramSetter.getParameter(compId, "MISSN_GUID_TYPE")
+                let newGuideType = guideType
+                if(newGuideType != 1){
+                    newGuideType = 1
+                } else {
+                    newGuideType = 0
+                }
+                paramSetter.setParameter(compId, "MISSN_GUID_TYPE", newGuideType)
+                return guideType + "->" + newGuideType
+            }
+        }
+
+        ListElement{
+            description:"Terminal velocity Up"
+            sequence:"Ctrl+V"
+            action:function(){
+                let compId = globalShortcuts.currentComputerId
+                let paramSetter = globalShortcuts.parameterSetter
+                let velocity = Math.floor(paramSetter.getParameter(compId, "MISSN_TERM_VEL"))
+                let newVelocity = velocity + 5
+                if( newVelocity > 100){
+                    return
+                }
+                paramSetter.setParameter(compId,"MISSN_TERM_VEL",newVelocity)
+                return velocity + " -> " + newVelocity
+            }
+        }
+        ListElement{
+            description:"Terminal velocity Down"
+            sequence:"Ctrl+Shift+V"
+            action:function(){
+                let compId = globalShortcuts.currentComputerId
+                let paramSetter = globalShortcuts.parameterSetter
+                let velocity = Math.floor(paramSetter.getParameter(compId, "MISSN_TERM_VEL"))
+                let newVelocity = velocity - 5
+                if(newVelocity < 0){
+                    return
+                }
+                paramSetter.setParameter(compId,"MISSN_TERM_VEL",newVelocity)
+                return velocity + " -> " + newVelocity
+            }
+        }
+
+        ListElement{
+            description:"Mission Autonomy Switch"
+            sequence:"Ctrl+Shift+A"
+            action:function(){
+                let compId = globalShortcuts.currentComputerId
+                let paramSetter = globalShortcuts.parameterSetter
+                let mode = Math.floor(paramSetter.getParameter(compId, "MISSN_AUTONOMY"))
+                let newMode = mode + 1
+                if (newMode > 2){
+                    newMode = 0
+                }
+                paramSetter.setParameter(compId,"MISSN_AUTONOMY",newMode)
+                return mode + " -> " + newMode
+
+            }
+        }
+
+        ListElement{
+            description:"SCR_USER1 Switch"
+            sequence:"Ctrl+Tab"
+            action:function(){
+                let paramSetter = globalShortcuts.parameterSetter
+                let mode = Math.floor(paramSetter.getParameter(1, "SCR_USER1"))
+                let newMode = mode + 1
+                if (newMode > 2){
+                    newMode = 0
+                }
+                paramSetter.setParameter(1,"SCR_USER1",newMode)
+                return qsTr(mode +" -> "+ newMode)
+            }
+        }
+    }
+
+    Instantiator{
+        model:globalShortcuts
+        delegate: Action{
+            shortcut: sequence
+            onTriggered:{
+                console.log("Shortcut pressed: "+sequence)
+                let result = action()
+                shortcutPressed(description,result)
+            }
+
+        }
+    }
+
+
 
     //-------------------------------------------------------------------------
     //-- Global Scope Functions
@@ -244,9 +475,9 @@ ApplicationWindow {
         for (var index=0; index<QGroundControl.multiVehicleManager.vehicles.count; index++) {
             if (QGroundControl.multiVehicleManager.vehicles.get(index).parameterManager.pendingWrites) {
                 mainWindow.showMessageDialog(closeDialogTitle,
-                    qsTr("You have pending parameter updates to a vehicle. If you close you will lose changes. Are you sure you want to close?"),
-                    Dialog.Yes | Dialog.No,
-                    function() { _closeChecksToSkip |= _skipPendingParameterWritesCheckMask; performCloseChecks() })
+                                             qsTr("You have pending parameter updates to a vehicle. If you close you will lose changes. Are you sure you want to close?"),
+                                             Dialog.Yes | Dialog.No,
+                                             function() { _closeChecksToSkip |= _skipPendingParameterWritesCheckMask; performCloseChecks() })
                 return false
             }
         }
@@ -256,9 +487,9 @@ ApplicationWindow {
     function checkForActiveConnections() {
         if (QGroundControl.multiVehicleManager.activeVehicle) {
             mainWindow.showMessageDialog(closeDialogTitle,
-                qsTr("There are still active connections to vehicles. Are you sure you want to exit?"),
-                Dialog.Yes | Dialog.No,
-                function() { _closeChecksToSkip |= _skipActiveConnectionsCheckMask; performCloseChecks() })
+                                         qsTr("There are still active connections to vehicles. Are you sure you want to exit?"),
+                                         Dialog.Yes | Dialog.No,
+                                         function() { _closeChecksToSkip |= _skipActiveConnectionsCheckMask; performCloseChecks() })
             return false
         } else {
             return true
@@ -266,18 +497,18 @@ ApplicationWindow {
     }
 
     onClosing: (close) => {
-        if (!_forceClose) {
-            _closeChecksToSkip = 0
-            close.accepted = performCloseChecks()
-        }
-    }
+                   if (!_forceClose) {
+                       _closeChecksToSkip = 0
+                       close.accepted = performCloseChecks()
+                   }
+               }
 
     background: Rectangle {
         anchors.fill:   parent
         color:          QGroundControl.globalPalette.window
     }
 
-    FlyView { 
+    FlyView {
         id:                     flyView
         anchors.fill:           parent
     }
@@ -451,18 +682,18 @@ ApplicationWindow {
                                 anchors.fill:       parent
 
                                 onClicked: (mouse) => {
-                                    if (mouse.modifiers & Qt.ControlModifier) {
-                                        QGroundControl.corePlugin.showTouchAreas = !QGroundControl.corePlugin.showTouchAreas
-                                        showTouchAreasNotification.open()
-                                    } else if (ScreenTools.isMobile || mouse.modifiers & Qt.ShiftModifier) {
-                                        mainWindow.closeIndicatorDrawer()
-                                        if(!QGroundControl.corePlugin.showAdvancedUI) {
-                                            advancedModeOnConfirmation.open()
-                                        } else {
-                                            advancedModeOffConfirmation.open()
-                                        }
-                                    }
-                                }
+                                               if (mouse.modifiers & Qt.ControlModifier) {
+                                                   QGroundControl.corePlugin.showTouchAreas = !QGroundControl.corePlugin.showTouchAreas
+                                                   showTouchAreasNotification.open()
+                                               } else if (ScreenTools.isMobile || mouse.modifiers & Qt.ShiftModifier) {
+                                                   mainWindow.closeIndicatorDrawer()
+                                                   if(!QGroundControl.corePlugin.showAdvancedUI) {
+                                                       advancedModeOnConfirmation.open()
+                                                   } else {
+                                                       advancedModeOffConfirmation.open()
+                                                   }
+                                               }
+                                           }
 
                                 // This allows you to change this on mobile
                                 onPressAndHold: {
@@ -732,7 +963,7 @@ ApplicationWindow {
                     anchors.centerIn:   parent
                     text:               ">"
                     color:              QGroundControl.globalPalette.buttonText
-                }  
+                }
 
                 QGCMouseArea {
                     fillItem: parent

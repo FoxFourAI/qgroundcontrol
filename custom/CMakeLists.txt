@@ -91,6 +91,8 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera/FoxFourCameraControl.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera/FoxFourCameraManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera/FoxFourCameraManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ParameterSetter/ParameterSetter.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ParameterSetter/ParameterSetter.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OnboardComputers/OnboardComputersManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OnboardComputers/OnboardComputersManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/FoxFourGstVideoReceiver.h
@@ -117,6 +119,7 @@ set(CUSTOM_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoPilotPlugin
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OnboardComputers
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ParameterSetter
     CACHE INTERNAL "" FORCE
 )
 

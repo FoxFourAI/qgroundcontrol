@@ -15,6 +15,7 @@
 #include "QGCCorePlugin.h"
 #include "QGCOptions.h"
 #include "VideoReceiver/FoxFourGstVideoReceiver.h"
+#include "ParameterSetter/ParameterSetter.h"
 class QQmlApplicationEngine;
 
 Q_DECLARE_LOGGING_CATEGORY(FoxFourLog)
@@ -23,6 +24,7 @@ class FoxFourPlugin : public QGCCorePlugin
 {
     Q_OBJECT
     Q_PROPERTY(QString version MEMBER _version)
+    Q_PROPERTY (ParameterSetter *parameterSetter MEMBER _parameterSetter)
 public:
     explicit FoxFourPlugin(QObject *parent = nullptr);
 
@@ -43,6 +45,7 @@ private slots:
     void _advancedChanged(bool advanced);
 
 private:
+    ParameterSetter *_parameterSetter = nullptr;
     QString _version= "0.0.0";
     QGCOptions *_options = nullptr;
     QQmlApplicationEngine *_qmlEngine = nullptr;

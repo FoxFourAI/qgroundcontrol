@@ -7,7 +7,6 @@
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlFile>
 
-
 QGC_LOGGING_CATEGORY(CustomLog, "FoxFour.Plugin")
 
 Q_APPLICATION_STATIC(FoxFourPlugin, _customPluginInstance);
@@ -15,6 +14,7 @@ Q_APPLICATION_STATIC(FoxFourPlugin, _customPluginInstance);
 FoxFourPlugin::FoxFourPlugin(QObject *parent)
     : QGCCorePlugin(parent)
     , _options(new QGCOptions(this))
+    , _parameterSetter(new ParameterSetter(this))
 {
     _version = QString(QGC_CUSTOM_VERSION);
     _showAdvancedUI = true;
