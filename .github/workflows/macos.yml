@@ -98,7 +98,7 @@ jobs:
 
       - name: Mount DMG
         working-directory: ${{ runner.temp }}/build
-        run: hdiutil attach QGroundControl.dmg
+        run: hdiutil attach QGroundControl-*.dmg
 
       - name: Sanity check DMG executable
         working-directory: /Volumes/QGroundControl/QGroundControl.app/Contents/MacOS
@@ -108,5 +108,5 @@ jobs:
         if: matrix.BuildType == 'Release'
         uses: ./.github/actions/upload
         with:
-          artifact_name: QGroundControl.dmg
-          package_name: QGroundControl
+          artifact_name: QGroundControl-*.dmg
+          package_name: QGroundControl-*

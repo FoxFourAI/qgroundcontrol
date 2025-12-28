@@ -6,7 +6,7 @@
 # Required Variables (passed from Install.cmake):
 #   QGC_STAGING_BUNDLE_PATH => Full path to MyApp.app bundle
 #   CREATE_DMG_PROGRAM      => Full path to create-dmg program
-#
+#   QGC_CUSTOM_VERSION      => Version that appends to .dmg name
 
 message(STATUS "QGC: Creating macOS DMG disk image...")
 
@@ -28,7 +28,7 @@ file(COPY "${QGC_STAGING_BUNDLE_PATH}" DESTINATION "${QGC_DMG_PATH}")
 # ============================================================================
 
 cmake_path(GET QGC_STAGING_BUNDLE_PATH STEM QGC_TARGET_APP_NAME)
-set(QGC_DMG_NAME "${QGC_TARGET_APP_NAME}.dmg")
+set(QGC_DMG_NAME "${QGC_TARGET_APP_NAME}-${QGC_CUSTOM_VERSION}.dmg")
 
 message(STATUS "QGC: Building ${QGC_DMG_NAME}...")
 

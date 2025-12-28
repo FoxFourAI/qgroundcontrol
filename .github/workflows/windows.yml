@@ -133,13 +133,13 @@ jobs:
             Write-Error "Installer not found!"
             exit 1
           }
-          echo "INSTALLER_PATH=$($installer.FullName)" >> $env:GITHUB_ENV
-          echo "INSTALLER_NAME=$($installer.Name)" >> $env:GITHUB_ENV
+          echo "INSTALLER_FILE=$($installer.Name)" >> $env:GITHUB_ENV
+          echo "INSTALLER_NAME=$($installer.BaseName)" >> $env:GITHUB_ENV
           echo "Found installer: $($installer.Name)"
 
       - name: Upload artifact (installer)
         if: matrix.build_type == 'Release'
         uses: ./.github/actions/upload
         with:
-          artifact_name: ${{ env.INSTALLER_NAME }}.exe
-          package_name: ${{ env.INSTALLER_PATH }}
+          artifact_name: ${{ env.INSTALLER_FILE }}
+          package_name: ${{ env.INSTALLER_NAME }}
