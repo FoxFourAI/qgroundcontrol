@@ -127,7 +127,7 @@ elseif(WIN32)
 elseif(MACOS)
     # Set bundle path for subsequent operations
     install(CODE "set(QGC_STAGING_BUNDLE_PATH \"${CMAKE_BINARY_DIR}/staging/${CMAKE_PROJECT_NAME}.app\")")
-    install(CODE "set(QGC_CUSTOM_VERSION "${QGC_CUSTOM_VERSION}")")
+    install(CODE "set(QGC_CUSTOM_VERSION \"${QGC_CUSTOM_VERSION}\")")
 
     # Code signing
     if(QGC_MACOS_SIGN_WITH_IDENTITY)
