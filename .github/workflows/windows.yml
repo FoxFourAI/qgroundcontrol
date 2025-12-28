@@ -125,9 +125,21 @@ jobs:
         working-directory: ${{ runner.temp }}\build
         run: cmake --install . --config ${{ matrix.build_type }}
 
+      - name: Find Installer
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem -Path "${{ runner.temp }}\build" -Recurse -Filter "QGroundControl-*-installer-AMD64.exe" | Select-Object -First 1
+          if ($null -eq $installer) {
+            Write-Error "Installer not found!"
+            exit 1
+          }
+          echo "INSTALLER_PATH=$($installer.FullName)" >> $env:GITHUB_ENV
+          echo "INSTALLER_NAME=$($installer.Name)" >> $env:GITHUB_ENV
+          echo "Found installer: $($installer.Name)"
+
       - name: Upload artifact (installer)
         if: matrix.build_type == 'Release'
         uses: ./.github/actions/upload
         with:
-          artifact_name: ${{ matrix.package }}.exe
-          package_name: ${{ matrix.package }}
+          artifact_name: ${{ env.INSTALLER_NAME }}.exe
+          package_name: ${{ env.INSTALLER_PATH }}
