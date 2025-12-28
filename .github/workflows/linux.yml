@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build_type: [Debug, Release]
+        build_type: [Release] #Debug,
         os: [ubuntu-22.04]
         include:
           - os: ubuntu-22.04

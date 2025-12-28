@@ -126,7 +126,7 @@ set(CUSTOM_INCLUDE_DIRECTORIES
 message(STATUS "QGC_CUSTOM_VERSION: ${QGC_CUSTOM_VERSION}")
 
 # Adding custom version for QGC
-set(QGC_CUSTOM_VERSION "0.0.1" CACHE STRING "Custom version of QGC")
+set(QGC_CUSTOM_VERSION "1.0.1" CACHE STRING "Custom version of QGC")
 # Custom compiler definitions
 set(CUSTOM_DEFINITIONS
     QGC_CUSTOM_BUILD
