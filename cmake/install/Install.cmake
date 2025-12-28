@@ -125,8 +125,8 @@ elseif(WIN32)
 # macOS Installation, Code Signing & DMG Creation
 # ----------------------------------------------------------------------------
 elseif(MACOS)
-    # Set bundle path for subsequent operations`
-    install(CODE "set(QGC_STAGING_BUNDLE_PATH \"${CMAKE_BINARY_DIR}/staging/${CMAKE_PROJECT_NAME}.app\")")`
+    # Set bundle path for subsequent operations
+    install(CODE "set(QGC_STAGING_BUNDLE_PATH \"${CMAKE_BINARY_DIR}/staging/${CMAKE_PROJECT_NAME}.app\")")
     install(CODE "set(QGC_CUSTOM_VERSION "${QGC_CUSTOM_VERSION}")")`
 
     # Code signing
