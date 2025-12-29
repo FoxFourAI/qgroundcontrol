@@ -143,7 +143,7 @@ ApplicationWindow {
 
         ListElement{
             description:"Zoom In"
-            sequence: "Ctrl+="
+            sequence: "Ctrl++"
             action:function(){
                 if(globalShortcuts.activeCamera == undefined){
                     return
@@ -178,7 +178,7 @@ ApplicationWindow {
 
         ListElement{
             description:"Reset zoom"
-            sequence:"Ctrl+Z"
+            sequence:"Ctrl+="
             action:function(){
                 if( globalShortcuts.activeCamera == undefined){
                     return
@@ -236,7 +236,7 @@ ApplicationWindow {
 
         ListElement{
             description:"Guide type"
-            sequence:"Ctrl+g"
+            sequence:"Ctrl+G"
             action:function(){
                 let compId = globalShortcuts.currentComputerId
                 let paramSetter = globalShortcuts.parameterSetter
@@ -254,7 +254,7 @@ ApplicationWindow {
 
         ListElement{
             description:"Terminal velocity Up"
-            sequence:"Ctrl+V"
+            sequence:"Ctrl+S"
             action:function(){
                 let compId = globalShortcuts.currentComputerId
                 let paramSetter = globalShortcuts.parameterSetter
@@ -269,7 +269,7 @@ ApplicationWindow {
         }
         ListElement{
             description:"Terminal velocity Down"
-            sequence:"Ctrl+Shift+V"
+            sequence:"Ctrl+Shift+S"
             action:function(){
                 let compId = globalShortcuts.currentComputerId
                 let paramSetter = globalShortcuts.parameterSetter

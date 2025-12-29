@@ -65,7 +65,8 @@ Item {
         radius:     _margins
 
         LabelledLabel{
-            anchors.margins: _margins * 2
+            anchors.leftMargin: _margins * 2
+            anchors.rightMargin: _margins * 2
             id: infoLabel
             anchors.fill: parent
         }
