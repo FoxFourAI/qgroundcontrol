@@ -18,6 +18,8 @@
 #include "Vehicle.h"
 #include "qtmetamacros.h"
 #include "f4_autonomy/version.h"
+#include "SettingsManager.h"
+#include "FlyViewSettings.h"
 
 QGC_LOGGING_CATEGORY(OnboardComputersManagerLog, "OnboardComputersManager")
 
@@ -205,10 +207,16 @@ void OnboardComputersManager::_handleHeartbeat(const mavlink_message_t& message)
         // If we see this computer for the first time, add it to the existing list
         _onboardComputers[computerId] = OnboardComputerStruct(message.compid, _vehicle);
         _onboardComputers[computerId].lastHeartbeat.start();
+
         qCDebug(OnboardComputersManagerLog) << "CompId:" << computerId << "Request COMPANION_VERSION form VGM.";
+        auto settings = SettingsManager::instance()->flyViewSettings();
+        if(settings->enableVGMDialect()->rawValue().toBool()){
         _vehicle->sendMavCommand(computerId, MAV_CMD_REQUEST_MESSAGE, true,
                                  MAVLINK_MSG_ID_COMPANION_VERSION, //first param set id of message
                                  0, 0, 0, 0, 0, 0); // do not touch other params
+        } else {
+            _onboardComputers[computerId].infoRequestCnt = _companionVersionMaxRetryCount + 1;
+        }
         // If current computer index is not set (is 0, while onboard computers has id 191-194), we set it to this computer
         if (_currentComputerComponent == 0) {
             setCurrentComputerComponent(computerId);

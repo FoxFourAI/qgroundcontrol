@@ -110,6 +110,15 @@ SettingsPage {
 
         FactCheckBoxSlider {
             Layout.fillWidth:   true
+            text:               qsTr("Enable VGM dialect")
+            fact:               _enableVGMDiaclect
+            visible:            _enableVGMDiaclect.visible
+
+            property Fact   _enableVGMDiaclect: _flyViewSettings.enableVGMDialect
+        }
+
+        FactCheckBoxSlider {
+            Layout.fillWidth:   true
             text:               qsTr("Update return to home position based on device location.")
             fact:               _updateHomePosition
             visible:            _updateHomePosition.visible

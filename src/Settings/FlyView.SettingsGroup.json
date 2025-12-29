@@ -114,6 +114,12 @@
     "shortDesc": "Show GPS_RAW_INT trajectory on map",
     "type":             "bool",
     "default":     true
+},
+{
+    "name":             "enableVGMDialect",
+    "shortDesc": "Enable VGM Dialect",
+    "type":             "bool",
+    "default":     true
 }
 ]
 }
