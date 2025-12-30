@@ -14,7 +14,11 @@
 
 #include "QGCCorePlugin.h"
 #include "QGCOptions.h"
+
+#ifdef QGC_GST_STREAMING
 #include "VideoReceiver/FoxFourGstVideoReceiver.h"
+#endif
+
 #include "ParameterSetter/ParameterSetter.h"
 class QQmlApplicationEngine;
 

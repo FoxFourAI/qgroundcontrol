@@ -95,14 +95,19 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ParameterSetter/ParameterSetter.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OnboardComputers/OnboardComputersManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OnboardComputers/OnboardComputersManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/FoxFourGstVideoReceiver.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/FoxFourGstVideoReceiver.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/KLVMetadata.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/KLVMetadata.cpp
-    CACHE INTERNAL "" FORCE
+    CACHE INTERNAL "adding custom sources" FORCE
 )
 
-
+if(${QGC_ENABLE_GST_VIDEOSTREAMING})
+    set(CUSTOM_SOURCES
+        ${CUSTOM_SOURCES}
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/FoxFourGstVideoReceiver.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/FoxFourGstVideoReceiver.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/KLVMetadata.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/KLVMetadata.cpp
+        CACHE INTERNAL "adding custom gstreamer" FORCE
+    )
+endif()
 # ============================================================================
 # Custom Build Configuration
 # ============================================================================
@@ -139,5 +144,5 @@ message(STATUS "CUSTOM_DEFINITIONS: ${CUSTOM_DEFINITIONS}")
 # Custom Qt components required
 set(CUSTOM_QT_COMPONENTS
     Core
-    CACHE INTERNAL "" FORCE
+    CACHE INTERNAL "adding custom components to qgc" FORCE
 )

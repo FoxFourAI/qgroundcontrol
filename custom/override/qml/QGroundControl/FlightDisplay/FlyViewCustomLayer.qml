@@ -59,7 +59,7 @@ Item {
         id:shortcutIndicator
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
-        width: parent.width * 0.3
+        width: parent.width * 0.1
         height: ScreenTools.defaultFontPixelHeight + 4
         color:      Qt.rgba(qgcPal.window.r, qgcPal.window.g, qgcPal.window.b, 0.5)
         radius:     _margins
