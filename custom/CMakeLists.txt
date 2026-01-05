@@ -95,6 +95,8 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ParameterSetter/ParameterSetter.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OnboardComputers/OnboardComputersManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OnboardComputers/OnboardComputersManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/HeadingAligment/HeadingAligmentSetter.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/HeadingAligment/HeadingAligmentSetter.cpp
     CACHE INTERNAL "adding custom sources" FORCE
 )
 

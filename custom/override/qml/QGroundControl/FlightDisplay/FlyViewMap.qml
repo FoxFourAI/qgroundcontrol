@@ -39,6 +39,7 @@ FlightMap {
     property var    toolInsets                          // Insets for the center viewport area
 
     property var    _activeVehicle:             QGroundControl.multiVehicleManager.activeVehicle
+    property var    _headingSetter:             _activeVehicle ? _activeVehicle.autopilotPlugin.headingSetter : 0
     property var    _planMasterController:      planMasterController
     property var    _geoFenceController:        planMasterController.geoFenceController
     property var    _rallyPointController:      planMasterController.rallyPointController
@@ -294,6 +295,14 @@ FlightMap {
             function onUpdateLastPoint(coordinate, src) {if( src === trajectoryPolyline._src) trajectoryPolyline.replaceCoordinate(trajectoryPolyline.pathLength() - 1, coordinate) }
             function onPointsCleared() { trajectoryPolyline.path = [] }
         }
+    }
+
+    MapPolyline{
+        id: headingCross
+        line.width: 3
+        line.color: "#FF0000"
+        visible: _root._headingSetter.isActive && _root._headingSetter.mapCoordinate.longitude >=0
+
     }
 
     // Add the vehicles to the map
@@ -797,10 +806,28 @@ FlightMap {
              globals.guidedControllerFlyView.showROI || globals.guidedControllerFlyView.showSetHome ||
              globals.guidedControllerFlyView.showSetEstimatorOrigin)) {
 
-            position = Qt.point(position.x, position.y)
+            let crossSize = Math.min(_root.width,_root.height)/20
             var clickCoord = _root.toCoordinate(position, false /* clipToViewPort */)
             // For some strange reason using mainWindow in mapToItem doesn't work, so we use globals.parent instead which also gets us mainWindow
             position = _root.mapToItem(globals.parent, position)
+            console.log("clicked position: " + position)
+
+
+            if(_root._headingSetter.isActive){
+
+                // building crosshair
+                position = Qt.point(position.x, position.y)
+                let crossTop = _root.toCoordinate(Qt.point(position.x, position.y + crossSize))
+                let crossBottom = _root.toCoordinate(Qt.point(position.x, position.y - crossSize))
+                let crossLeft = _root.toCoordinate(Qt.point(position.x - crossSize, position.y))
+                let crossRight = _root.toCoordinate(Qt.point(position.x + crossSize, position.y))
+
+                headingCross.path = [crossTop,crossBottom,clickCoord,crossLeft,crossRight]
+
+                console.log("heading coords: " + clickCoord)
+                _root._headingSetter.mapCoordinate = clickCoord
+                return
+            }
             var dropPanel = mapClickDropPanelComponent.createObject(mainWindow, { mapClickCoord: clickCoord, clickRect: Qt.rect(position.x, position.y, 0, 0) })
             dropPanel.open()
         }

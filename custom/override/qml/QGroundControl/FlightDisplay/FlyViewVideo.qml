@@ -138,6 +138,7 @@ Item {
         readonly property int scaleModeBoth: 2
         readonly property int numScaleModes: 3
 
+        property var headingSetter : globals.activeVehicle.autopilotPlugin.headingSetter
 
         property int currentScaleMode: scaleModeBoth
 
@@ -145,7 +146,7 @@ Item {
                         // Set starting point and make the selection rectangle visible
                         startX = mouseX
                         startY = mouseY
-                        selectionRect.visible = true
+                        selectionRect.visible = !headingSetter.isActive
                         selectionRect.x = mouseX;
                         selectionRect.y = mouseY;
                         selectionRect.width = Math.abs(mouseX - startX)
@@ -153,6 +154,11 @@ Item {
                     }
 
         onReleased: (mouse) => {
+
+            if(headingSetter.isActive){
+                return;
+            }
+
             selectionRect.visible = false;
 
             let x0 = Math.floor(Math.max(0, selectionRect.x));
@@ -202,6 +208,21 @@ Item {
                 return;
             }
 
+            //calculate offset between video stream rect and background (black stripes)
+            let offset_x = (parent.width - videoStreaming.getWidth()) / 2
+            let offset_y = (parent.height - videoStreaming.getHeight()) / 2
+
+            //if we in "set heading" mode
+            if(headingSetter.isActive){
+                let point = Qt.point(headingAnchor.headingX, headingAnchor.headingY)
+                point.x -= offset_x
+                point.y -= offset_y
+                point.x = Math.max(Math.min(point.x / videoStreaming.getWidth(), 1.0), 0.0)
+                point.y = Math.max(Math.min(point.y / videoStreaming.getHeight(), 1.0), 0.0)
+                headingSetter.cameraCoordinate = point
+                confirmedHeadingAnchor.requestPaint();
+                return;
+            }
 
             if (!videoStreaming._camera || !videoStreaming._camera.trackingEnabled) {
                 return;
@@ -211,10 +232,6 @@ Item {
             let y0 = Math.floor(Math.max(0, targetCanvas.rectCenterY - targetCanvas.rectHeight / 2));
             let x1 = Math.floor(Math.min(width, targetCanvas.rectCenterX + targetCanvas.rectWidth / 2));
             let y1 = Math.floor(Math.min(height, targetCanvas.rectCenterY + targetCanvas.rectHeight / 2));
-
-            //calculate offset between video stream rect and background (black stripes)
-            let offset_x = (parent.width - videoStreaming.getWidth()) / 2
-            let offset_y = (parent.height - videoStreaming.getHeight()) / 2
 
             //calculate offset between video stream rect and background (black stripes)
             x0 -= offset_x
@@ -227,6 +244,7 @@ Item {
             x1 = Math.max(Math.min(x1 / videoStreaming.getWidth(), 1.0), 0.0)
             y0 = Math.max(Math.min(y0 / videoStreaming.getHeight(), 1.0), 0.0)
             y1 = Math.max(Math.min(y1 / videoStreaming.getHeight(), 1.0), 0.0)
+
 
 
             //use point message if rectangle is very small
@@ -242,7 +260,6 @@ Item {
                 let rec = Qt.rect(x0, y0, x1 - x0, y1 - y0)
                 videoStreaming._camera.startTracking(rec, latestFrameTimestamp, false)
             }
-            // videoStreaming._camera._requestTrackingStatus()
         }
 
         onWheel: (wheel) => {
@@ -262,6 +279,12 @@ Item {
 
 
         onPositionChanged: (mouse) => {
+            if(headingSetter && headingSetter.isActive){
+            headingAnchor.headingX = mouse.x;
+            headingAnchor.headingY = mouse.y;
+            headingAnchor.requestPaint();
+            }
+
             targetCanvas.rectCenterX = mouse.x;
             targetCanvas.rectCenterY = mouse.y;
             targetCanvas.requestPaint();
@@ -272,6 +295,82 @@ Item {
                 selectionRect.width = Math.abs(mouse.x - startX)
                 selectionRect.height = Math.abs(mouse.y - startY)
            }
+        }
+
+        Canvas {
+            id: headingAnchor
+
+            property int headingX
+            property int headingY
+            anchors.fill: parent
+            visible: parent.headingSetter.isActive
+            onPaint: {
+                const lineW = 2;
+                const lineColor = '#11BB11';
+                const size = 20;
+                var ctx = getContext("2d");
+                ctx.reset();
+
+                let vertYStart = Math.floor(Math.max(0,headingY - size/2))
+                let vertYEnd = Math.floor(Math.min(height,headingY + size/2))
+                let horXStart = Math.floor(Math.max(0,headingX - size/2))
+                let horXEnd = Math.floor(Math.min(width,headingX + size/2))
+                ctx.lineWidth = lineW;
+                ctx.strokeStyle = lineColor;
+                ctx.beginPath();
+                ctx.moveTo(headingX,vertYStart);
+                ctx.lineTo(headingX,vertYEnd);
+                ctx.moveTo(horXStart,headingY);
+                ctx.lineTo(horXEnd,headingY);
+                ctx.stroke();
+            }
+        }
+
+        Connections{
+            target: flyViewVideoMouseArea.headingSetter
+            onActivityChanged:{
+                confirmedHeadingAnchor.requestPaint()
+            }
+        }
+
+        Canvas {
+            id: confirmedHeadingAnchor
+
+            anchors.fill: parent
+            visible: false
+            onPaint: {
+                visible = parent.headingSetter.isActive && parent.headingSetter.cameraCoordinate.x >= 0
+                if(!visible){
+                    return;
+                }
+
+                let center = parent.headingSetter.cameraCoordinate
+                const lineW = 2;
+                const lineColor = '#FF0000';
+                const size = 20;
+                let ctx = getContext("2d");
+                ctx.reset();
+
+                let offset_x = (parent.width - videoStreaming.getWidth()) / 2
+                let offset_y = (parent.height - videoStreaming.getHeight()) / 2
+
+                let x = center.x* videoStreaming.getWidth() + offset_x;
+                let y = center.y * videoStreaming.getHeight() + offset_y;
+
+                let vertYStart = Math.floor(Math.max(0,y - size/2))
+                let vertYEnd = Math.floor(Math.min(parent.height,y + size/2))
+                let horXStart = Math.floor(Math.max(0,x - size/2))
+                let horXEnd = Math.floor(Math.min(parent.width,x + size/2))
+
+                ctx.lineWidth = lineW;
+                ctx.strokeStyle = lineColor;
+                ctx.beginPath();
+                ctx.moveTo(x,vertYStart);
+                ctx.lineTo(x,vertYEnd);
+                ctx.moveTo(horXStart,y);
+                ctx.lineTo(horXEnd,y);
+                ctx.stroke();
+            }
         }
 
         Canvas {
