@@ -671,7 +671,7 @@ Rectangle {
 
                     QGCButton{
                         Layout.fillWidth:   true
-                        text:               qsTr("Set heading aligment")
+                        text:               qsTr("Set heading alignment")
                         onClicked:  {
                             _headingSetter.start()
                             popupDialog.close()

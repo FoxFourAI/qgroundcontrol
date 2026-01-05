@@ -5,14 +5,14 @@
 #include <QtCore/QPointF>
 #include "Vehicle.h"
 
-class HeadingAligmentSetter: public QObject{
+class HeadingAlignmentSetter: public QObject{
     Q_OBJECT
     Q_PROPERTY(QGeoCoordinate mapCoordinate READ mapCoordinate WRITE setMapCoordinate NOTIFY mapCoordinateChanged)
     Q_PROPERTY(QPointF cameraCoordinate READ cameraCoordinate WRITE setCameraCoordinate NOTIFY cameraCoordinateChanged)
     Q_PROPERTY(bool isActive READ isActive NOTIFY activityChanged)
     Q_PROPERTY(bool canApply READ canApply NOTIFY canApplyChanged)
 public:
-    HeadingAligmentSetter(Vehicle *vehicle,QObject* parent=nullptr);
+    HeadingAlignmentSetter(Vehicle *vehicle,QObject* parent=nullptr);
 
     void setMapCoordinate(QGeoCoordinate coordinate);
     void setCameraCoordinate(QPointF coordinate);

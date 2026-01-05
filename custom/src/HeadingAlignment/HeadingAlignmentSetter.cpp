@@ -1,13 +1,13 @@
-#include "HeadingAligmentSetter.h"
+#include "HeadingAlignmentSetter.h"
 
-HeadingAligmentSetter::HeadingAligmentSetter(Vehicle *vehicle, QObject *parent):
+HeadingAlignmentSetter::HeadingAlignmentSetter(Vehicle *vehicle, QObject *parent):
     _vehicle(vehicle)
   , QObject(parent)
 {
 
 }
 
-void HeadingAligmentSetter::setMapCoordinate(QGeoCoordinate coordinates)
+void HeadingAlignmentSetter::setMapCoordinate(QGeoCoordinate coordinates)
 {
     if(coordinates != _mapCoords){
         _mapCoords = coordinates;
@@ -16,7 +16,7 @@ void HeadingAligmentSetter::setMapCoordinate(QGeoCoordinate coordinates)
     }
 }
 
-void HeadingAligmentSetter::setCameraCoordinate(QPointF coordinates)
+void HeadingAlignmentSetter::setCameraCoordinate(QPointF coordinates)
 {
     if(coordinates != _cameraCoords){
         _cameraCoords = coordinates;
@@ -25,27 +25,27 @@ void HeadingAligmentSetter::setCameraCoordinate(QPointF coordinates)
     }
 }
 
-QGeoCoordinate HeadingAligmentSetter::mapCoordinate()
+QGeoCoordinate HeadingAlignmentSetter::mapCoordinate()
 {
     return _mapCoords;
 }
 
-QPointF HeadingAligmentSetter::cameraCoordinate()
+QPointF HeadingAlignmentSetter::cameraCoordinate()
 {
     return _cameraCoords;
 }
 
-bool HeadingAligmentSetter::isActive()
+bool HeadingAlignmentSetter::isActive()
 {
     return _active;
 }
 
-void HeadingAligmentSetter::start()
+void HeadingAlignmentSetter::start()
 {
     setActive(true);
 }
 
-void HeadingAligmentSetter::stop()
+void HeadingAlignmentSetter::stop()
 {
     setCameraCoordinate(QPointF(-1,-1));
     setMapCoordinate(QGeoCoordinate(-1,-1));
@@ -53,7 +53,7 @@ void HeadingAligmentSetter::stop()
     setActive(false);
 }
 
-bool HeadingAligmentSetter::canApply()
+bool HeadingAlignmentSetter::canApply()
 {
     if((_mapCoords.latitude() >=0 && _cameraCoords.x() >=0) != _appliable){
         _appliable = (_mapCoords.longitude() >=0 && _cameraCoords.x() >=0);
@@ -62,14 +62,14 @@ bool HeadingAligmentSetter::canApply()
     return _appliable;
 }
 
-void HeadingAligmentSetter::apply()
+void HeadingAlignmentSetter::apply()
 {
 //TODO: send msg to VGM
 
     stop();
 }
 
-void HeadingAligmentSetter::setActive(bool active)
+void HeadingAlignmentSetter::setActive(bool active)
 {
     if(active != _active){
         _active = active;

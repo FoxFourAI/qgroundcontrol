@@ -16,7 +16,7 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle *vehicle, QObject *parent
     : APMAutoPilotPlugin(vehicle, parent)
 {
     _onboardComputersMngr = new OnboardComputersManager(vehicle, this);
-    _headingSetter = new HeadingAligmentSetter(vehicle, this);
+    _headingSetter = new HeadingAlignmentSetter(vehicle, this);
 }
 
 FoxFourAutoPilotPlugin::~FoxFourAutoPilotPlugin(){

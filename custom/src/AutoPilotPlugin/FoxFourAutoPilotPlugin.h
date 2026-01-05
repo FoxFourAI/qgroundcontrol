@@ -2,14 +2,14 @@
 
 #include "APM/APMAutoPilotPlugin.h"
 #include "OnboardComputersManager.h"
-#include "HeadingAligment/HeadingAligmentSetter.h"
+#include "HeadingAlignment/HeadingAlignmentSetter.h"
 class Vehicle;
 
 class FoxFourAutoPilotPlugin : public APMAutoPilotPlugin
 {
     Q_OBJECT
     Q_PROPERTY(OnboardComputersManager* onboardComputersManager MEMBER _onboardComputersMngr)
-    Q_PROPERTY(HeadingAligmentSetter* headingSetter MEMBER _headingSetter)
+    Q_PROPERTY(HeadingAlignmentSetter* headingSetter MEMBER _headingSetter)
 public:
     explicit FoxFourAutoPilotPlugin(Vehicle *vehicle, QObject *parent = nullptr);
     ~FoxFourAutoPilotPlugin();
@@ -21,7 +21,7 @@ public:
 
 private:
     QVariantList _components;
-    HeadingAligmentSetter *_headingSetter = nullptr;
+    HeadingAlignmentSetter *_headingSetter = nullptr;
     OnboardComputersManager *_onboardComputersMngr = nullptr;
 
 };
