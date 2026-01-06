@@ -93,10 +93,18 @@ jobs:
         run: ./QGroundControl --simple-boot-test
 
       - name: Create DMG
+        on:
+          push:
+            tags:
+              - '*'
         working-directory: ${{ runner.temp }}/build
         run: cmake --install . --config ${{ matrix.BuildType }}
 
       - name: Find DMG file
+        on:
+          push:
+            tags:
+              - '*'
         shell: bash
         working-directory: ${{ runner.temp }}/build
         run: |
@@ -112,18 +120,34 @@ jobs:
           echo "Found DMG: $DMG_NAME"
 
       - name: Mount DMG
+        on:
+          push:
+            tags:
+              - '*'
         working-directory: ${{ runner.temp }}/build
         run: hdiutil attach "${{ env.DMG_FILE }}"
 
       - name: Sanity check DMG executable
+        on:
+          push:
+            tags:
+              - '*'
         working-directory: /Volumes/QGroundControl/QGroundControl.app/Contents/MacOS
         run: ./QGroundControl --simple-boot-test
 
       - name: Unmount DMG
+        on:
+          push:
+            tags:
+              - '*'
         if: always()
         run: hdiutil detach /Volumes/QGroundControl || true
 
       - name: Upload Build File
+        on:
+          push:
+            tags:
+              - '*'
         if: matrix.BuildType == 'Release'
         uses: ./.github/actions/upload
         with:
