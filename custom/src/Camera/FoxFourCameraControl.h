@@ -9,6 +9,8 @@ class FoxFourCameraControl : public VehicleCameraControl
 {
     Q_OBJECT
     Q_PROPERTY(bool zoomEnabled READ zoomEnabled NOTIFY zoomEnabledChanged)
+    Q_PROPERTY(int minZoomLevel READ minZoomLevel)
+    Q_PROPERTY(int maxZoomLevel READ maxZoomLevel)
 public:
     FoxFourCameraControl(const mavlink_camera_information_t* info, Vehicle* vehicle, int compID, QObject* parent = nullptr);
     virtual ~FoxFourCameraControl();
@@ -22,6 +24,14 @@ public:
 
     virtual void handleSettings (const mavlink_camera_settings_t& settings);
 
+    int maxZoomLevel(){
+        return _maxZoomLevel;
+    }
+
+    int minZoomLevel(){
+        return _minZoomLevel;
+    }
+
 signals:
     void zoomEnabledChanged();
 public slots:
@@ -34,4 +44,6 @@ protected:
     QTimer        _videoRecordTimeUpdateTimer;
     QElapsedTimer _videoRecordTimeElapsedTimer;
     bool _zoomEnabled = false;
+    int _minZoomLevel = 1;
+    int _maxZoomLevel = 16;
 };

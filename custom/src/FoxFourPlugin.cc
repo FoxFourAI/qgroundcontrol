@@ -63,6 +63,10 @@ VideoReceiver *FoxFourPlugin::createVideoReceiver(QObject *parent)
 #endif
 }
 
+ParameterSetter *FoxFourPlugin::parameterSetter(){
+    return _parameterSetter;
+}
+
 QQmlApplicationEngine* FoxFourPlugin::createQmlApplicationEngine(QObject* parent)
 {
     _qmlEngine = QGCCorePlugin::createQmlApplicationEngine(parent);

@@ -37,3 +37,7 @@ void FoxFourAutoPilotPlugin::rebootOnboardComputers(){
         qWarning() << "Rebooting onboard computers";
         _onboardComputersMngr->rebootAllOnboardComputers();
 }
+
+OnboardComputersManager *FoxFourAutoPilotPlugin::onboardComputersManager(){
+    return _onboardComputersMngr;
+}
