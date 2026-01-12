@@ -113,7 +113,6 @@ jobs:
         run: cmake --install . --config ${{ matrix.build_type }}
 
       - name: Verify AppImage
-        if: 
         if: matrix.build_type == 'Release' && startsWith(github.ref, 'refs/tags/')
         working-directory: ${{ runner.temp }}/build
         run: xvfb-run -a ./${{ matrix.package }}-*-x86_64.AppImage --simple-boot-test

@@ -125,12 +125,10 @@ jobs:
 
       - name: Unmount DMG
         if: startsWith(github.ref, 'refs/tags/')
-        if: always()
         run: hdiutil detach /Volumes/QGroundControl || true
 
       - name: Upload Build File
-        if: startsWith(github.ref, 'refs/tags/')
-        if: matrix.BuildType == 'Release'
+        if: matrix.BuildType == 'Release' && startsWith(github.ref, 'refs/tags/')
         uses: ./.github/actions/upload
         with:
           artifact_name: ${{ env.DMG_FILE }}
