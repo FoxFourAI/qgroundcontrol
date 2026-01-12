@@ -128,10 +128,63 @@ set(CUSTOM_INCLUDE_DIRECTORIES
     CACHE INTERNAL "" FORCE
 )
 
-message(STATUS "QGC_CUSTOM_VERSION: ${QGC_CUSTOM_VERSION}")
+# ============================================================================
+# Getting version from git tag if available
+# ============================================================================
+if(GIT_FOUND)
+    # Get the current Git tag
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} tag --sort=-version:refname
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_ALL_TAGS
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
 
+    # Extract the first (latest) tag
+    string(REGEX MATCH "^[^\n]+" GIT_TAG "${GIT_ALL_TAGS}")
+
+    message(STATUS "GIT TAG IS: ${GIT_TAG}")
+
+    # Get the full describe output (tag + commits + hash)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} describe --tags --always --dirty
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_DESCRIBE
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+
+    # Get current commit hash
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_COMMIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+else()
+    set(GIT_TAG "unknown")
+    set(GIT_DESCRIBE "unknown")
+    set(GIT_COMMIT_HASH "unknown")
+endif()
+
+# Extract version from tag (assumes format like v1.2.3)
+if(GIT_TAG MATCHES "^v?([0-9]+)\\.([0-9]+)\\.([0-9]+)")
+    set(VERSION_MAJOR ${CMAKE_MATCH_1})
+    set(VERSION_MINOR ${CMAKE_MATCH_2})
+    set(VERSION_PATCH ${CMAKE_MATCH_3})
+    message(STATUS "Setting QGC_CUSTOM_VERSION TO: ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+    set(QGC_CUSTOM_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+else()
+    message(STATUS "Setting QGC_CUSTOM_VERSION TO: 0.0.0")
+    set(QGC_CUSTOM_VERSION "0.0.0")
+endif()
+
+message(STATUS "QGC_CUSTOM_VERSION: ${QGC_CUSTOM_VERSION}")
 # Adding custom version for QGC
-set(QGC_CUSTOM_VERSION "1.0.1" CACHE STRING "Custom version of QGC")
+# set(QGC_CUSTOM_VERSION "1.0.2" CACHE STRING "Custom version of QGC")
+
 # Custom compiler definitions
 set(CUSTOM_DEFINITIONS
     QGC_CUSTOM_BUILD
