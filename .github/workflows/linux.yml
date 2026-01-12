@@ -108,37 +108,23 @@ jobs:
         run: xvfb-run -a ./${{ matrix.package }} --simple-boot-test
 
       - name: Create AppImage
-        on:
-          push:
-            tags:
-              - '*'
+        if: startsWith(github.ref, 'refs/tags/')
         working-directory: ${{ runner.temp }}/build
         run: cmake --install . --config ${{ matrix.build_type }}
 
       - name: Verify AppImage
-        on:
-          push:
-            tags:
-              - '*'
-        if: matrix.build_type == 'Release'
+        if: 
+        if: matrix.build_type == 'Release' && startsWith(github.ref, 'refs/tags/')
         working-directory: ${{ runner.temp }}/build
         run: xvfb-run -a ./${{ matrix.package }}-*-x86_64.AppImage --simple-boot-test
 
       - name: Run Unit Tests
-        on:
-          push:
-            tags:
-              - '*'
-        if: matrix.build_type == 'Debug'
+        if: matrix.build_type == 'Debug' && startsWith(github.ref, 'refs/tags/')
         working-directory: ${{ runner.temp }}/build
         run: xvfb-run -a ./${{ matrix.package }}-*-x86_64.AppImage --unittest
 
       - name: Upload Build File
-        on:
-          push:
-            tags:
-              - '*'
-        if: matrix.build_type == 'Release'
+        if: matrix.build_type == 'Release' && startsWith(github.ref, 'refs/tags/')
         uses: ./.github/actions/upload
         with:
           artifact_name: ${{ matrix.package }}-*-x86_64.AppImage

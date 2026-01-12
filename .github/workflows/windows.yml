@@ -122,18 +122,12 @@ jobs:
         run: QGroundControl.exe --simple-boot-test
 
       - name: Create Installer
-        on:
-          push:
-            tags:
-              - '*' 
+        if: startsWith(github.ref, 'refs/tags/')
         working-directory: ${{ runner.temp }}\build
         run: cmake --install . --config ${{ matrix.build_type }}
 
       - name: Find Installer
-        on:
-          push:
-            tags:
-              - '*'
+        if: startsWith(github.ref, 'refs/tags/')
         shell: pwsh
         run: |
           $installer = Get-ChildItem -Path "${{ runner.temp }}\build" -Recurse -Filter "QGroundControl-*-installer-AMD64.exe" | Select-Object -First 1
@@ -146,11 +140,7 @@ jobs:
           echo "Found installer: $($installer.Name)"
 
       - name: Upload artifact (installer)
-        on:
-          push:
-            tags:
-              - '*'
-        if: matrix.build_type == 'Release'
+        if: matrix.build_type == 'Release' && startsWith(github.ref, 'refs/tags/')
         uses: ./.github/actions/upload
         with:
           artifact_name: ${{ env.INSTALLER_FILE }}
