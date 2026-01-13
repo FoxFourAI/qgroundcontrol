@@ -165,11 +165,9 @@ Item {
             let y1 = Math.floor(Math.min(height, selectionRect.y + selectionRect.height));
 
             if (selectionDiagonal < trackingTrashhold) {
-                console.log("HANDLE click")
-                handleClick(mouse);
+                handleTargetSelection(mouse);
                 return;
             }
-            console.log("NOT HANDLE click")
             //calculate offset between video stream rect and background (black stripes)
             let offset_x = (parent.width - videoStreaming.getWidth()) / 2
             let offset_y = (parent.height - videoStreaming.getHeight()) / 2
@@ -200,9 +198,8 @@ Item {
 
         onDoubleClicked: QGroundControl.videoManager.fullScreen = !QGroundControl.videoManager.fullScreen
 
-        // onClicked: (mouse) => handleClick(mouse)
 
-        function handleClick(mouse) {
+        function handleTargetSelection(mouse) {
             // If right button is clicked, change the selection mode
             if (mouse.button == Qt.RightButton) {
                 // If mode reached the highest value, put it back to zero
