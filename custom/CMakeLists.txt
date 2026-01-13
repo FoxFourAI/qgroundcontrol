@@ -5,6 +5,9 @@
 
 message(STATUS "QGC: Adding Custom Plugin")
 
+# Adding custom version for QGC
+set(QGC_CUSTOM_VERSION "1.0.2" CACHE STRING "Custom version of QGC")
+
 # ============================================================================
 # Custom Android Package Template
 # ============================================================================
