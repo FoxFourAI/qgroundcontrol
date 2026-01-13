@@ -104,11 +104,15 @@ Rectangle {
                 Layout.alignment:   Qt.AlignHCenter
                 Layout.fillHeight:  true
                 orientation:        Qt.Vertical
-                to:                 32
-                from:               1
+                to:                 _camera.maxZoomLevel
+                from:               _camera.minZoomLevel
                 value:              _camera.zoomLevel
                 live:               true
                 onMoved:            _camera.zoomLevel = value
+
+                // Connections{
+                //     target:
+                // }
             }
 
             // Zoom button

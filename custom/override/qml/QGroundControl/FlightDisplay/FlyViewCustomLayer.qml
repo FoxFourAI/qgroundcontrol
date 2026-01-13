@@ -58,7 +58,7 @@ Item {
         property real   _spacing:      ScreenTools.defaultFontPixelWidth * 5
         id:shortcutIndicator
         anchors.right: parent.right
-        anchors.rightMargin: 150
+        anchors.rightMargin: 200
         anchors.top: parent.top
         width: parent.width * 0.1
         height: ScreenTools.defaultFontPixelHeight + 4

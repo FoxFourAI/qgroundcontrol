@@ -7,6 +7,9 @@
 #include "QGCCorePlugin.h"
 #include "Vehicle.h"
 #include "MissionCommandTree.h"
+#include "FoxFourAutoPilotPlugin.h"
+#include "ParameterSetter.h"
+#include "FoxFourPlugin.h"
 
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtCore/QDir>
@@ -59,6 +62,23 @@ FoxFourCameraControl::FoxFourCameraControl(const mavlink_camera_information_t *i
     connect(VideoManager::instance(), &VideoManager::recordingChanged,this,&FoxFourCameraControl::_processRecordingChanged);
     qCDebug(CameraControlLog)<< "FoxFour camera control initialized";
     _info.flags |= CAMERA_CAP_FLAGS_HAS_VIDEO_STREAM;
+    OnboardComputersManager* compMgr = dynamic_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager();
+    if (compMgr){
+        int component = compMgr->currentComputerComponent();
+        if (component == 0){
+            qCDebug(CameraControlLog)<<"Cant get component!";
+            return;
+        }
+        ParameterSetter *setter =dynamic_cast<FoxFourPlugin*>(QGCCorePlugin::instance())->parameterSetter();
+        if (!setter){
+            qCDebug(CameraControlLog)<<"Cant get parameterSetter!";
+            return;
+        }
+        _maxZoomLevel = setter->getParameter(component, "VID_ZOOM_MAX").toDouble();
+        _minZoomLevel = setter->getParameter(component, "VID_ZOOM_MIN").toDouble();
+    } else {
+        qCDebug(CameraControlLog)<<"Cant get comp manager!";
+    }
 }
 
 //-----------------------------------------------------------------------------

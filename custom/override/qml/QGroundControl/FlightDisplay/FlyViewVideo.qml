@@ -130,6 +130,10 @@ Item {
         property double radius:     20
         property real   startX:     0
         property real   startY:     0
+        property real   selectionDiagonal:   0
+
+        readonly property real trackingTrashhold:  10
+
         // property var trackingStatus: trackingStatusComponent.createObject(flyViewVideoMouseArea, {})
 
         // Define constants representing rectangle scaling modes
@@ -145,7 +149,7 @@ Item {
                         // Set starting point and make the selection rectangle visible
                         startX = mouseX
                         startY = mouseY
-                        selectionRect.visible = true
+                        selectionRect.visible = flyViewVideoMouseArea.selectionDiagonal > flyViewVideoMouseArea.trackingTrashhold
                         selectionRect.x = mouseX;
                         selectionRect.y = mouseY;
                         selectionRect.width = Math.abs(mouseX - startX)
@@ -153,18 +157,17 @@ Item {
                     }
 
         onReleased: (mouse) => {
-            selectionRect.visible = false;
 
+            selectionRect.visible = false;
             let x0 = Math.floor(Math.max(0, selectionRect.x));
             let y0 = Math.floor(Math.max(0, selectionRect.y));
             let x1 = Math.floor(Math.min(width, selectionRect.x + selectionRect.width));
             let y1 = Math.floor(Math.min(height, selectionRect.y + selectionRect.height));
 
-            if (selectionRect.width < 15 || selectionRect.height < 15) {
-                handleClick(mouse);
+            if (selectionDiagonal < trackingTrashhold) {
+                handleTargetSelection(mouse);
                 return;
             }
-
             //calculate offset between video stream rect and background (black stripes)
             let offset_x = (parent.width - videoStreaming.getWidth()) / 2
             let offset_y = (parent.height - videoStreaming.getHeight()) / 2
@@ -186,15 +189,17 @@ Item {
                 return;
             }
             let latestFrameTimestamp = QGroundControl.videoManager.lastKlvTimestamp;
-            videoStreaming._camera.startTracking(rec, latestFrameTimestamp, true);
-            videoStreaming._camera.zoomLevel = Math.min(1.0/(x1-x0), 1.0/(y1-y0))
+            let camera = videoStreaming._camera
+            camera.startTracking(rec, latestFrameTimestamp, true)
+
+            let newZoomLevel = Math.min(1.0/(x1-x0), 1.0/(y1-y0))
+            camera.zoomLevel = Math.min(camera.maxZoomLevel, Math.max(camera.minZoomLevel, newZoomLevel))
         }
 
         onDoubleClicked: QGroundControl.videoManager.fullScreen = !QGroundControl.videoManager.fullScreen
 
-        onClicked: (mouse) => handleClick(mouse)
 
-        function handleClick(mouse) {
+        function handleTargetSelection(mouse) {
             // If right button is clicked, change the selection mode
             if (mouse.button == Qt.RightButton) {
                 // If mode reached the highest value, put it back to zero
@@ -266,12 +271,21 @@ Item {
             targetCanvas.rectCenterY = mouse.y;
             targetCanvas.requestPaint();
             // Redraw selection rectangle as mouse moves
+            let x = Math.min(mouse.x, startX);
+            let y = Math.min(mouse.y, startY);
+            let w = Math.abs(mouse.x - startX);
+            let h =Math.abs(mouse.y - startY);
+
             if (flyViewVideoMouseArea.pressed) {
-                selectionRect.x = Math.min(mouse.x, startX);
-                selectionRect.y = Math.min(mouse.y, startY);
-                selectionRect.width = Math.abs(mouse.x - startX)
-                selectionRect.height = Math.abs(mouse.y - startY)
-           }
+                selectionRect.x = x
+                selectionRect.y = y
+                selectionRect.width = w
+                selectionRect.height = h
+                selectionDiagonal = Math.sqrt(w * w + h * h)
+                selectionRect.visible = flyViewVideoMouseArea.selectionDiagonal > flyViewVideoMouseArea.trackingTrashhold
+            } else if (selectionDiagonal != 0){
+                selectionDiagonal = 0
+            }
         }
 
         Canvas {
@@ -280,7 +294,6 @@ Item {
 
             property int rectWidth: 100
             property int rectHeight: 100
-
             anchors.fill: parent
 
             id: targetCanvas
@@ -291,7 +304,7 @@ Item {
                 var ctx = getContext("2d");
                 ctx.reset();
 
-               if (!videoStreaming._camera || !videoStreaming._camera.trackingEnabled) {
+               if (!videoStreaming._camera || !videoStreaming._camera.trackingEnabled || parent.selectionDiagonal > parent.trackingTrashhold) {
                    return;
                }
 

@@ -28,7 +28,7 @@ class FoxFourPlugin : public QGCCorePlugin
 {
     Q_OBJECT
     Q_PROPERTY(QString version MEMBER _version)
-    Q_PROPERTY (ParameterSetter *parameterSetter MEMBER _parameterSetter)
+    Q_PROPERTY (ParameterSetter *parameterSetter READ parameterSetter MEMBER _parameterSetter)
 public:
     explicit FoxFourPlugin(QObject *parent = nullptr);
 
@@ -42,6 +42,7 @@ public:
 
     VideoReceiver *createVideoReceiver(QObject *parent);
 
+    ParameterSetter* parameterSetter();
 
     QQmlApplicationEngine *createQmlApplicationEngine(QObject *parent) final;
 

@@ -149,8 +149,9 @@ ApplicationWindow {
                     return
                 }
                 let zoom = globalShortcuts.activeCamera.zoomLevel
+                let maxZoom = globalShortcuts.activeCamera.maxZoomLevel
                 let newZoom = zoom +1
-                if (newZoom > 32 ){
+                if (newZoom > maxZoom ){
                     return
                 }
 
@@ -167,8 +168,9 @@ ApplicationWindow {
                     return
                 }
                 let zoom = globalShortcuts.activeCamera.zoomLevel
+                let minZoom = globalShortcuts.activeCamera.minZoomLevel
                 let newZoom = zoom -1
-                if (newZoom < 0 ){
+                if (newZoom < minZoom ){
                     return
                 }
                 globalShortcuts.activeCamera.zoomLevel = newZoom
@@ -184,8 +186,8 @@ ApplicationWindow {
                     return
                 }
                 let zoom = globalShortcuts.activeCamera.zoomLevel
-                globalShortcuts.activeCamera.zoomLevel = 1
-                return (zoom + "-> 1")
+                globalShortcuts.activeCamera.zoomLevel = globalShortcuts.activeCamera.minZoomLevel
+                return (zoom + "-> " + globalShortcuts.activeCamera.zoomLevel)
             }
         }
         ListElement{

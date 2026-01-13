@@ -7,7 +7,7 @@ class Vehicle;
 class FoxFourAutoPilotPlugin : public APMAutoPilotPlugin
 {
     Q_OBJECT
-    Q_PROPERTY(OnboardComputersManager* onboardComputersManager MEMBER _onboardComputersMngr)
+    Q_PROPERTY(OnboardComputersManager* onboardComputersManager READ onboardComputersManager MEMBER _onboardComputersMngr)
 public:
     explicit FoxFourAutoPilotPlugin(Vehicle *vehicle, QObject *parent = nullptr);
     ~FoxFourAutoPilotPlugin();
@@ -16,7 +16,7 @@ public:
 
     /// Reboot all onboard computers
     Q_INVOKABLE void rebootOnboardComputers();
-
+    OnboardComputersManager* onboardComputersManager();
 private:
     QVariantList _components;
     OnboardComputersManager *_onboardComputersMngr;
