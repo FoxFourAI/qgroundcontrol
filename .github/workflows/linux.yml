@@ -57,8 +57,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           submodules: recursive
-          fetch-depth: 1
-          fetch-tags: true
+          fetch-depth: 0
 
       - name: Initial Setup
         uses: ./.github/actions/common
@@ -108,21 +107,22 @@ jobs:
         run: xvfb-run -a ./${{ matrix.package }} --simple-boot-test
 
       - name: Create AppImage
+        if: startsWith(github.ref, 'refs/tags/')
         working-directory: ${{ runner.temp }}/build
         run: cmake --install . --config ${{ matrix.build_type }}
 
       - name: Verify AppImage
-        if: matrix.build_type == 'Release'
+        if: matrix.build_type == 'Release' && startsWith(github.ref, 'refs/tags/')
         working-directory: ${{ runner.temp }}/build
         run: xvfb-run -a ./${{ matrix.package }}-*-x86_64.AppImage --simple-boot-test
 
       - name: Run Unit Tests
-        if: matrix.build_type == 'Debug'
+        if: matrix.build_type == 'Debug' && startsWith(github.ref, 'refs/tags/')
         working-directory: ${{ runner.temp }}/build
         run: xvfb-run -a ./${{ matrix.package }}-*-x86_64.AppImage --unittest
 
       - name: Upload Build File
-        if: matrix.build_type == 'Release'
+        if: matrix.build_type == 'Release' && startsWith(github.ref, 'refs/tags/')
         uses: ./.github/actions/upload
         with:
           artifact_name: ${{ matrix.package }}-*-x86_64.AppImage

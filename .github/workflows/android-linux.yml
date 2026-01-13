@@ -53,8 +53,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           submodules: recursive
-          fetch-depth: 1
-          fetch-tags: true
+          fetch-depth: 0
 
       - name: Initial Setup
         uses: ./.github/actions/common
@@ -94,7 +93,7 @@ jobs:
       - run: cp ${{ runner.temp }}/build/android-build/*.apk ${{ runner.temp }}/build/${{ env.PACKAGE }}.apk
 
       - name: Upload Build File
-        if: matrix.build_type == 'Release'
+        if: matrix.build_type == 'Release' && startsWith(github.ref, 'refs/tags/')
         uses: ./.github/actions/upload
         with:
           artifact_name: ${{ env.PACKAGE }}.apk
