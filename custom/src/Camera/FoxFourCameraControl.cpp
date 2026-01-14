@@ -202,7 +202,6 @@ FoxFourCameraControl::stopVideoRecording()
 void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp, bool zoom)
 {
     uint64_t time = timestamp.toULongLong();
-    qDebug()<<"starting tracking";
     if(_trackingMarquee != rec) {
         _trackingMarquee = rec;
 
@@ -212,12 +211,20 @@ void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp, bool zoo
                                   << static_cast<float>(rec.x() + rec.width()) << ", "
                                   << static_cast<float>(rec.y() + rec.height()) << "]"
                                   << ", Timestamp: "<< timestamp;
-
+        //if we are zooming, calculating new zoom level and setting it.
         if(zoom){
-            qDebug()<<"zooming";
+            //for now zoom is just a bit in timestamp
             time = time | (1ULL<<63);
+            double newZoomLevel = qMin(1.0/rec.width(), 1.0/rec.height());
+            if( _zoomLevel != newZoomLevel){
+                _zoomLevel = newZoomLevel;
+                if( (_zoomLevel > _minZoomLevel) != _zoomEnabled) {
+                    _zoomEnabled = !_zoomEnabled;
+                    emit zoomEnabledChanged();
+                }
+                emit zoomLevelChanged();
+            }
         }
-        // qDebug()<<time;
         uint32_t timestampLow = static_cast<uint32_t>(time);
         uint32_t timestampHight = static_cast<uint32_t>(time >> 32);
 
@@ -275,7 +282,7 @@ void FoxFourCameraControl::setZoomLevel(qreal level)
 {
     VehicleCameraControl::setZoomLevel(level);
     _zoomLevel = level;
-    if((_zoomLevel > 1) != _zoomEnabled){
+    if((_zoomLevel > _minZoomLevel) != _zoomEnabled){
         _zoomEnabled = !_zoomEnabled;
         emit zoomEnabledChanged();
     }
