@@ -109,7 +109,6 @@ Rectangle {
                 value:              _camera.zoomLevel
                 live:               true
                 onMoved:            _camera.zoomLevel = value
-
                 // Connections{
                 //     target:
                 // }
@@ -125,7 +124,6 @@ Rectangle {
                 radius:             width * 0.5
                 border.color:       qgcPal.buttonText
                 border.width:       3
-                visible:            _camera && _camera.hasZoom
                 // Connections{
                 //     target: _camera
                 //     function onZoomLevelChanged (){
