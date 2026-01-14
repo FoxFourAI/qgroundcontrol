@@ -191,9 +191,6 @@ Item {
             let latestFrameTimestamp = QGroundControl.videoManager.lastKlvTimestamp;
             let camera = videoStreaming._camera
             camera.startTracking(rec, latestFrameTimestamp, true)
-
-            let newZoomLevel = Math.min(1.0/(x1-x0), 1.0/(y1-y0))
-            camera.zoomLevel = Math.min(camera.maxZoomLevel, Math.max(camera.minZoomLevel, newZoomLevel))
         }
 
         onDoubleClicked: QGroundControl.videoManager.fullScreen = !QGroundControl.videoManager.fullScreen
