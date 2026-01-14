@@ -319,7 +319,8 @@ void FoxFourCameraControl::setZoomLevel(qreal level)
 {
     VehicleCameraControl::setZoomLevel(level);
     _zoomLevel = level;
-    if((_zoomLevel > 1) != _zoomEnabled){
+    double minZoom = _minZoomFact ? _minZoomFact->rawValue().toDouble() : _defaultMinZoom;
+    if((_zoomLevel > minZoom) != _zoomEnabled){
         _zoomEnabled = !_zoomEnabled;
         emit zoomEnabledChanged();
     }
