@@ -1,21 +1,34 @@
 #include "ParameterSetter.h"
 #include "Vehicle.h"
-#include "ParameterManager.h"
 #include "MultiVehicleManager.h"
 
 
-QString ParameterSetter::getParameter(int compId, QString paramName)
+QString ParameterSetter::getParameter(int compId, QString paramName, bool report)
 {
-    auto vehicle=MultiVehicleManager::instance()->activeVehicle();
-    if(vehicle == nullptr){
-        return QString();
-    }
-    auto parameterManager = vehicle->parameterManager();
-    auto parameter = parameterManager->getParameter(compId,paramName);
-    if(parameter == nullptr){
+    auto parameter = getFact(compId, paramName, report);
+    if( parameter == nullptr ){
         return QString();
     }
     return parameter->rawValueString();
+}
+
+Fact *ParameterSetter::getFact(int compId, QString paramName, bool report)
+{
+    auto vehicle=MultiVehicleManager::instance()->activeVehicle();
+    if(vehicle == nullptr){
+        return nullptr;
+    }
+    auto parameterManager = vehicle->parameterManager();
+    Fact *fact = nullptr;
+    if( report ){
+        fact = parameterManager->getParameter(compId,paramName);
+    } else {
+        bool parameterExist = parameterManager->parameterExists(compId,paramName);
+        if( parameterExist ){
+            fact = parameterManager->getParameter(compId,paramName);
+        }
+    }
+    return fact;
 }
 
 void ParameterSetter::setParameter(int compId, QString paramName, float value)
