@@ -16,6 +16,7 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle *vehicle, QObject *parent
     : APMAutoPilotPlugin(vehicle, parent)
 {
     _onboardComputersMngr = new OnboardComputersManager(vehicle, this);
+    _vioGpsComparer = new VioGpsComparer(vehicle,this);
 }
 
 FoxFourAutoPilotPlugin::~FoxFourAutoPilotPlugin(){

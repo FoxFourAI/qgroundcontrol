@@ -133,17 +133,18 @@ Rectangle {
 
             property real availableWidth: mainLayout.width - leftStatusLayout.width
 
+
+
             FlyViewToolBarIndicators { 
                 id: toolIndicators 
-                anchors.right: foxFourLogo.visible? foxFourLogo.left: parent.right
+                anchors.right: foxFourLogo.visible ? foxFourLogo.left : indicatorsFlickable.right
             }
         }
+
         ParameterDownloadProgress {
             anchors.fill: parent
         }
     }
-
-
 
     Image {
         id:foxFourLogo

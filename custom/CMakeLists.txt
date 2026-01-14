@@ -98,6 +98,8 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ParameterSetter/ParameterSetter.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OnboardComputers/OnboardComputersManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OnboardComputers/OnboardComputersManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/VioGpsComparer/VioGpsComparer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/VioGpsComparer/VioGpsComparer.h
     CACHE INTERNAL "adding custom sources" FORCE
 )
 
