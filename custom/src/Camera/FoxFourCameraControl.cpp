@@ -62,23 +62,12 @@ FoxFourCameraControl::FoxFourCameraControl(const mavlink_camera_information_t *i
     connect(VideoManager::instance(), &VideoManager::recordingChanged,this,&FoxFourCameraControl::_processRecordingChanged);
     qCDebug(CameraControlLog)<< "FoxFour camera control initialized";
     _info.flags |= CAMERA_CAP_FLAGS_HAS_VIDEO_STREAM;
-    OnboardComputersManager* compMgr = dynamic_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager();
-    if (compMgr){
-        int component = compMgr->currentComputerComponent();
-        if (component == 0){
-            qCDebug(CameraControlLog)<<"Cant get component!";
-            return;
-        }
-        ParameterSetter *setter =dynamic_cast<FoxFourPlugin*>(QGCCorePlugin::instance())->parameterSetter();
-        if (!setter){
-            qCDebug(CameraControlLog)<<"Cant get parameterSetter!";
-            return;
-        }
-        _maxZoomLevel = setter->getParameter(component, "VID_ZOOM_MAX").toDouble();
-        _minZoomLevel = setter->getParameter(component, "VID_ZOOM_MIN").toDouble();
-    } else {
-        qCDebug(CameraControlLog)<<"Cant get comp manager!";
-    }
+
+
+
+    _requestZoomBoundriesTimer.setInterval(1000);
+    connect(&_requestZoomBoundriesTimer,&QTimer::timeout,this,&FoxFourCameraControl::_requestZoomBoundries);
+    _requestZoomBoundriesTimer.start();
 }
 
 //-----------------------------------------------------------------------------
@@ -165,6 +154,61 @@ FoxFourCameraControl::_processRecordingChanged()
 }
 
 //-----------------------------------------------------------------------------
+void FoxFourCameraControl::_requestZoomBoundries()
+{
+    if(_requestZoomBoundriesMaxCount <=0){
+        _requestZoomBoundriesTimer.stop();
+        return;
+    }
+    _requestZoomBoundriesMaxCount --;
+    OnboardComputersManager* compMgr = dynamic_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager();
+    if (compMgr){
+
+        //getting computer component.
+        int component = compMgr->currentComputerComponent();
+        if (component == 0){
+            qCDebug(CameraControlLog)<<"Cant get component!";
+            return;
+        }
+        //getting Parameter Manager to sign to values
+        ParameterManager *mgr =_vehicle->parameterManager();
+        if (!mgr){
+            qCDebug(CameraControlLog)<<"Cant get parameterManager!";
+            return;
+        }
+
+        //signing to maximal zoom value
+        if( mgr->parameterExists(component, "VID_ZOOM_MAX")  && _maxZoomFact == nullptr){
+            _maxZoomFact = mgr->getParameter(component, "VID_ZOOM_MAX");
+            connect(_maxZoomFact, &Fact::valueChanged, this, [this](const QVariant& value){
+                    qDebug()<<"changed max";
+                    emit maxZoomLevelChanged();
+            });
+            emit maxZoomLevelChanged();
+        }
+
+        //signing to minimal zoom value
+        if( mgr->parameterExists(component,"VID_ZOOM_MIN") && _minZoomFact == nullptr){
+            _minZoomFact = mgr->getParameter(component,"VID_ZOOM_MIN");
+            connect(_minZoomFact, &Fact::valueChanged, this, [this](const QVariant& value){
+                    qDebug()<<"changed min";
+                    emit minZoomLevelChanged();
+            });
+            emit minZoomLevelChanged();
+        }
+
+        if(_maxZoomFact && _minZoomFact){
+            _requestZoomBoundriesTimer.stop();
+            qCDebug(CameraControlLog)<<"recieved boundries!";
+        }
+
+    } else {
+        qCDebug(CameraControlLog)<<"Cant get comp manager!";
+    }
+
+}
+
+//-----------------------------------------------------------------------------
 bool
 FoxFourCameraControl::stopVideoRecording()
 {
@@ -218,7 +262,8 @@ void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp, bool zoo
             double newZoomLevel = qMin(1.0/rec.width(), 1.0/rec.height());
             if( _zoomLevel != newZoomLevel){
                 _zoomLevel = newZoomLevel;
-                if( (_zoomLevel > _minZoomLevel) != _zoomEnabled) {
+                double minZoomLevel = _minZoomFact ? _minZoomFact->rawValue().toDouble() : _defaultMinZoom;
+                if( (_zoomLevel > minZoomLevel) != _zoomEnabled) {
                     _zoomEnabled = !_zoomEnabled;
                     emit zoomEnabledChanged();
                 }
@@ -282,7 +327,8 @@ void FoxFourCameraControl::setZoomLevel(qreal level)
 {
     VehicleCameraControl::setZoomLevel(level);
     _zoomLevel = level;
-    if((_zoomLevel > _minZoomLevel) != _zoomEnabled){
+    double minZoom = _minZoomFact ? _minZoomFact->rawValue().toDouble() : _defaultMinZoom;
+    if((_zoomLevel > minZoom) != _zoomEnabled){
         _zoomEnabled = !_zoomEnabled;
         emit zoomEnabledChanged();
     }
