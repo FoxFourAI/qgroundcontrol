@@ -4,6 +4,9 @@
         <file alias="FoxFourTextLogo_dark.svg">res/Images/FoxFourTextLogo_dark.svg</file>
         <file alias="keyboard.svg">res/Images/keyboard.svg</file>
     </qresource>
+    <qresource prefix="/Custom/res">
+        <file alias="TrashDelete.svg">res/Images/TrashDelete.svg</file>
+    </qresource>
     <qresource prefix="/Custom/qmlimages">
         <file alias="PaperPlane.svg">res/Images/CustomVehicleIcon.svg</file>
     </qresource>
@@ -15,6 +18,7 @@
         <file alias="QGroundControl/Controls/AppSettings.qml">override/qml/QGroundControl/Controls/AppSettings.qml</file>
         <file alias="QGroundControl/Controls/FlyViewToolBar.qml">override/qml/QGroundControl/Controls/FlyViewToolBar.qml</file>
         <file alias="QGroundControl/Controls/QGCPopupDialog.qml">override/qml/QGroundControl/Controls/QGCPopupDialog.qml</file>
+        <file alias="QGroundControl/Controls/MainStatusIndicator.qml">override/qml/QGroundControl/Controls/MainStatusIndicator.qml</file>
         <file alias="QGroundControl/MainWindow.qml">override/qml/MainWindow.qml</file>
         <file alias="QGroundControl/Controls/ParameterEditor.qml">override/qml/QGroundControl/Controls/ParameterEditor.qml</file>
         <file alias="QGroundControl/MainWindow.qml">override/qml/MainWindow.qml</file>
