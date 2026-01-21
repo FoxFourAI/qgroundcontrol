@@ -330,7 +330,6 @@ Rectangle {
             panelLoader.vehicleComponent = vehicleComponent
             panelLoader.sourceComponent = sourceComponent
         }
-
         property var vehicleComponent
     }
 }
