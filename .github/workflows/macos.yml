@@ -101,7 +101,7 @@ jobs:
         shell: bash
         working-directory: ${{ runner.temp }}/build
         run: |
-          DMG=$(find . -maxdepth 1 -name "MaxOS-QGroundControl-*.dmg" -type f | head -n 1)
+          DMG=$(find . -maxdepth 1 -name "MacOS-QGroundControl-*.dmg" -type f | head -n 1)
           if [ -z "$DMG" ]; then
             echo "DMG not found!"
             exit 1

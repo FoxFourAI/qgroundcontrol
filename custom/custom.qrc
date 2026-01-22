@@ -17,8 +17,6 @@
         <file alias="QGroundControl/AppSettings/SettingsPagesModel.qml">override/qml/QGroundControl/AppSettings/SettingsPagesModel.qml</file>
         <file alias="QGroundControl/Controls/AppSettings.qml">override/qml/QGroundControl/Controls/AppSettings.qml</file>
         <file alias="QGroundControl/Controls/FlyViewToolBar.qml">override/qml/QGroundControl/Controls/FlyViewToolBar.qml</file>
-        <file alias="QGroundControl/Controls/QGCPopupDialog.qml">override/qml/QGroundControl/Controls/QGCPopupDialog.qml</file>
-        <file alias="QGroundControl/Controls/MainStatusIndicator.qml">override/qml/QGroundControl/Controls/MainStatusIndicator.qml</file>
         <file alias="QGroundControl/MainWindow.qml">override/qml/MainWindow.qml</file>
         <file alias="QGroundControl/Controls/ParameterEditor.qml">override/qml/QGroundControl/Controls/ParameterEditor.qml</file>
         <file alias="QGroundControl/MainWindow.qml">override/qml/MainWindow.qml</file>
