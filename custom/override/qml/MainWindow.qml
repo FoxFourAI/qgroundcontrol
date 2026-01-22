@@ -21,6 +21,7 @@ import QGroundControl.FactControls
 import QGroundControl.FlightDisplay
 import QGroundControl.FlightMap
 
+import Custom.Widgets
 /// @brief Native QML top level window
 /// All properties defined here are visible to all QML pages.
 ApplicationWindow {
@@ -422,7 +423,7 @@ ApplicationWindow {
     Component {
         id: simpleMessageDialogComponent
 
-        QGCSimpleMessageDialog {
+        CustomSimpleMessageDialog {
         }
     }
 
