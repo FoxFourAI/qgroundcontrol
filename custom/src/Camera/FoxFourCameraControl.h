@@ -23,6 +23,7 @@ public:
     void setZoomLevel(qreal level);
 
     virtual void handleSettings (const mavlink_camera_settings_t& settings);
+    void handleStorageInfo(const mavlink_storage_information_t &st);
 
     int maxZoomLevel(){
         if( _maxZoomFact ){
@@ -44,6 +45,7 @@ signals:
     void zoomEnabledChanged();
     void minZoomLevelChanged();
     void maxZoomLevelChanged();
+    void storageCapacityChanged(uint32_t total, uint32_t free);
 public slots:
     bool zoomEnabled(){return _zoomEnabled;}
 
@@ -60,4 +62,6 @@ protected:
     QTimer        _requestZoomBoundriesTimer;
     QElapsedTimer _videoRecordTimeElapsedTimer;
     bool _zoomEnabled = false;
+
+
 };
