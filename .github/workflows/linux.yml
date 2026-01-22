@@ -114,19 +114,19 @@ jobs:
       - name: Verify AppImage
         if: matrix.build_type == 'Release' && startsWith(github.ref, 'refs/tags/')
         working-directory: ${{ runner.temp }}/build
-        run: xvfb-run -a ./${{ matrix.package }}-*-x86_64.AppImage --simple-boot-test
+        run: xvfb-run -a ./Linux-${{ matrix.package }}-*.AppImage --simple-boot-test
 
       - name: Run Unit Tests
         if: matrix.build_type == 'Debug' && startsWith(github.ref, 'refs/tags/')
         working-directory: ${{ runner.temp }}/build
-        run: xvfb-run -a ./${{ matrix.package }}-*-x86_64.AppImage --unittest
+        run: xvfb-run -a ./Linux-${{ matrix.package }}-*.AppImage --unittest
 
       - name: Upload Build File
         if: matrix.build_type == 'Release' && startsWith(github.ref, 'refs/tags/')
         uses: ./.github/actions/upload
         with:
-          artifact_name: ${{ matrix.package }}-*-x86_64.AppImage
-          package_name: ${{ matrix.package }}
+          artifact_name: Linux-${{ matrix.package }}-*.AppImage
+          package_name: Linux-${{ matrix.package }}
 #          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
 #          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 #          aws_distribution_id: ${{ secrets.AWS_DISTRIBUTION_ID }}

@@ -66,6 +66,10 @@ Rectangle {
         color:          qgcPal.windowTransparent
     }
 
+    ParameterDownloadProgress {
+        anchors.fill: parent
+    }
+
     RowLayout {
         id:                     mainLayout
         anchors.bottomMargin:   1
@@ -81,7 +85,6 @@ Rectangle {
             Layout.fillHeight:  true
             Layout.alignment:   Qt.AlignLeft
             spacing:            ScreenTools.defaultFontPixelWidth * 2
-
             RowLayout {
                 id:                 mainStatusLayout
                 Layout.fillHeight:  true
@@ -125,26 +128,21 @@ Rectangle {
 
         QGCFlickable {
             id:                     indicatorsFlickable
-            Layout.alignment:       Qt.AlignRight
+            Layout.alignment:       Qt.AlignLeft
             Layout.fillHeight:      true
             Layout.preferredWidth:  Math.min(contentWidth, availableWidth)
             contentWidth:           toolIndicators.width
             flickableDirection:     Flickable.HorizontalFlick
-
+            anchors.left:          leftStatusLayout.right
             property real availableWidth: mainLayout.width - leftStatusLayout.width
 
-            FlyViewToolBarIndicators { 
-                id: toolIndicators 
-                anchors.right: foxFourLogo.visible? foxFourLogo.left: parent.right
+            FlyViewToolBarIndicators {
+                id: toolIndicators
+
             }
         }
-        ParameterDownloadProgress {
-            anchors.fill: parent
-        }
+
     }
-
-
-
     Image {
         id:foxFourLogo
         anchors.right:          parent.right
