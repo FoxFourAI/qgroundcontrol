@@ -28,7 +28,7 @@ file(COPY "${QGC_STAGING_BUNDLE_PATH}" DESTINATION "${QGC_DMG_PATH}")
 # ============================================================================
 
 cmake_path(GET QGC_STAGING_BUNDLE_PATH STEM QGC_TARGET_APP_NAME)
-set(QGC_DMG_NAME "${QGC_TARGET_APP_NAME}-${QGC_CUSTOM_VERSION}.dmg")
+set(QGC_DMG_NAME "MacOS-${QGC_TARGET_APP_NAME}-${QGC_CUSTOM_VERSION}.dmg")
 
 message(STATUS "QGC: Building ${QGC_DMG_NAME}...")
 

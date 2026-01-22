@@ -4,6 +4,9 @@
         <file alias="FoxFourTextLogo_dark.svg">res/Images/FoxFourTextLogo_dark.svg</file>
         <file alias="keyboard.svg">res/Images/keyboard.svg</file>
     </qresource>
+    <qresource prefix="/Custom/res">
+        <file alias="TrashDelete.svg">res/Images/TrashDelete.svg</file>
+    </qresource>
     <qresource prefix="/Custom/qmlimages">
         <file alias="PaperPlane.svg">res/Images/CustomVehicleIcon.svg</file>
     </qresource>
