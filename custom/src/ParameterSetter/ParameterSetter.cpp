@@ -31,16 +31,17 @@ Fact *ParameterSetter::getFact(int compId, QString paramName, bool report)
     return fact;
 }
 
-void ParameterSetter::setParameter(int compId, QString paramName, float value)
+bool ParameterSetter::setParameter(int compId, QString paramName, float value)
 {
     auto vehicle=MultiVehicleManager::instance()->activeVehicle();
     if(vehicle == nullptr){
-        return;
+        return false;
     }
     auto parameterManager = vehicle->parameterManager();
     auto parameter = parameterManager->getParameter(compId,paramName);
     if(parameter == nullptr){
-        return;
+        return false;
     }
    parameter->setRawValue(value);
+   return true;
 }

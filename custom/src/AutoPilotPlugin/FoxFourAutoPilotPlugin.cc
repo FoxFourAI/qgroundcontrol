@@ -11,12 +11,22 @@
 #include "ParameterManager.h"
 #include "QGCCorePlugin.h"
 #include "Vehicle.h"
-
+#include "Camera/FoxFourCameraControl.h"
+#include "QGCCameraManager.h"
+#include "QGCApplication.h"
 FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle *vehicle, QObject *parent)
     : APMAutoPilotPlugin(vehicle, parent)
 {
     _onboardComputersMngr = new OnboardComputersManager(vehicle, this);
     _vioGpsComparer = new VioGpsComparer(vehicle,this);
+    auto cameraMgr =vehicle->cameraManager();
+    connect(cameraMgr, &QGCCameraManager::currentCameraChanged,this,[this,cameraMgr](){
+        if(_cameraConnection){
+            disconnect(_cameraConnection);
+        }
+        auto camera =reinterpret_cast<FoxFourCameraControl*>(cameraMgr->currentCameraInstance());
+        _cameraConnection = connect(camera,&FoxFourCameraControl::storageCapacityChanged,this,&FoxFourAutoPilotPlugin::handleStorageCapacityChanged);
+    });
 }
 
 FoxFourAutoPilotPlugin::~FoxFourAutoPilotPlugin(){
@@ -41,4 +51,12 @@ void FoxFourAutoPilotPlugin::rebootOnboardComputers(){
 
 OnboardComputersManager *FoxFourAutoPilotPlugin::onboardComputersManager(){
     return _onboardComputersMngr;
+}
+QString FoxFourAutoPilotPlugin::storageCapacity(){
+    return _storageCapacityStr;
+}
+void FoxFourAutoPilotPlugin::handleStorageCapacityChanged(uint32_t total, uint32_t free)
+{
+    _storageCapacityStr = qgcApp()->bigSizeMBToString(free).split(' ').first() + " / "+ qgcApp()->bigSizeMBToString(total);
+    emit storageCapacityChanged();
 }

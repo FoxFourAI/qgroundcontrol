@@ -207,6 +207,16 @@ void FoxFourCameraControl::_requestZoomBoundries()
     }
 
 }
+//-----------------------------------------------------------------------------
+
+void FoxFourCameraControl::handleStorageInfo(const mavlink_storage_information_t &st)
+{
+    auto oldCapacity = _storageFree;
+    VehicleCameraControl::handleStorageInfo(st);
+    // if(_storageFree != oldCapacity){
+        emit storageCapacityChanged(_storageTotal,_storageFree);
+    // }
+}
 
 //-----------------------------------------------------------------------------
 bool

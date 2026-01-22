@@ -9,7 +9,7 @@
 message(STATUS "QGC: Creating AppImage...")
 
 set(APPDIR_PATH "${CMAKE_BINARY_DIR}/AppDir")
-set(APPIMAGE_PATH "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${QGC_CUSTOM_VERSION}-${CMAKE_SYSTEM_PROCESSOR}.AppImage")
+set(APPIMAGE_PATH "${CMAKE_BINARY_DIR}/Linux-${CMAKE_PROJECT_NAME}-${QGC_CUSTOM_VERSION}.AppImage")
 
 # ============================================================================
 # Helper Functions
