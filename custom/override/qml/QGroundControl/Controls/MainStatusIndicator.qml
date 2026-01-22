@@ -256,12 +256,21 @@ RowLayout {
                     property var paramSetter:   QGroundControl.corePlugin.parameterSetter
                     property var app:           _activeVehicle.autopilotPlugin
                     property var compId:        globals.activeVehicle.autopilotPlugin.onboardComputersManager.currentComputerComponent
-                    visible: paramSetter.getParameter(compId,"LOG_CLEAN",false) !== ""
                     Layout.fillWidth: true
-                    text: qsTr("Clear logs")
+                    text: qsTr("Clear logs and reboot VGM")
                     onActivated: {
-                        paramSetter.setParameter(compId,"LOG_CLEAN",1)
-                        mainWindow.closeIndicatorDrawer()
+                        if(paramSetter.setParameter(compId,"LOG_CLEAN",1)) {
+                            rebootTimer.start()
+                        }
+                    }
+                }
+                Timer{
+                    property var app:           _activeVehicle.autopilotPlugin
+                    id: rebootTimer
+                    interval: 1000
+                    repeat: false
+                    onTriggered: {
+                        console.log("rebooting")
                         app.rebootOnboardComputers()
                     }
                 }
