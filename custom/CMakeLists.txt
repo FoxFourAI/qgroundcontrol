@@ -62,8 +62,9 @@ set(QML_IMPORT_PATH ${QML_IMPORT_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/res" CACHE S
 qt_add_library(CustomModule STATIC)
 
 # Set resource aliases for custom widgets
-# set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/OnboardComputers/OnboardComputersInfo.qml PROPERTIES QT_RESOURCE_ALIAS /Custom/src/VehicleSetup/OnboardComputersInfo.qml)
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CustomSimpleMessageDialog.qml PROPERTIES QT_RESOURCE_ALIAS CustomSimpleMessageDialog.qml)
 qgc_set_qt_resource_alias(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CustomPopupDialog.qml
      # ${CMAKE_CURRENT_SOURCE_DIR}src/OnboardComputers/OnboardComputersInfo.qml
 )
 
@@ -72,6 +73,8 @@ qt_add_qml_module(CustomModule
     VERSION 1.0
     RESOURCE_PREFIX /qml
     QML_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CustomPopupDialog.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CustomSimpleMessageDialog.qml
 #         ${CMAKE_CURRENT_SOURCE_DIR}/src/OnboardComputers/OnboardComputersInfo.qml
     NO_PLUGIN
     SOURCES
