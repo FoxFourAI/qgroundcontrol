@@ -98,7 +98,12 @@ apt-get install -y -qq --no-install-recommends \
     gstreamer1.0-gl \
     gstreamer1.0-libav \
     gstreamer1.0-rtsp \
-    gstreamer1.0-x
+    gstreamer1.0-x \
+    gstreamer1.0-libcamera \
+    gstreamer1.0-opencv \
+    gstreamer1.0-pipewire \
+    gstreamer1.0-vaapi \
+    gstreamer1.0-tools
 
 # Optional – only present on Ubuntu 22.04+; skip gracefully otherwise
 if apt-cache show gstreamer1.0-qt6 >/dev/null 2>&1; then
