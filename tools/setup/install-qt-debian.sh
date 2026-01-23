@@ -44,21 +44,21 @@ echo "QT_PLUGIN_PATH $QT_PLUGIN_PATH"
 echo "QML2_IMPORT_PATH $QML2_IMPORT_PATH"
 
 #Check Qt dependencies:
-apt-get install -y -qq --no-install-recommends \
-    libqt6core6t64 \
-    libqt6dbus6t64 \
-    libqt6gui6t64 \
-    libqt6network6t64 \
-    libqt6opengl6t64 \
-    libqt6printsupport6t64 \
-    libqt6qml6 \
-    libqt6qmlmodels6 \
-    libqt6quick6 \
-    libqt6svg6 \
-    libqt6waylandclient6 \
-    libqt6waylandcompositor6 \
-    libqt6waylandeglclienthwintegration6 \
-    libqt6waylandeglcompositorhwintegration6 \
-    libqt6widgets6t64 \
-    libqt6wlshellintegration6 \
-    qt6-translations-l10n \
+# apt-get install -y -qq --no-install-recommends \
+#     libqt6core6t64 \
+#     libqt6dbus6t64 \
+#     libqt6gui6t64 \
+#     libqt6network6t64 \
+#     libqt6opengl6t64 \
+#     libqt6printsupport6t64 \
+#     libqt6qml6 \
+#     libqt6qmlmodels6 \
+#     libqt6quick6 \
+#     libqt6svg6 \
+#     libqt6waylandclient6 \
+#     libqt6waylandcompositor6 \
+#     libqt6waylandeglclienthwintegration6 \
+#     libqt6waylandeglcompositorhwintegration6 \
+#     libqt6widgets6t64 \
+#     libqt6wlshellintegration6 \
+#     qt6-translations-l10n \
