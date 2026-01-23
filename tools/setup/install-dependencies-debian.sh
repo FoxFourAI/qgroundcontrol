@@ -99,7 +99,6 @@ apt-get install -y -qq --no-install-recommends \
     gstreamer1.0-libav \
     gstreamer1.0-rtsp \
     gstreamer1.0-x \
-    gstreamer1.0-libcamera \
     gstreamer1.0-opencv \
     gstreamer1.0-pipewire \
     gstreamer1.0-vaapi \
