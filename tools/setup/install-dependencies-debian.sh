@@ -85,7 +85,11 @@ apt-get install -y -qq --no-install-recommends \
 # GStreamer (video/telemetry streaming)
 # --------------------------------------------------------------------
 apt-get install -y -qq --no-install-recommends \
-    gir1.2-gstreamer-1.0 \
+    libgstreamer1.0-dev \
+    libgstreamer-plugins-bad1.0-dev \
+    libgstreamer-plugins-base1.0-dev \
+    libgstreamer-plugins-good1.0-dev \
+    libgstreamer-gl1.0-0 \
     gstreamer1.0-plugins-bad \
     gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-good \
@@ -94,17 +98,7 @@ apt-get install -y -qq --no-install-recommends \
     gstreamer1.0-gl \
     gstreamer1.0-libav \
     gstreamer1.0-rtsp \
-    gstreamer1.0-x \
-    gstreamer1.0-opencv \
-    gstreamer1.0-pipewire \
-    gstreamer1.0-vaapi \
-    gstreamer1.0-tools \
-    gstreamer1.0-alsa \
-    gstreamer1.0-packagekit \
-    gstreamer1.0-plugins-base-apps \
-    gstreamer1.0-qt6 \
-
-
+    gstreamer1.0-x
 
 # Optional – only present on Ubuntu 22.04+; skip gracefully otherwise
 if apt-cache show gstreamer1.0-qt6 >/dev/null 2>&1; then
