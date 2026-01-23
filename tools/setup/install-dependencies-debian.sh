@@ -86,18 +86,6 @@ apt-get install -y -qq --no-install-recommends \
 # --------------------------------------------------------------------
 apt-get install -y -qq --no-install-recommends \
     gir1.2-gstreamer-1.0 \
-    libgstreamer1.0-dev \
-    libgstreamer-plugins-bad1.0-dev \
-    libgstreamer-plugins-base1.0-dev \
-    libgstreamer-plugins-good1.0-dev \
-    libgstreamer-gl1.0-0 \
-    libgstreamer-opencv1.0-0 \
-    libgstreamer-plugins-bad1.0-0 \
-    libgstreamer-plugins-base1.0-0 \
-    libgstreamer-plugins-good1.0-0 \
-    libgstreamer1.0-0 \
-    libgstrtspserver-1.0-0 \
-    libgtk-4-media-gstreamer \
     gstreamer1.0-plugins-bad \
     gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-good \
@@ -115,32 +103,13 @@ apt-get install -y -qq --no-install-recommends \
     gstreamer1.0-packagekit \
     gstreamer1.0-plugins-base-apps \
     gstreamer1.0-qt6 \
-    libqt6core5compat6 \
-    libqt6core6t64 \
-    libqt6dbus6t64 \
-    libqt6gui6t64 \
-    libqt6multimedia6 \
-    libqt6network6t64 \
-    libqt6opengl6t64 \
-    libqt6printsupport6t64 \
-    libqt6qml6 \
-    libqt6qmlmodels6 \
-    libqt6quick6 \
-    libqt6svg6 \
-    libqt6waylandclient6 \
-    libqt6waylandcompositor6 \
-    libqt6waylandeglclienthwintegration6 \
-    libqt6waylandeglcompositorhwintegration6 \
-    libqt6widgets6t64 \
-    libqt6wlshellintegration6 \
-    qt6-translations-l10n \
+
+
 
 # Optional – only present on Ubuntu 22.04+; skip gracefully otherwise
 if apt-cache show gstreamer1.0-qt6 >/dev/null 2>&1; then
     apt-get install -y -qq --no-install-recommends gstreamer1.0-qt6
 fi
-
-
 
 # --------------------------------------------------------------------
 # SDL
