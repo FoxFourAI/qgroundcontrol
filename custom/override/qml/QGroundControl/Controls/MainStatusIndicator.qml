@@ -126,7 +126,7 @@ RowLayout {
             color:                  getIconColor()
             sourceSize.width:       width
             fillMode:               Image.PreserveAspectFit
-            visible:                _activeVehicle && _activeVehicle.messageCount > 0
+            visible:                _activeVehicle
 
             function getIconColor() {
                 let iconColor = qgcPal.windowTransparentText

@@ -18,13 +18,14 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle *vehicle, QObject *parent
     : APMAutoPilotPlugin(vehicle, parent)
 {
     _onboardComputersMngr = new OnboardComputersManager(vehicle, this);
+    _vioGpsComparer = new VioGpsComparer(vehicle,this);
     auto cameraMgr =vehicle->cameraManager();
     connect(cameraMgr, &QGCCameraManager::currentCameraChanged,this,[this,cameraMgr](){
-        if(_cameraConnnection){
-            disconnect(_cameraConnnection);
+        if(_cameraConnection){
+            disconnect(_cameraConnection);
         }
         auto camera =reinterpret_cast<FoxFourCameraControl*>(cameraMgr->currentCameraInstance());
-        _cameraConnnection = connect(camera,&FoxFourCameraControl::storageCapacityChanged,this,&FoxFourAutoPilotPlugin::handleStorageCapacityChanged);
+        _cameraConnection = connect(camera,&FoxFourCameraControl::storageCapacityChanged,this,&FoxFourAutoPilotPlugin::handleStorageCapacityChanged);
     });
 }
 

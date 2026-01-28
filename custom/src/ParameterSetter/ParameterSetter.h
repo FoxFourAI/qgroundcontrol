@@ -6,6 +6,7 @@ class ParameterSetter: public QObject{
     Q_OBJECT
 public:
     ParameterSetter(QObject* parent =nullptr):QObject(parent){};
+    Q_INVOKABLE bool parameterExits(int compId, QString paramName);
     Q_INVOKABLE QString getParameter(int compId,QString paramName, bool report = true);
     Q_INVOKABLE Fact* getFact(int compId, QString paramName, bool report = true);
     Q_INVOKABLE bool setParameter(int compId,QString paramName,float value);
