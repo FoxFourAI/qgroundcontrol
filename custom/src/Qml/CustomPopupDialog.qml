@@ -73,19 +73,6 @@ Popup {
 
     background: Item{}
 
-    QGCMouseArea {
-        width:  parent.width
-        height: parent.height
-        onEntered: {
-            console.log("entered")
-            closeTimer.stop()
-        }
-        onExited: {
-            console.log("leaved")
-            closeTimer.start()
-        }
-    }
-
     Timer{
         id: closeTimer
         interval: root._closeInterval
@@ -284,6 +271,18 @@ Popup {
                             }
                             event.accepted = true
                         }
+                    }
+                }
+                QGCMouseArea {
+                    width:  parent.width
+                    height: parent.height
+                    onClicked: {
+                        console.log("entered")
+                        closeTimer.stop()
+                    }
+                    onReleased: {
+                        console.log("leaved")
+                        closeTimer.start()
                     }
                 }
             }

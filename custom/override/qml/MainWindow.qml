@@ -656,14 +656,14 @@ ApplicationWindow {
 
                         QGCLabel {
                             id:                     versionLabel
-                            text:                   qsTr("%1 Version").arg(QGroundControl.appName)
+                            text:                   qsTr("QGroundControl\n %1 Version").arg(QGroundControl.corePlugin.version)
                             font.pointSize:         ScreenTools.smallFontPointSize
                             wrapMode:               QGCLabel.WordWrap
                             Layout.maximumWidth:    parent.width
                             Layout.alignment:       Qt.AlignHCenter
                         }
 
-                        QGCLabel {
+                        /*QGCLabel {
                             text:                   QGroundControl.qgcVersion
                             font.pointSize:         ScreenTools.smallFontPointSize
                             wrapMode:               QGCLabel.WrapAnywhere
@@ -703,7 +703,7 @@ ApplicationWindow {
                                     showTouchAreasNotification.open()
                                 }
                             }
-                        }
+                        }*/
                     }
                 }
             }

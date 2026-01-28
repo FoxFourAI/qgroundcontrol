@@ -3,10 +3,8 @@
         <file alias="FoxFourTextLogo_light.svg">res/Images/FoxFourTextLogo_light.svg</file>
         <file alias="FoxFourTextLogo_dark.svg">res/Images/FoxFourTextLogo_dark.svg</file>
         <file alias="keyboard.svg">res/Images/keyboard.svg</file>
-        <file alias="wifi-0.svg">res/Images/wifi-0.svg</file>
-        <file alias="wifi-1.svg">res/Images/wifi-1.svg</file>
-        <file alias="wifi-2.svg">res/Images/wifi-2.svg</file>
-        <file alias="wifi-3.svg">res/Images/wifi-3.svg</file>
+        <file alias="eye-1.svg">res/Images/eye-opened.svg</file>
+        <file alias="eye-0.svg">res/Images/eye-closed.svg</file>
     </qresource>
     <qresource prefix="/Custom/res">
         <file alias="TrashDelete.svg">res/Images/TrashDelete.svg</file>
@@ -24,9 +22,9 @@
         <file alias="QGroundControl/Controls/AppSettings.qml">override/qml/QGroundControl/Controls/AppSettings.qml</file>
         <file alias="QGroundControl/Controls/FlyViewToolBar.qml">override/qml/QGroundControl/Controls/FlyViewToolBar.qml</file>
         <file alias="QGroundControl/Controls/MainStatusIndicator.qml">override/qml/QGroundControl/Controls/MainStatusIndicator.qml</file>
-        <file alias="QGroundControl/MainWindow.qml">override/qml/MainWindow.qml</file>
+        <file alias="QGroundControl/Controls/VehicleMessageList.qml">override/qml/QGroundControl/Controls/VehicleMessageList.qml</file>
         <file alias="QGroundControl/Controls/ParameterEditor.qml">override/qml/QGroundControl/Controls/ParameterEditor.qml</file>
-        <file alias="QGroundControl/VehicleSetup/SetupView.qml">override/qml/QGroundControl/VehicleSetup/SetupView.qml</file>
+        <file alias="QGroundControl/MainWindow.qml">override/qml/MainWindow.qml</file>
         <file alias="QGroundControl/FlightDisplay/FlyViewVideo.qml">override/qml/QGroundControl/FlightDisplay/FlyViewVideo.qml</file>
         <file alias="QGroundControl/FlightDisplay/FlyViewTopRightColumnLayout.qml">override/qml/QGroundControl/FlightDisplay/FlyViewTopRightColumnLayout.qml</file>
         <file alias="QGroundControl/FlightDisplay/FlyViewMap.qml">override/qml/QGroundControl/FlightDisplay/FlyViewMap.qml</file>
@@ -34,6 +32,7 @@
         <file alias="QGroundControl/FlightDisplay/FlightDisplayViewVideo.qml">override/qml/QGroundControl/FlightDisplay/FlightDisplayViewVideo.qml</file>
         <file alias="QGroundControl/FlightDisplay/GuidedActionsController.qml">override/qml/QGroundControl/FlightDisplay/GuidedActionsController.qml</file>
         <file alias="QGroundControl/FlightMap/Widgets/PhotoVideoControl.qml">override/qml/QGroundControl/FlightMap/Widgets/PhotoVideoControl.qml</file>
+        <file alias="QGroundControl/VehicleSetup/SetupView.qml">override/qml/QGroundControl/VehicleSetup/SetupView.qml</file>
         <file alias="OnboardComputers/OnboardComputersInfo.qml">res/Custom/OnboardComputers/OnboardComputersInfo.qml</file>
         <file alias="Toolbar/VioIndicator.qml">res/Toolbar/VioIndicator.qml</file>
     </qresource>
