@@ -17,7 +17,6 @@ import QGroundControl.Controls
 
 
 
-ScrollView{
 TextArea {
     id:                     messageText
     Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 50
@@ -109,5 +108,4 @@ TextArea {
             }
         }
     }
-}
 }
