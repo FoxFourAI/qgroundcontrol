@@ -44,7 +44,6 @@ private:
     int _refreshInterval = 2000;
     int _vioStatus = -1;
     QGeoCoordinate  _vioCoordinate;
-    QMetaObject::Connection _ekfSwitchConnection;
     QTimer _refreshTimer;
     Vehicle *_vehicle = nullptr;
 };

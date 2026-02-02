@@ -42,10 +42,22 @@ ToolIndicatorPage{
                 LabelledLabel{
                     label: qsTr("RMSE:")
                     labelText: root.comparer.RMSEError.toFixed(2) + " m"
+                    MouseArea{
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onEntered: ToolTip.show(qsTr("Root Mean Squared Error"))
+                        onExited: ToolTip.hide()
+                    }
                 }
                 LabelledLabel{
                     label: qsTr("ATE:")
                     labelText: root.comparer.ATEError.toFixed(2) + " m"
+                    MouseArea{
+                        anchors.fill:parent
+                        hoverEnabled: true
+                        onEntered: ToolTip.show(qsTr("Absolute Trajectory Error"))
+                        onExited: ToolTip.hide()
+                    }
                 }
             }
         }
