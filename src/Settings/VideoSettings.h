@@ -28,6 +28,7 @@ public:
     DEFINE_SETTINGFACT(rtspUrl)
     DEFINE_SETTINGFACT(aspectRatio)
     DEFINE_SETTINGFACT(videoFit)
+    DEFINE_SETTINGFACT(videoToolBarOverlap)
     DEFINE_SETTINGFACT(gridLines)
     DEFINE_SETTINGFACT(showRecControl)
     DEFINE_SETTINGFACT(recordingFormat)
