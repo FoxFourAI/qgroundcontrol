@@ -3,6 +3,12 @@
 #include "MultiVehicleManager.h"
 
 
+
+bool ParameterSetter::parameterExits(int compId, QString paramName)
+{
+    return getFact(compId, paramName, false) != nullptr;
+}
+
 QString ParameterSetter::getParameter(int compId, QString paramName, bool report)
 {
     auto parameter = getFact(compId, paramName, report);

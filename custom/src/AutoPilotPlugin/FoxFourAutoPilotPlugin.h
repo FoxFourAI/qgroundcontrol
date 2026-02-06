@@ -2,12 +2,14 @@
 
 #include "APM/APMAutoPilotPlugin.h"
 #include "OnboardComputersManager.h"
+#include "VioGpsComparer/VioGpsComparer.h"
 class Vehicle;
 class FoxFourCameraControl;
 class FoxFourAutoPilotPlugin : public APMAutoPilotPlugin
 {
     Q_OBJECT
     Q_PROPERTY(OnboardComputersManager* onboardComputersManager READ onboardComputersManager MEMBER _onboardComputersMngr)
+    Q_PROPERTY(VioGpsComparer *vioGpsComparer MEMBER _vioGpsComparer)
     Q_PROPERTY(QString storageCapacity READ storageCapacity NOTIFY storageCapacityChanged)
 
 public:
@@ -25,7 +27,8 @@ private slots:
     void handleStorageCapacityChanged(uint32_t total, uint32_t free);
 private:
     QVariantList _components;
-    OnboardComputersManager *_onboardComputersMngr;
+    OnboardComputersManager *_onboardComputersMngr = nullptr;
+    VioGpsComparer *_vioGpsComparer = nullptr;
     QString _storageCapacityStr = "0 / 0 MB";
-    QMetaObject::Connection _cameraConnnection;
+    QMetaObject::Connection _cameraConnection;
 };

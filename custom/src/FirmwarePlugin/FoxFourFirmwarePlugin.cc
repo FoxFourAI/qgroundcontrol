@@ -20,3 +20,12 @@ MavlinkCameraControl *FoxFourFirmwarePlugin::createCameraControl(const mavlink_c
 {
     return new FoxFourCameraControl(info,vehicle,compID,parent);
 }
+
+const QVariantList &FoxFourFirmwarePlugin::toolIndicators(const Vehicle *vehicle)
+{
+    if(_toolIndicatorList.isEmpty()){
+        _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/VioIndicator.qml")));
+        _toolIndicatorList.append(ArduCopterFirmwarePlugin::toolIndicators(vehicle));
+    }
+    return _toolIndicatorList;
+}

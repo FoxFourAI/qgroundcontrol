@@ -116,14 +116,14 @@ Rectangle {
                 visible:            _activeVehicle
             }
 
-            QGCLabel{
-                // Layout.fillHeight:  true
-                Layout.alignment:   Qt.AlignVCenter
-                font.pointSize:     ScreenTools.defaultFontPointSize
-                font.family:        ScreenTools.normalFontFamily
-                font.weight:        Font.Normal
-                text: qsTr("v"+QGroundControl.corePlugin.version)
-            }
+            // QGCLabel{
+            //     // Layout.fillHeight:  true
+            //     Layout.alignment:   Qt.AlignVCenter
+            //     font.pointSize:     ScreenTools.defaultFontPointSize
+            //     font.family:        ScreenTools.normalFontFamily
+            //     font.weight:        Font.Normal
+            //     text: qsTr("v"+QGroundControl.corePlugin.version)
+            // }
         }
 
         QGCFlickable {
@@ -148,7 +148,7 @@ Rectangle {
         anchors.right:          parent.right
         anchors.top:            parent.top
         anchors.bottom:         parent.bottom
-        anchors.margins:        ScreenTools.defaultFontPixelHeight * 0.66
+        anchors.margins:        ScreenTools.defaultFontPixelHeight / 2
         source:                 _outdoorPalette ? "/custom/img/FoxFourTextLogo_dark.svg" : "/custom/img/FoxFourTextLogo_light.svg"
         visible:                _computersManager &&
                                 // checkForVGM(_computersManager.computersInfo) &&
