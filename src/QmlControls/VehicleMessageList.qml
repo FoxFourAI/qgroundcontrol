@@ -17,7 +17,6 @@ import QGroundControl.Controls
 
 
 
-
 TextArea {
     id:                     messageText
     Layout.preferredWidth:  ScreenTools.defaultFontPixelWidth * 50
