@@ -54,15 +54,16 @@ Item{
         Column{
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            width: Math.max(ateText.width,rmseText.width)
+            width: Math.max(currentErrorText.width,rmseText.width)
             spacing: ScreenTools.defaultFontPixelWidth / 2
             QGCLabel{
                 id:     rmseText
                 text: qsTr(root.comparer.RMSEError.toFixed(2) + "m")
             }
             QGCLabel{
-                id:     ateText
-                text: qsTr(root.comparer.ATEError.toFixed(2) + "m")
+                property double error : root.comparer.currentError
+                id:     currentErrorText
+                text: qsTr(error.toFixed(2) + "m")
 
             }
         }

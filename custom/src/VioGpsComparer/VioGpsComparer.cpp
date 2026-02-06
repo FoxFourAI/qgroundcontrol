@@ -4,6 +4,8 @@
 #include "OnboardComputersManager.h"
 #include "FoxFourAutoPilotPlugin.h"
 #include "FoxFourPlugin.h"
+
+
 VioGpsComparer::VioGpsComparer(Vehicle *vehicle, QObject *parent): QObject(parent){
 
     _vehicle = vehicle;
@@ -19,15 +21,18 @@ VioGpsComparer::VioGpsComparer(Vehicle *vehicle, QObject *parent): QObject(paren
         }
         _vioStatus = fact->rawValue().toInt();
         emit vioStatusChanged();
-        connect(fact,&Fact::rawValueChanged,this,[this](const QVariant& value){
+        connect(fact,&Fact::rawValueChanged, this, [this](const QVariant& value){
             _vioStatus = value.toInt();
             emit vioStatusChanged();
-            if( _vioStatus ){
-                _RMSEAvr = 0;
-                _RMSECount = 0;
+            if( _vioStatus == 1 ){
+                updateATE();
+                clearRMSE();
             }
         });
-        _refreshTimer.start();
+    });
+    //connect updateTimer to parameterReady
+    connect(_vehicle->parameterManager(),&ParameterManager::parametersReadyChanged,this,[this](bool ready){
+        ready ? _refreshTimer.start() : _refreshTimer.stop();
     });
 }
 
@@ -39,7 +44,8 @@ void VioGpsComparer::_handleTrajectory(QGeoCoordinate coordinate, uint8_t src){
     switch (src){
     case MAVLINK_MSG_ID_GPS_RAW_INT:
         if(_vioStatus == 1){
-            calculateATE(coordinate);
+            _gpsCoordinate = coordinate;
+            calculateRMSE(coordinate);
         }
         break;
     case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
@@ -48,15 +54,17 @@ void VioGpsComparer::_handleTrajectory(QGeoCoordinate coordinate, uint8_t src){
     default:
         return;
     }
-}
 
-void VioGpsComparer::_handleArmedChanged(bool armed)
-{
-    //if the vehicle disarmed, then we clear the RMSE error
-    if(!armed){
-        _RMSEAvr = 0;
-        _RMSECount = 0;
+    //calculating current error
+    double error = 0;
+    error = _vioCoordinate.distanceTo(_gpsCoordinate);
+    if(error == _currentError){
+        return;
     }
+    _currentError = error;
+    emit currentErrorChanged();
+
+
 }
 
 void VioGpsComparer::_handleTimeout()
@@ -73,15 +81,15 @@ void VioGpsComparer::_handleTimeout()
     }
 }
 
-void VioGpsComparer::calculateATE(const QGeoCoordinate &coordinate){
-    _ATESumm += calculateRMSE(coordinate);
+void VioGpsComparer::updateATE(){
+    _ATESumm += RMSEError();
     _ATECount++;
     emit ATEErrorChanged();
 }
 
-double VioGpsComparer::calculateRMSE(const QGeoCoordinate &coordinate){
+void VioGpsComparer::calculateRMSE(const QGeoCoordinate &coordinate){
     if (!_vioCoordinate.isValid() || !coordinate.isValid()){
-        return 0.0;
+        return;
     }
 
     double distance = _vioCoordinate.distanceTo(coordinate); // meters
@@ -92,9 +100,18 @@ double VioGpsComparer::calculateRMSE(const QGeoCoordinate &coordinate){
     // Incremental mean of squared errors
     _RMSEAvr += (sqError - _RMSEAvr) / _RMSECount;
 
-    // RMSE = sqrt(mean squared error)
-    double rmseError = std::sqrt(_RMSEAvr);
     emit RMSEErrorChanged();
-    return rmseError;
 
+}
+
+void VioGpsComparer::clearRMSE()
+{
+    _RMSEAvr = 0;
+    _RMSECount = 0;
+    emit RMSEErrorChanged();
+}
+
+void VioGpsComparer::clearCurrentError(){
+    _currentError = 0;
+    emit currentErrorChanged();
 }

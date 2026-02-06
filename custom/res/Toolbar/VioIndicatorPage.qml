@@ -40,6 +40,16 @@ ToolIndicatorPage{
                 }
 
                 LabelledLabel{
+                    label: qsTr("Current Error:")
+                    labelText: root.comparer.currentError.toFixed(2) + " m"
+                    MouseArea{
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onEntered: ToolTip.show(qsTr("Current distance between gps and vio positions"))
+                        onExited: ToolTip.hide()
+                    }
+                }
+                LabelledLabel{
                     label: qsTr("RMSE:")
                     labelText: root.comparer.RMSEError.toFixed(2) + " m"
                     MouseArea{
