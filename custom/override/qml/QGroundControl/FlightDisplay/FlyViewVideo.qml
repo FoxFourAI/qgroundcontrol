@@ -54,8 +54,10 @@ Item {
 
     //-- Video Streaming
     FlightDisplayViewVideo {
+        property bool toolBarOverlap: QGroundControl.settingsManager.videoSettings.videoToolBarOverlap.rawValue
         id:             videoStreaming
         anchors.fill:   parent
+        anchors.topMargin: toolBarOverlap ? 0 : QGroundControl.videoManager.fullScreen || pipState.state == pipState.pipState ? 0: ScreenTools.toolbarHeight
         useSmallFont:   _root.pipState.state !== _root.pipState.fullState
         visible:        QGroundControl.videoManager.isStreamSource
     }
@@ -170,7 +172,7 @@ Item {
             }
             //calculate offset between video stream rect and background (black stripes)
             let offset_x = (parent.width - videoStreaming.getWidth()) / 2
-            let offset_y = (parent.height - videoStreaming.getHeight()) / 2
+            let offset_y = (parent.height - videoStreaming.getHeight() + videoStreaming.anchors.topMargin) / 2
 
             //calculate offset between video stream rect and background (black stripes)
             x0 -= offset_x

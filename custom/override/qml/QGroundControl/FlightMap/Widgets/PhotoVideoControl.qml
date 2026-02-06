@@ -417,7 +417,7 @@ Rectangle {
                         flow:   GridLayout.TopToBottom
                         rows:   dynamicRows + _camera.activeSettings.length
 
-                        property int dynamicRows: 10
+                        property int dynamicRows: 11
 
                         // First column
                         QGCLabel {
@@ -473,6 +473,11 @@ Rectangle {
 
                         QGCLabel {
                             text:               qsTr("Video Screen Fit")
+                            visible:            _camera.hasVideoStream
+                            onVisibleChanged:   gridLayout.dynamicRows += visible ? 1 : -1
+                        }
+                        QGCLabel {
+                            text:               qsTr("Video ToolBar Overlap")
                             visible:            _camera.hasVideoStream
                             onVisibleChanged:   gridLayout.dynamicRows += visible ? 1 : -1
                         }
@@ -614,6 +619,12 @@ Rectangle {
                             fact:               _videoSettings.videoFit
                             indexModel:         false
                             visible:            _camera.hasVideoStream
+                        }
+
+                        QGCSwitch{
+                            checked:    _videoSettings.videoToolBarOverlap.rawValue
+                            visible:    _camera.hasVideoStream
+                            onClicked:  _videoSettings.videoToolBarOverlap.rawValue = checked ? 1 : 0
                         }
 
                         QGCButton {
