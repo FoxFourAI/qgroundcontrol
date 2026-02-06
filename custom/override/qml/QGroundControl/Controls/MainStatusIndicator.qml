@@ -237,10 +237,10 @@ RowLayout {
                     on_RgLinkNamesChanged:  updateComboModel()
                     on_RgLinkStatusChanged: updateComboModel()
 
-                    onActivated:    (index) => { 
-                        _activeVehicle.vehicleLinkManager.primaryLinkName = _rgLinkNames[index]; currentIndex = -1
-                        mainWindow.closeIndicatorDrawer()
-                    }
+                    onActivated:    (index) => {
+                                        _activeVehicle.vehicleLinkManager.primaryLinkName = _rgLinkNames[index]; currentIndex = -1
+                                        mainWindow.closeIndicatorDrawer()
+                                    }
                 }
             }
 
@@ -249,7 +249,7 @@ RowLayout {
                 LabelledLabel {
                     property var app:           _activeVehicle.autopilotPlugin
                     Layout.fillWidth: true
-                    label: qsTr("SD card space available:")
+                    label: qsTr("Space available:")
                     labelText: app.storageCapacity
                 }
                 QGCDelayButton {
@@ -278,11 +278,45 @@ RowLayout {
 
             SettingsGroupLayout {
                 //Layout.fillWidth:   true
+                showDividers: false
                 heading:            qsTr("Vehicle Messages")
                 visible:            !vehicleMessageList.noMessages
+                Item{
+                    Layout.preferredWidth:      ScreenTools.defaultFontPixelWidth * 50
+                    height:                     ScreenTools.defaultFontPixelHeight * 20
+                    VehicleMessageList {
+                        id: vehicleMessageList
+                    }
+                    Rectangle {
+                        id: clearLogButton
+                        anchors.right:              parent.right
+                        anchors.top:                parent.top
+                        width:                      ScreenTools.defaultFontPixelHeight * 1.25
+                        height:                     width
+                        radius:                     width / 2
+                        color:                      QGroundControl.globalPalette.button
+                        border.color:               QGroundControl.globalPalette.buttonText
+                        visible:                    !noMessages
+                        QGCColoredImage {
+                            anchors.margins:    ScreenTools.defaultFontPixelHeight * 0.25
+                            anchors.centerIn:   parent
+                            anchors.fill:       parent
+                            sourceSize.height:  height
+                            source:             "/res/TrashDelete.svg"
+                            fillMode:           Image.PreserveAspectFit
+                            mipmap:             true
+                            smooth:             true
+                            color:              qgcPal.text
+                        }
 
-                VehicleMessageList { 
-                    id: vehicleMessageList
+                        QGCMouseArea {
+                            fillItem: parent
+                            onClicked: {
+                                _activeVehicle.clearMessages()
+                                mainWindow.closeIndicatorDrawer()
+                            }
+                        }
+                    }
                 }
             }
 
@@ -367,16 +401,16 @@ RowLayout {
                         property var fact:  null
 
                         onLinkActivated: (link) => {
-                            if (link.startsWith('param://')) {
-                                var paramName = link.substr(8);
-                                fact = controller.getParameterFact(-1, paramName, true)
-                                if (fact != null) {
-                                    paramEditorDialogComponent.createObject(mainWindow).open()
-                                }
-                            } else {
-                                Qt.openUrlExternally(link);
-                            }
-                        }
+                                             if (link.startsWith('param://')) {
+                                                 var paramName = link.substr(8);
+                                                 fact = controller.getParameterFact(-1, paramName, true)
+                                                 if (fact != null) {
+                                                     paramEditorDialogComponent.createObject(mainWindow).open()
+                                                 }
+                                             } else {
+                                                 Qt.openUrlExternally(link);
+                                             }
+                                         }
 
                         FactPanelController {
                             id: controller
@@ -438,7 +472,7 @@ RowLayout {
                     QGCLabel { Layout.fillWidth: true; text: qsTr("Vehicle Parameters") }
                     QGCButton {
                         text: qsTr("Configure")
-                        onClicked: {                            
+                        onClicked: {
                             mainWindow.showVehicleConfigParametersPage()
                             mainWindow.closeIndicatorDrawer()
                         }
@@ -447,7 +481,7 @@ RowLayout {
                     QGCLabel { Layout.fillWidth: true; text: qsTr("Vehicle Configuration") }
                     QGCButton {
                         text: qsTr("Configure")
-                        onClicked: {                            
+                        onClicked: {
                             mainWindow.showVehicleConfig()
                             mainWindow.closeIndicatorDrawer()
                         }

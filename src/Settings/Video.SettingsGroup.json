@@ -63,6 +63,13 @@
     "default":     1
 },
 {
+    "name":         "videoToolBarOverlap",
+    "shortDesc":    "ToolBar overlap the video",
+    "longDesc":     "Top ToolBar will overlap the video if enabled.",
+    "type":         "bool",
+    "default":      true
+},
+{
     "name":             "showRecControl",
     "shortDesc": "Show Video Record Control",
     "longDesc":  "Show recording control in the UI.",
