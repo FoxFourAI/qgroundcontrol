@@ -1,123 +1,109 @@
-name: Linux (Manual)
+name: Linux <Manual>
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    name: Build ${{ matrix.arch }} ${{ matrix.build_type }}
+    runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false
       matrix:
-        BuildType: [ Release ]
+        build_type: [Release] #Debug,
+        os: [ubuntu-24.04]
+        include:
+          - os: ubuntu-24.04
+            package: QGroundControl
+            host: linux
+            arch: linux_gcc_64
 
-    env:
-      ARTIFACT: QGroundControl-x86_64.AppImage
-      QT_VERSION: 6.6.3
+        exclude:
+          - os: ubuntu-24.04-arm
+            build_type: Debug
 
     defaults:
       run:
         shell: bash
 
-    steps:
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
-        continue-on-error: true
+    env:
+      QT_VERSION: 6.10.0
 
+    steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
-          fetch-tags: true
           fetch-depth: 0
+
+      - name: Initial Setup
+        uses: ./.github/actions/common
 
       - name: Install Dependencies
         run: |
           chmod a+x ./tools/setup/install-dependencies-debian.sh
           sudo ./tools/setup/install-dependencies-debian.sh
-          python3 -m pip install --user ninja cmake
 
-      - name: Install Vulkan
-        run: |
-          wget -qO - http://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -
-          sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.283-focal.list https://packages.lunarg.com/vulkan/1.3.283/lunarg-vulkan-1.3.283-focal.list
-          sudo apt update
-          sudo apt install vulkan-sdk
-
-      - name: Install Compiler
-        run: |
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-          sudo apt install gcc-13 g++-13
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100 --slave /usr/bin/g++ g++ /usr/bin/g++-13 --slave /usr/bin/gcov gcov /usr/bin/gcov-13
-          sudo update-alternatives --set gcc /usr/bin/gcc-13
-
-      - name: Install CCache
-        run: |
-          wget --quiet https://github.com/ccache/ccache/releases/download/v4.9.1/ccache-4.9.1-linux-x86_64.tar.xz
-          tar -xvf ccache-*-linux-x86_64.tar.xz
-          cd ccache-*-linux-x86_64
-          sudo make install
-
-      - name: Install Unit-Test Dependencies
-        if: matrix.BuildType == 'Debug'
-        run: sudo apt install xvfb x11-xserver-utils
-
-      - name: Set Up Cache
-        uses: hendrikmuhs/ccache-action@v1.2
+      - name: Setup Caching
+        uses: ./.github/actions/cache
         with:
-          create-symlink: true
-          key: ${{ runner.os }}-${{ matrix.BuildType }}
-          restore-keys: ${{ runner.os }}-${{ matrix.BuildType }}
-          max-size: 1G
-          append-timestamp: false
-          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+          host: ${{ matrix.host }}
+          target: ${{ matrix.arch }}
+          build-type: ${{ matrix.build_type }}
+          cpm-modules: ${{ runner.temp }}/build/cpm_modules
 
-      - name: Install Qt
+      - name: Install Qt for Linux
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
-          aqtversion: ==3.1.*
-          host: linux
+          host: ${{ matrix.host }}
           target: desktop
+          arch: ${{ matrix.arch }}
           dir: ${{ runner.temp }}
-          modules: qtcharts qtlocation qtpositioning qtspeech qt5compat qtmultimedia qtserialport qtimageformats qtshadertools qtconnectivity qtquick3d qtsensors
-          setup-python: true
-          cache: ${{ github.ref == 'refs/heads/master' && github.event_name != 'pull_request' }}
+          modules: qtcharts qtlocation qtpositioning qtspeech qt5compat qtmultimedia qtserialport qtimageformats qtshadertools qtconnectivity qtquick3d qtsensors qtscxml
+          setup-python: false
+          cache: true
 
-      - name: Installation Cleanup
-        run: sudo apt clean
-
-    # - name: Build GStreamer
-    #   uses: ./.github/actions/gstreamer
-
-      - name: Create build directory
-        run:  mkdir ${{ runner.temp }}/shadow_build_dir
+      # - name: Build GStreamer
+      #   uses: ./.github/actions/gstreamer
 
       - name: Configure
-        working-directory: ${{ runner.temp }}/shadow_build_dir
-        run: cmake -S ${{ github.workspace }} -B . -G Ninja
-              -DCMAKE_BUILD_TYPE=${{ matrix.BuildType }}
-              -DQGC_BUILD_TESTING=${{ matrix.BuildType == 'Debug' && 'ON' || 'OFF' }}
+        working-directory: ${{ runner.temp }}/build
+        run: ${{ env.QT_ROOT_DIR }}/bin/qt-cmake -S ${{ github.workspace }} -B . -G Ninja
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+              -DQGC_BUILD_TESTING=${{ matrix.build_type == 'Debug' && 'ON' || 'OFF' }}
               -DQGC_STABLE_BUILD=${{ github.ref_type == 'tag' || contains(github.ref, 'Stable') && 'ON' || 'OFF' }}
 
       - name: Build
-        working-directory: ${{ runner.temp }}/shadow_build_dir
-        run: cmake --build . --target all --config ${{ matrix.BuildType }}
+        working-directory: ${{ runner.temp }}/build
+        run: cmake --build . --target all --config ${{ matrix.build_type }} --parallel
+
+      - name: Verify Executable
+        if: matrix.build_type == 'Release'
+        working-directory: ${{ runner.temp }}/build/${{ matrix.build_type }}
+        run: xvfb-run -a ./${{ matrix.package }} --simple-boot-test
 
       - name: Create AppImage
-        working-directory: ${{ runner.temp }}/shadow_build_dir
-        run: cmake --install . --config ${{ matrix.BuildType }}
+        working-directory: ${{ runner.temp }}/build
+        run: cmake --install . --config ${{ matrix.build_type }}
 
-      - name: Run unit tests
-        if: matrix.BuildType == 'Debug'
-        working-directory:  ${{ runner.temp }}/shadow_build_dir
-        run: xvfb-run -a ./${{ env.ARTIFACT }} --unittest
+      - name: Verify AppImage
+        if: matrix.build_type == 'Release'        working-directory: ${{ runner.temp }}/build
+        run: xvfb-run -a ./Linux-${{ matrix.package }}-*.AppImage --simple-boot-test
+
+      - name: Run Unit Tests
+        if: matrix.build_type == 'Debug'
+        working-directory: ${{ runner.temp }}/build
+        run: xvfb-run -a ./Linux-${{ matrix.package }}-*.AppImage --unittest
 
       - name: Upload Build File
+        if: matrix.build_type == 'Release'
         uses: ./.github/actions/upload
-        if: matrix.BuildType == 'Release'
         with:
-          artifact_name: ${{ env.ARTIFACT }}
-          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          source: ''
+          artifact_name: Linux-${{ matrix.package }}-*.AppImage
+          package_name: Linux-${{ matrix.package }}
+#          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws_distribution_id: ${{ secrets.AWS_DISTRIBUTION_ID }}
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
