@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        BuildType: Release
+        BuildType: [ Release ]
 
     env:
       ARTIFACT: QGroundControl-x86_64.AppImage
