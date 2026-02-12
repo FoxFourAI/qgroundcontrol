@@ -89,7 +89,8 @@ jobs:
         run: cmake --install . --config ${{ matrix.build_type }}
 
       - name: Verify AppImage
-        if: matrix.build_type == 'Release'        working-directory: ${{ runner.temp }}/build
+        if: matrix.build_type == 'Release'
+        working-directory: ${{ runner.temp }}/build
         run: xvfb-run -a ./Linux-${{ matrix.package }}-*.AppImage --simple-boot-test
 
       - name: Run Unit Tests
