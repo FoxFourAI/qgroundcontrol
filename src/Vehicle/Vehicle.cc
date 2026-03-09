@@ -282,11 +282,11 @@ void Vehicle::_commonInit(LinkInterface* link)
     _ftpManager                     = new FTPManager                    (this);
 
     _vehicleLinkManager = new VehicleLinkManager(this);
-    connect(_vehicleLinkManager,&VehicleLinkManager::allLinksRemoved,this,[this](){
-        if(_parameterFilePath.isEmpty()){
+    connect(_vehicleLinkManager, &VehicleLinkManager::allLinksRemoved, this, [this](){
+        if (_parameterFilePath.isEmpty()) {
             return;
         }
-        qCDebug(VehicleLog)<<"saving parameters";
+        qCDebug(VehicleLog) << "saving parameters";
         _saveParameters();
     });
     if (link) {
@@ -1172,17 +1172,18 @@ void Vehicle::_handleAutoPilotVersion(mavlink_message_t &message)
     mavlink_msg_autopilot_version_decode(&message,&version);
     qCDebug(VehicleLog)<<"handling autopilot version message";
     QString fileName="";
-    if(version.uid != 0){
+    if (version.uid != 0) {
         fileName+=QString::number(version.uid);
     } else {
-        for(int i = 0;i < 18; i++)
-        fileName+=QString::number(version.uid2[i]);
+        for(int i = 0;i < 18; i++){
+            fileName+=QString::number(version.uid2[i]);
+        }
     }
-    if(fileName.isEmpty()){
+    if (fileName.isEmpty()) {
         return;
     }
-    _parameterFilePath = _parameterManager->parameterCacheDir().absolutePath()+
-                         QDir::separator()+fileName+".params";
+    _parameterFilePath = _parameterManager->parameterCacheDir().absolutePath() +
+                         QDir::separator() + fileName + ".params";
     _loadLocalParameters();
 
 }
@@ -3780,7 +3781,7 @@ void Vehicle::_altitudeAboveTerrainReceived(bool success, QList<double> heights)
 void Vehicle::_loadLocalParameters()
 {
     QFile file(_parameterFilePath);
-    if(!file.open(QIODevice::ReadOnly)){
+    if (!file.open(QIODevice::ReadOnly)) {
         return;
     }
     QTextStream stream(&file);
@@ -3790,7 +3791,7 @@ void Vehicle::_loadLocalParameters()
 void Vehicle::_saveParameters()
 {
     QFile file(_parameterFilePath);
-    if(!file.open(QIODevice::WriteOnly)){
+    if (!file.open(QIODevice::WriteOnly)) {
         return;
     }
     QTextStream stream(&file);

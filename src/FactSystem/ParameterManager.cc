@@ -999,7 +999,7 @@ void ParameterManager::_tryCacheHashLoad(int vehicleId, int componentId, const Q
 
 QString ParameterManager::readParametersFromStream(QTextStream &stream, bool force)
 {
-    if(force){
+    if (force) {
         _waitingParamTimeoutTimer.stop();
     }
 
@@ -1032,7 +1032,7 @@ QString ParameterManager::readParametersFromStream(QTextStream &stream, bool for
                 }
 
                 //creating new parameter
-                if(!paramExist && force){
+                if (!paramExist && force) {
                     Fact *fact = nullptr;
                     if (_mapCompId2FactMap.contains(componentId) && _mapCompId2FactMap[componentId].contains(paramName)) {
                         fact = _mapCompId2FactMap[componentId][paramName];
@@ -1067,7 +1067,7 @@ QString ParameterManager::readParametersFromStream(QTextStream &stream, bool for
     }
 
     //we load all parameters, now emitting signal that we are done
-    if(force){
+    if (force) {
         _missingParameters = false;
         _parametersReady = true;
         _vehicle->autopilotPlugin()->parametersReadyPreChecks();
