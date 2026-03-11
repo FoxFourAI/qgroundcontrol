@@ -151,10 +151,10 @@ Section "Create Start Menu Shortcuts"
     CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
 
     !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
-        CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${APPNAME}.lnk" "$INSTDIR\bin\${EXENAME}.exe" "" "$INSTDIR\bin\${EXENAME}.exe" 0
-        CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${APPNAME} (GPU Compatibility Mode).lnk" "$INSTDIR\bin\${EXENAME}.exe" "-desktop" "$INSTDIR\bin\${EXENAME}.exe" 0
+        CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${APPNAME}.lnk" "$INSTDIR\bin\QGroundControl.exe" "" "$INSTDIR\bin\QGroundControl.exe" 0
+        CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${APPNAME} (GPU Compatibility Mode).lnk" "$INSTDIR\bin\QGroundControl.exe" "-desktop" "$INSTDIR\bin\QGroundControl.exe" 0
         !insertmacro DemoteShortCut "$SMPROGRAMS\$StartMenuFolder\${APPNAME} (GPU Compatibility Mode).lnk"
-        CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${APPNAME} (GPU Safe Mode).lnk" "$INSTDIR\bin\${EXENAME}.exe" "-swrast" "$INSTDIR\bin\${EXENAME}.exe" 0
+        CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${APPNAME} (GPU Safe Mode).lnk" "$INSTDIR\bin\QGroundControl.exe" "-swrast" "$INSTDIR\bin\QGroundControl.exe" 0
         !insertmacro DemoteShortCut "$SMPROGRAMS\$StartMenuFolder\${APPNAME} (GPU Safe Mode).lnk"
     !insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
