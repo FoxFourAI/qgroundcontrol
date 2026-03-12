@@ -117,6 +117,16 @@ SettingsPage {
             property Fact   _enableVGMDiaclect: _flyViewSettings.enableVGMDialect
         }
 
+        LabelledFactTextField {
+            Layout.fillWidth:   true
+            label:               qsTr("TRACKING_STATUS rate")
+            fact:               _flyViewSettings.trackingRate
+            textField.numericValuesOnly: true
+            textFieldShowUnits:          true
+            textFieldUnitsLabel:         qsTr("Hz")
+            visible:            true
+        }
+
         FactCheckBoxSlider {
             Layout.fillWidth:   true
             text:               qsTr("Update return to home position based on device location.")

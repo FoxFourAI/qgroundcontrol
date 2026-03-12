@@ -41,4 +41,5 @@ public:
     DEFINE_SETTINGFACT(showJoystickIndicatorInToolbar)
     DEFINE_SETTINGFACT(showGPSrawTrajectory)
     DEFINE_SETTINGFACT(enableVGMDialect)
+    DEFINE_SETTINGFACT(trackingRate)
 };

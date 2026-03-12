@@ -120,6 +120,16 @@
     "shortDesc": "Enable VGM Dialect",
     "type":             "bool",
     "default":     true
+},
+{
+    "name":             "trackingRate",
+    "shortDesc":        "TRACKING_STATUS rate",
+    "longDesc":         "TRACKING_STATUS rate in us",
+    "type":             "uint32",
+    "units":            "Hz",
+    "default":          2,
+    "min":              1,
+    "max":              10000
 }
 ]
 }

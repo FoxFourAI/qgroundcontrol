@@ -52,6 +52,9 @@ public slots:
 protected slots:
     virtual void _processRecordingChanged();
     void         _requestZoomBoundries();
+
+protected:
+    void _requestTrackingStatus() override;
 protected:
     const double _defaultMaxZoom = 16;
     const double _defaultMinZoom = 1;
@@ -62,6 +65,7 @@ protected:
     QTimer        _requestZoomBoundriesTimer;
     QElapsedTimer _videoRecordTimeElapsedTimer;
     bool _zoomEnabled = false;
+
 
 
 };
