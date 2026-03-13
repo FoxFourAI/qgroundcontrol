@@ -1168,6 +1168,9 @@ void Vehicle::_handlePing(LinkInterface* link, mavlink_message_t& message)
 
 void Vehicle::_handleAutoPilotVersion(mavlink_message_t &message)
 {
+    if(!SettingsManager::instance()->appSettings()->cacheParameters()->rawValue().toBool()){
+        return;
+    }
     mavlink_autopilot_version_t version;
     mavlink_msg_autopilot_version_decode(&message,&version);
     qCDebug(VehicleLog)<<"handling autopilot version message";

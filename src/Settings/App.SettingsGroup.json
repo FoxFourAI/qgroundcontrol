@@ -1,3 +1,4 @@
+
 {
     "version":      1,
     "fileType":  "FactMetaData",
@@ -84,7 +85,7 @@
     "shortDesc": "Mute audio output",
     "longDesc":  "If this option is enabled all audio output will be muted.",
     "type":             "bool",
-    "default":     false
+    "default":     true
 },
 {
     "name":             "virtualJoystick",
@@ -268,6 +269,12 @@
     "shortDesc": "AirLink Password",
     "type": "string",
     "default": ""
+},
+{
+    "name": "cacheParameters",
+    "shortDesc": "Cache Vehicle parameters",
+    "type": "bool",
+    "default": true
 }
 ]
 }
