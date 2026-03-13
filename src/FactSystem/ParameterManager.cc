@@ -999,9 +999,9 @@ void ParameterManager::_tryCacheHashLoad(int vehicleId, int componentId, const Q
 
 QString ParameterManager::readParametersFromStream(QTextStream &stream, bool force)
 {
-    if (force) {
-        _waitingParamTimeoutTimer.stop();
-    }
+    // if (force) {
+    //     _waitingParamTimeoutTimer.stop();
+    // }
 
     QString missingErrors;
     QString typeErrors;

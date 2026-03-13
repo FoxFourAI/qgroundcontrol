@@ -1,5 +1,3 @@
-
-
 #include "FoxFourCameraControl.h"
 #include "QGCCameraIO.h"
 #include "VideoManager.h"
@@ -10,6 +8,9 @@
 #include "FoxFourAutoPilotPlugin.h"
 #include "ParameterSetter.h"
 #include "FoxFourPlugin.h"
+
+#include "SettingsManager.h"
+#include "FlyViewSettings.h"
 
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtCore/QDir>
@@ -207,8 +208,19 @@ void FoxFourCameraControl::_requestZoomBoundries()
     }
 
 }
-//-----------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------
+void FoxFourCameraControl::_requestTrackingStatus()
+{
+    uint64_t rate = 1'000'000 / SettingsManager::instance()->flyViewSettings()->trackingRate()->rawValue().toInt();
+    _vehicle->sendMavCommand(_compID,
+                             MAV_CMD_SET_MESSAGE_INTERVAL,
+                             true,
+                             MAVLINK_MSG_ID_CAMERA_TRACKING_IMAGE_STATUS,
+                             rate); // Interval (us)
+}
+
+//-----------------------------------------------------------------------------
 void FoxFourCameraControl::handleStorageInfo(const mavlink_storage_information_t &st)
 {
     auto oldCapacity = _storageFree;
