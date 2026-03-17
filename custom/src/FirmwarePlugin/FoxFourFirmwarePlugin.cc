@@ -26,6 +26,7 @@ const QVariantList &FoxFourFirmwarePlugin::toolIndicators(const Vehicle *vehicle
     if(_toolIndicatorList.isEmpty()){
         _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/VioIndicator.qml")));
         _toolIndicatorList.append(ArduCopterFirmwarePlugin::toolIndicators(vehicle));
+        _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/EK3Sources.qml")));
     }
     return _toolIndicatorList;
 }
