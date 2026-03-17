@@ -211,7 +211,7 @@ ApplicationWindow {
                 let compId = globalShortcuts.currentComputerId
                 let paramSetter = globalShortcuts.parameterSetter
                 let exposure = Math.floor(paramSetter.getParameter(compId, "CAM_EXPOSURE"))
-                let newExposure = exposure * Math.ceil(exposure * goldenRatio)
+                let newExposure = Math.ceil(exposure * goldenRatio)
                 if( newExposure > 20000){
                     return
                 }
@@ -229,7 +229,7 @@ ApplicationWindow {
                 let compId = globalShortcuts.currentComputerId
                 let paramSetter = globalShortcuts.parameterSetter
                 let exposure = Math.floor(paramSetter.getParameter(compId, "CAM_EXPOSURE"))
-                let newExposure = exposure / Math.ceil(exposure / goldenRatio)
+                let newExposure = Math.ceil(exposure / goldenRatio)
                 if( newExposure < 0){
                     return
                 }
