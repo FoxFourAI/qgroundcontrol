@@ -218,7 +218,7 @@ Item {
 
             //calculate offset between video stream rect and background (black stripes)
             let offset_x = (parent.width - videoStreaming.getWidth()) / 2
-            let offset_y = (parent.height - videoStreaming.getHeight()) / 2
+            let offset_y = (parent.height - videoStreaming.getHeight() + videoStreaming.anchors.topMargin) / 2
 
             //calculate offset between video stream rect and background (black stripes)
             x0 -= offset_x
