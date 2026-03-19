@@ -3,6 +3,8 @@
 #include "APM/APMAutoPilotPlugin.h"
 #include "OnboardComputersManager.h"
 #include "VioGpsComparer/VioGpsComparer.h"
+
+
 class Vehicle;
 class FoxFourCameraControl;
 class FoxFourAutoPilotPlugin : public APMAutoPilotPlugin
@@ -21,6 +23,7 @@ public:
     /// Reboot all onboard computers
     Q_INVOKABLE void rebootOnboardComputers();
     Q_INVOKABLE void setEK3Source(int index);
+    Q_INVOKABLE void setServo(int servo, int value,int duration = -1);
 
     OnboardComputersManager* onboardComputersManager();
 signals:

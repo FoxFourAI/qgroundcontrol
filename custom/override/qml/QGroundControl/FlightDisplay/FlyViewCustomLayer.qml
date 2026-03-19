@@ -101,4 +101,22 @@ Item {
         }
     }
 
+    ColumnLayout{
+        property var vehicle: globals.activeVehicle
+        property var ap : vehicle.autopilotPlugin
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.left: parent.left
+        visible: vehicle != undefined
+        spacing: ScreenTools.defaultFontPixelWidth / 2
+        Repeater{
+            model: [7,9]
+            delegate: QGCDelayButton{
+
+                text: qsTr("Release %1").arg(modelData)
+                onActivated: {
+                    parent.ap.setServo(modelData,1900,1000)
+                }
+            }
+        }
+    }
 }
