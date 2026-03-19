@@ -1,7 +1,11 @@
 #pragma once
 
 #include <QtCore/QObject>
+
+#include "QGCLoggingCategory.h"
 #include "Vehicle.h"
+
+Q_DECLARE_LOGGING_CATEGORY(EKSourcesLog)
 
 class Vehicle;
 
@@ -26,7 +30,9 @@ private slots:
     void _setCurrentSource(int indx);
 
 private:
-   static  void _changeSrcHandler(void* responceData,int /*compid*/, const mavlink_command_ack_t& ack, Vehicle::MavCmdResultFailureCode_t failureCode);
+    static void _changeSrcHandler(void* responceData, int /*compid*/, const mavlink_command_ack_t& ack,
+                                  Vehicle::MavCmdResultFailureCode_t failureCode);
+
 private:
     QMetaObject::Connection _paramConnection;
     QStringList _sources;
