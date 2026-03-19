@@ -1,33 +1,27 @@
 #include "FoxFourPlugin.h"
-#include "QGCLoggingCategory.h"
-#include "QGCPalette.h"
-#include "BrandImageSettings.h"
 
 #include <QtCore/QApplicationStatic>
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlFile>
 
+#include "BrandImageSettings.h"
+#include "QGCLoggingCategory.h"
+#include "QGCPalette.h"
+
 QGC_LOGGING_CATEGORY(CustomLog, "FoxFour.Plugin")
 
 Q_APPLICATION_STATIC(FoxFourPlugin, _customPluginInstance);
 
-FoxFourPlugin::FoxFourPlugin(QObject *parent)
-    : QGCCorePlugin(parent)
-    , _options(new QGCOptions(this))
-    , _parameterSetter(new ParameterSetter(this))
-{
+FoxFourPlugin::FoxFourPlugin(QObject* parent)
+    : QGCCorePlugin(parent), _options(new QGCOptions(this)), _parameterSetter(new ParameterSetter(this)) {
     _version = QString(QGC_CUSTOM_VERSION);
     _showAdvancedUI = true;
-    (void) connect(this, &FoxFourPlugin::showAdvancedUIChanged, this, &FoxFourPlugin::_advancedChanged);
+    (void)connect(this, &FoxFourPlugin::showAdvancedUIChanged, this, &FoxFourPlugin::_advancedChanged);
 }
 
-QGCCorePlugin *FoxFourPlugin::instance()
-{
-    return _customPluginInstance();
-}
+QGCCorePlugin* FoxFourPlugin::instance() { return _customPluginInstance(); }
 
-void FoxFourPlugin::cleanup()
-{
+void FoxFourPlugin::cleanup() {
     if (_qmlEngine) {
         _qmlEngine->removeUrlInterceptor(_selector);
     }
@@ -35,14 +29,12 @@ void FoxFourPlugin::cleanup()
     delete _selector;
 }
 
-void FoxFourPlugin::_advancedChanged(bool changed)
-{
+void FoxFourPlugin::_advancedChanged(bool changed) {
     // Firmware Upgrade page is only show in Advanced mode
     emit _options->showFirmwareUpgradeChanged(changed);
 }
 
-bool FoxFourPlugin::overrideSettingsGroupVisibility(const QString &name)
-{
+bool FoxFourPlugin::overrideSettingsGroupVisibility(const QString& name) {
     // We have set up our own specific brand imaging.
     // Hide the brand image settings such that the end user can't change it.
     if (name == BrandImageSettings::name) {
@@ -52,8 +44,7 @@ bool FoxFourPlugin::overrideSettingsGroupVisibility(const QString &name)
     return true;
 }
 
-VideoReceiver *FoxFourPlugin::createVideoReceiver(QObject *parent)
-{
+VideoReceiver* FoxFourPlugin::createVideoReceiver(QObject* parent) {
 #ifdef QGC_GST_STREAMING
     return new FoxFourGstVideoReceiver(parent);
 #elif defined(QGC_QT_STREAMING)
@@ -63,12 +54,9 @@ VideoReceiver *FoxFourPlugin::createVideoReceiver(QObject *parent)
 #endif
 }
 
-ParameterSetter *FoxFourPlugin::parameterSetter(){
-    return _parameterSetter;
-}
+ParameterSetter* FoxFourPlugin::parameterSetter() { return _parameterSetter; }
 
-QQmlApplicationEngine* FoxFourPlugin::createQmlApplicationEngine(QObject* parent)
-{
+QQmlApplicationEngine* FoxFourPlugin::createQmlApplicationEngine(QObject* parent) {
     _qmlEngine = QGCCorePlugin::createQmlApplicationEngine(parent);
     // TODO: Investigate _qmlEngine->setExtraSelectors({"custom"})
     _selector = new CustomOverrideInterceptor();
@@ -79,14 +67,9 @@ QQmlApplicationEngine* FoxFourPlugin::createQmlApplicationEngine(QObject* parent
 
 /*===========================================================================*/
 
-CustomOverrideInterceptor::CustomOverrideInterceptor()
-    : QQmlAbstractUrlInterceptor()
-{
+CustomOverrideInterceptor::CustomOverrideInterceptor() : QQmlAbstractUrlInterceptor() {}
 
-}
-
-QUrl CustomOverrideInterceptor::intercept(const QUrl &url, QQmlAbstractUrlInterceptor::DataType type)
-{
+QUrl CustomOverrideInterceptor::intercept(const QUrl& url, QQmlAbstractUrlInterceptor::DataType type) {
     switch (type) {
     using DataType = QQmlAbstractUrlInterceptor::DataType;
     case DataType::QmlFile:
@@ -97,13 +80,13 @@ QUrl CustomOverrideInterceptor::intercept(const QUrl &url, QQmlAbstractUrlInterc
 
             if (QFile::exists(overrideRes)) {
                 // if (overrideRes.endsWith("qml")) {
-                    qCDebug(CustomLog) << "Overiding: "<< origPath <<" with " << overrideRes;
-                // }
-                const QString relPath = overrideRes.mid(2);
-                QUrl result;
-                result.setScheme(QStringLiteral("qrc"));
-                result.setPath('/' + relPath);
-                return result;
+                    qCDebug(CustomLog) << "Overiding: " << origPath << " with " << overrideRes;
+                    // }
+                    const QString relPath = overrideRes.mid(2);
+                    QUrl result;
+                    result.setScheme(QStringLiteral("qrc"));
+                    result.setPath('/' + relPath);
+                    return result;
             }
         }
         break;

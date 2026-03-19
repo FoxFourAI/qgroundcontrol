@@ -41,5 +41,6 @@
         <file alias="QGroundControl/VehicleSetup/SetupView.qml">override/qml/QGroundControl/VehicleSetup/SetupView.qml</file>
         <file alias="OnboardComputers/OnboardComputersInfo.qml">res/Custom/OnboardComputers/OnboardComputersInfo.qml</file>
         <file alias="Toolbar/VioIndicator.qml">res/Toolbar/VioIndicator.qml</file>
+        <file alias="Toolbar/EK3Sources.qml">res/Toolbar/EK3Sources.qml</file>
     </qresource>
 </RCC>
