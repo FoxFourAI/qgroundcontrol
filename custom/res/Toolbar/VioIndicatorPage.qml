@@ -22,7 +22,7 @@ ToolIndicatorPage{
                 heading: qsTr("VIO helper")
 
                 QGCSwitch{
-                    text: qsTr("Enabled")
+                    text: qsTr("Enable")
                     onToggled: {
                         let fact = parameterSetter.getFact(1, "SCR_USER2", false)
                         if(fact === undefined){
