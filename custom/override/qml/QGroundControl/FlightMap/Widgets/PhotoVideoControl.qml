@@ -19,7 +19,7 @@ import QGroundControl.FactControls
 
 Rectangle {
     width:      mainLayout.width + (_smallMargins * 2)
-    height:     mainLayout.height + (_smallMargins * 2)
+    height:     mainLayout.height + dropList.height + (_smallMargins * 4)
     color:      Qt.rgba(qgcPal.window.r, qgcPal.window.g, qgcPal.window.b, 0.5)
     radius:     _margins
     visible:    _camera.capturesVideo || _camera.capturesPhotos || _camera.hasTracking || _camera.hasVideoStream
@@ -676,6 +676,35 @@ Rectangle {
                             }
                         }
                     }
+                }
+            }
+        }
+
+    }
+
+    ColumnLayout{
+        id:dropList
+        property var vehicle: globals.activeVehicle
+        property var ap : vehicle.autopilotPlugin
+        anchors.top: mainLayout.bottom
+        anchors.topMargin: parent._smallMargins
+        anchors.left: parent.left
+        anchors.leftMargin: parent._smallMargins
+        anchors.right: parent.right
+        anchors.rightMargin: parent._smallMargins
+        anchors.bottomMargin: parent._smallMargins
+        // anchors.verticalCenter: parent.verticalCenter
+        // anchors.left: parent.left
+        visible: vehicle != undefined /*&& ap.isDropper*/
+        spacing: ScreenTools.defaultFontPixelWidth / 2
+        Repeater{
+            model: [7,9]
+            delegate: QGCDelayButton{
+                Layout.fillWidth: true
+                text: qsTr("Release %1").arg(modelData)
+                onActivated: {
+                    parent.ap.setServo(modelData,1900,1000)
+
                 }
             }
         }

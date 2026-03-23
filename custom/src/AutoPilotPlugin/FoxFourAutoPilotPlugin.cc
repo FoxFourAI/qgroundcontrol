@@ -32,6 +32,20 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent
         auto camera = reinterpret_cast<FoxFourCameraControl*>(cameraMgr->currentCameraInstance());
         _cameraConnection = connect(camera, &FoxFourCameraControl::storageCapacityChanged, this,
                                     &FoxFourAutoPilotPlugin::handleStorageCapacityChanged);
+        connect(_vehicle->parameterManager(), &ParameterManager::parametersReadyChanged, this, [=](bool ready) {
+            if (!ready) {
+                return;
+            }
+            auto pm = _vehicle->parameterManager();
+            const int compId = _onboardComputersMngr->currentComputerComponent();
+            if (!pm->parameterExists(compId, "GUID_FRAME_TYPE")) {
+                return;
+            }
+            auto fact = pm->getParameter(compId, "GUID_FRAME_TYPE");
+            connect(fact, &Fact::rawValueChanged,this,[=](QVariant value){
+               setIsDropper(value.toInt());
+            });
+        });
     });
 }
 
@@ -67,6 +81,15 @@ void FoxFourAutoPilotPlugin::setServo(int servo, int value, int duration) {
 }
 
 OnboardComputersManager* FoxFourAutoPilotPlugin::onboardComputersManager() { return _onboardComputersMngr; }
+
+void FoxFourAutoPilotPlugin::setIsDropper(int type)
+{
+    bool dropperFlag = type == 2;
+    if (dropperFlag != _isDropper) {
+        _isDropper = dropperFlag;
+        emit isDropperChanged();
+    }
+}
 
 QString FoxFourAutoPilotPlugin::storageCapacity() { return _storageCapacityStr; }
 
