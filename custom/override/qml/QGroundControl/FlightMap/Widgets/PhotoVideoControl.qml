@@ -701,6 +701,7 @@ Rectangle {
 
         QGCDelayButton{
             Layout.fillWidth: true
+            text: qsTr("7")
             onActivated: {
                 parent.ap.setServo(7,1900,1000)
             }
@@ -708,7 +709,7 @@ Rectangle {
                 // anchors.fill: parent
                 anchors.topMargin: root._smallMargins
                 anchors.bottomMargin: root._smallMargins
-                anchors.horizontalCenter: parent.horizontalCenter
+                x: parent.width / 2 - width / 2 + 1
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
                 width: height
@@ -720,7 +721,7 @@ Rectangle {
 
         QGCDelayButton{
             Layout.fillWidth: true
-
+            text: qsTr("9")
             onActivated: {
                 parent.ap.setServo(9,1900,1000)
             }
@@ -728,7 +729,7 @@ Rectangle {
                 // anchors.fill: parent
                 anchors.topMargin: root._smallMargins
                 anchors.bottomMargin: root._smallMargins
-                anchors.horizontalCenter: parent.horizontalCenter
+                x: parent.width / 2 - width / 2 + 1
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
                 width: height
