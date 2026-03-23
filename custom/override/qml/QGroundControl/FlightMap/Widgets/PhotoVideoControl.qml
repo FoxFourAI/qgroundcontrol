@@ -18,6 +18,7 @@ import QGroundControl.Controls
 import QGroundControl.FactControls
 
 Rectangle {
+    id:root
     width:      mainLayout.width + (_smallMargins * 2)
     height:     mainLayout.height + dropList.height + (_smallMargins * 4)
     color:      Qt.rgba(qgcPal.window.r, qgcPal.window.g, qgcPal.window.b, 0.5)
@@ -682,7 +683,7 @@ Rectangle {
 
     }
 
-    ColumnLayout{
+    RowLayout{
         id:dropList
         property var vehicle: globals.activeVehicle
         property var ap : vehicle.autopilotPlugin
@@ -697,16 +698,48 @@ Rectangle {
         // anchors.left: parent.left
         visible: vehicle != undefined /*&& ap.isDropper*/
         spacing: ScreenTools.defaultFontPixelWidth / 2
-        Repeater{
-            model: [7,9]
-            delegate: QGCDelayButton{
-                Layout.fillWidth: true
-                text: qsTr("Release %1").arg(modelData)
-                onActivated: {
-                    parent.ap.setServo(modelData,1900,1000)
 
-                }
+        QGCDelayButton{
+            Layout.fillWidth: true
+            onActivated: {
+                parent.ap.setServo(7,1900,1000)
+            }
+            QGCColoredImage{
+                // anchors.fill: parent
+                anchors.topMargin: root._smallMargins
+                anchors.bottomMargin: root._smallMargins
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                width: height
+                source: "qrc:/custom/img/drop.svg"
+                color: qgcPal.text
+                fillMode: Image.PreserveAspectFit
             }
         }
+
+        QGCDelayButton{
+            Layout.fillWidth: true
+
+            onActivated: {
+                parent.ap.setServo(9,1900,1000)
+            }
+            QGCColoredImage{
+                // anchors.fill: parent
+                anchors.topMargin: root._smallMargins
+                anchors.bottomMargin: root._smallMargins
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                width: height
+                source: "qrc:/custom/img/drop.svg"
+                color: qgcPal.text
+                fillMode: Image.PreserveAspectFit
+            }
+        }
+        // Repeater{
+            // model: [7,9]
+            // delegate:
+        // }
     }
 }

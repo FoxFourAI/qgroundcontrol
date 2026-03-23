@@ -45,6 +45,7 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent
             connect(fact, &Fact::rawValueChanged,this,[=](QVariant value){
                setIsDropper(value.toInt());
             });
+            setIsDropper(fact->rawValue().toInt());
         });
     });
 }
