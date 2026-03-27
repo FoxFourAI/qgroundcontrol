@@ -16,10 +16,9 @@
 #include "QGCCorePlugin.h"
 #include "Vehicle.h"
 
-
 FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent)
     : APMAutoPilotPlugin(vehicle, parent) {
-    _ekSources = new EKSources(vehicle,this);
+    _ekSources = new EKSources(vehicle, this);
     _onboardComputersMngr = new OnboardComputersManager(vehicle, this);
     _vioGpsComparer = new VioGpsComparer(vehicle, this);
     auto cameraMgr = vehicle->cameraManager();
@@ -40,9 +39,7 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent
                 return;
             }
             auto fact = pm->getParameter(compId, "GUID_FRAME_TYPE");
-            connect(fact, &Fact::rawValueChanged,this,[=](QVariant value){
-               setIsDropper(value.toInt());
-            });
+            connect(fact, &Fact::rawValueChanged, this, [=](QVariant value) { setIsDropper(value.toInt()); });
             setIsDropper(fact->rawValue().toInt());
         });
     });
@@ -72,17 +69,17 @@ void FoxFourAutoPilotPlugin::setEK3Source(int index) {
 }
 
 void FoxFourAutoPilotPlugin::flipServo(int servo) {
-    if(servo < 0 || servo >= _servoCount){
+    if (servo < 0 || servo >= _servoCount) {
         return;
     }
-    _vehicle->sendMavCommand(_vehicle->defaultComponentId(), MAV_CMD_DO_SET_SERVO, false, servo,  _servoActive[servo] ? SERVO_MIN : SERVO_MAX);
+    _vehicle->sendMavCommand(_vehicle->defaultComponentId(), MAV_CMD_DO_SET_SERVO, false, servo,
+                             _servoActive[servo] ? SERVO_MIN : SERVO_MAX);
     _servoActive[servo] = !_servoActive[servo];
 }
 
 OnboardComputersManager* FoxFourAutoPilotPlugin::onboardComputersManager() { return _onboardComputersMngr; }
 
-void FoxFourAutoPilotPlugin::setIsDropper(int type)
-{
+void FoxFourAutoPilotPlugin::setIsDropper(int type) {
     bool dropperFlag = type == 2;
     if (dropperFlag != _isDropper) {
         _isDropper = dropperFlag;
