@@ -5,6 +5,7 @@
         <file alias="keyboard.svg">res/Images/keyboard.svg</file>
         <file alias="eye-1.svg">res/Images/eye-opened.svg</file>
         <file alias="eye-0.svg">res/Images/eye-closed.svg</file>
+        <file alias="drop.svg">res/Images/drop.svg</file>
     </qresource>
     <qresource prefix="/Custom/res">
         <file alias="TrashDelete.svg">res/Images/TrashDelete.svg</file>

@@ -18,8 +18,9 @@ import QGroundControl.Controls
 import QGroundControl.FactControls
 
 Rectangle {
+    id:root
     width:      mainLayout.width + (_smallMargins * 2)
-    height:     mainLayout.height + (_smallMargins * 2)
+    height:     mainLayout.height + dropList.height + (_smallMargins * 4)
     color:      Qt.rgba(qgcPal.window.r, qgcPal.window.g, qgcPal.window.b, 0.5)
     radius:     _margins
     visible:    _camera.capturesVideo || _camera.capturesPhotos || _camera.hasTracking || _camera.hasVideoStream
@@ -679,5 +680,67 @@ Rectangle {
                 }
             }
         }
+
+    }
+
+    RowLayout{
+        id:dropList
+        property var vehicle: globals.activeVehicle
+        property var ap : vehicle.autopilotPlugin
+        anchors.top: mainLayout.bottom
+        anchors.topMargin: parent._smallMargins
+        anchors.left: parent.left
+        anchors.leftMargin: parent._smallMargins
+        anchors.right: parent.right
+        anchors.rightMargin: parent._smallMargins
+        anchors.bottomMargin: parent._smallMargins
+        // anchors.verticalCenter: parent.verticalCenter
+        // anchors.left: parent.left
+        visible: vehicle != undefined /*&& ap.isDropper*/
+        spacing: ScreenTools.defaultFontPixelWidth / 2
+
+        QGCDelayButton{
+            Layout.fillWidth: true
+            text: qsTr("7")
+            onActivated: {
+                parent.ap.flipServo(7)
+            }
+            QGCColoredImage{
+                // anchors.fill: parent
+                anchors.topMargin: root._smallMargins
+                anchors.bottomMargin: root._smallMargins
+                x: parent.width / 2 - width / 2 + 1
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                width: height
+                source: "qrc:/custom/img/drop.svg"
+                color: qgcPal.text
+                fillMode: Image.PreserveAspectFit
+            }
+        }
+
+        QGCDelayButton{
+            Layout.fillWidth: true
+            text: qsTr("9")
+            onActivated: {
+                parent.ap.flipServo(9)
+            }
+            QGCColoredImage{
+                // anchors.fill: parent
+                anchors.topMargin: root._smallMargins
+                anchors.bottomMargin: root._smallMargins
+                x: parent.width / 2 - width / 2 + 1
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                width: height
+                source: "qrc:/custom/img/drop.svg"
+                color: qgcPal.text
+                fillMode: Image.PreserveAspectFit
+            }
+        }
+        // Repeater{
+            // model: [7,9]
+            // delegate:
+        // }
     }
 }
