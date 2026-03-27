@@ -24,7 +24,7 @@ public:
     /// Reboot all onboard computers
     Q_INVOKABLE void rebootOnboardComputers();
     Q_INVOKABLE void setEK3Source(int index);
-    Q_INVOKABLE void setServo(int servo, int value,int duration = -1);
+    Q_INVOKABLE void flipServo(int servo);
     bool isDropper(){return _isDropper;}
     OnboardComputersManager* onboardComputersManager();
 signals:
@@ -41,4 +41,10 @@ private:
     VioGpsComparer *_vioGpsComparer = nullptr;
     QString _storageCapacityStr = "0 / 0 MB";
     QMetaObject::Connection _cameraConnection;
+
+    static const int  _servoCount = 9;
+    bool _servoActive[_servoCount];
+    //define boundries
+    static inline constexpr int SERVO_MIN = 1100;
+    static inline constexpr int SERVO_MAX = 1900;
 };

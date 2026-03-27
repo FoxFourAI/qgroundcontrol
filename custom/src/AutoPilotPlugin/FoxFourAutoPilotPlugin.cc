@@ -16,9 +16,6 @@
 #include "QGCCorePlugin.h"
 #include "Vehicle.h"
 
-//define boundries
-#define SERVO_MAX 1900
-#define SERVO_MIN 1100
 
 FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent)
     : APMAutoPilotPlugin(vehicle, parent) {
@@ -74,12 +71,9 @@ void FoxFourAutoPilotPlugin::setEK3Source(int index) {
     _vehicle->sendCommand(_vehicle->defaultComponentId(), MAV_CMD_SET_EKF_SOURCE_SET, false, index);
 }
 
-void FoxFourAutoPilotPlugin::setServo(int servo, int value, int duration) {
-    _vehicle->sendMavCommand(_vehicle->defaultComponentId(), MAV_CMD_DO_SET_SERVO, false, servo, qMin(SERVO_MAX,value));
-    if (duration == -1) {
-        return;
-    }
-    QTimer::singleShot(duration,[=](){setServo(servo,SERVO_MIN);});
+void FoxFourAutoPilotPlugin::flipServo(int servo) {
+    _vehicle->sendMavCommand(_vehicle->defaultComponentId(), MAV_CMD_DO_SET_SERVO, false, servo,  _servoActive[servo] ? SERVO_MIN : SERVO_MAX);
+    _servoActive[servo] = !_servoActive[servo];
 }
 
 OnboardComputersManager* FoxFourAutoPilotPlugin::onboardComputersManager() { return _onboardComputersMngr; }

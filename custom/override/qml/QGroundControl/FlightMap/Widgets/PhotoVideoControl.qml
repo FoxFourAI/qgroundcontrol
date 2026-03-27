@@ -703,7 +703,7 @@ Rectangle {
             Layout.fillWidth: true
             text: qsTr("7")
             onActivated: {
-                parent.ap.setServo(7,1900,1000)
+                parent.ap.flipServo(7)
             }
             QGCColoredImage{
                 // anchors.fill: parent
@@ -723,7 +723,7 @@ Rectangle {
             Layout.fillWidth: true
             text: qsTr("9")
             onActivated: {
-                parent.ap.setServo(9,1900,1000)
+                parent.ap.flipServo(9)
             }
             QGCColoredImage{
                 // anchors.fill: parent
