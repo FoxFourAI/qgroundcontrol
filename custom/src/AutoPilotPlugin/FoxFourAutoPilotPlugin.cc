@@ -72,6 +72,9 @@ void FoxFourAutoPilotPlugin::setEK3Source(int index) {
 }
 
 void FoxFourAutoPilotPlugin::flipServo(int servo) {
+    if(servo < 0 || servo >= _servoCount){
+        return;
+    }
     _vehicle->sendMavCommand(_vehicle->defaultComponentId(), MAV_CMD_DO_SET_SERVO, false, servo,  _servoActive[servo] ? SERVO_MIN : SERVO_MAX);
     _servoActive[servo] = !_servoActive[servo];
 }
