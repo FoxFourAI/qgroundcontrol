@@ -130,17 +130,6 @@ Item {
                                                          function() { _activeVehicle.autopilotPlugin.rebootOnboardComputers() })
         }
         QGCMenuSeparator{}
-        QGCMenuItem {
-            visible:        _activeVehicle
-            contentItem: LabelledComboBox{
-                label:           qsTr("EKF3 source")
-                property var sources: ["1","2","3"]
-                model: sources
-                onActivated: (index)=>{
-                    _activeVehicle.autopilotPlugin.setEK3Source(index);
-                }
-            }
-        }
     }
 
 
