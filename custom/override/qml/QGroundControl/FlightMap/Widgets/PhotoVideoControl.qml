@@ -160,8 +160,11 @@ Rectangle {
                 visible:            _cameraManager.cameras.length > 1
             }
 
-            // Photo/Video Mode Selector
+            // Front/Bottom camera selector
             Rectangle {
+                id: cameraSelector
+                property var activeVehicle: globals.activeVehicle
+
                 Layout.alignment:   Qt.AlignHCenter
                 width:              ScreenTools.defaultFontPixelWidth * 10
                 height:             width / 2
@@ -169,16 +172,17 @@ Rectangle {
                 radius:             height * 0.5
                 visible:            true //_camera.hasModes
 
-                //-- Video Mode
+
+                //-- Front Camera
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     width:                  parent.height
                     height:                 parent.height
-                    color:                  _cameraInVideoMode ? qgcPal.window : qgcPal.windowShadeLight
+                    color:                   _camera.cameraIndex <= 0 ? qgcPal.window : qgcPal.windowShadeLight
                     radius:                 height * 0.5
                     anchors.left:           parent.left
                     border.color:           qgcPal.text
-                    border.width:           _cameraInPhotoMode ? 0 : 1
+                    border.width:            _camera.cameraIndex  <= 0 ? 1 : 0
 
                     QGCColoredImage {
                         height:             parent.height * 0.5
@@ -187,40 +191,42 @@ Rectangle {
                         source:             "/qmlimages/camera_video.svg"
                         fillMode:           Image.PreserveAspectFit
                         sourceSize.height:  height
-                        color:              _cameraInVideoMode ? qgcPal.colorGreen : qgcPal.text
+                        color:               _camera.cameraIndex <= 0 ? qgcPal.colorGreen : qgcPal.text
 
                         MouseArea {
                             anchors.fill:   parent
-                            enabled:        _cameraInPhotoMode ? _photoCaptureIdle : true
-                            onClicked:      _camera.setCameraModeVideo()
+                            enabled:         _camera.cameraIndex > 0
+                            onClicked:      _camera.setCameraIndex(0)
                         }
                     }
                 }
                 
-                //-- Photo Mode
+                //-- Bottom camera
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     width:                  parent.height
                     height:                 parent.height
-                    color:                  _cameraInPhotoMode ? qgcPal.window : qgcPal.windowShadeLight
+                    color:                   _camera.cameraIndex > 0 ? qgcPal.window : qgcPal.windowShadeLight
                     radius:                 height * 0.5
+
                     anchors.right:          parent.right
                     border.color:           qgcPal.text
-                    border.width:           _cameraInPhotoMode ? 1 : 0
+                    border.width:            _camera.cameraIndex > 0 ? 1 : 0
 
                     QGCColoredImage {
                         height:             parent.height * 0.5
                         width:              height
                         anchors.centerIn:   parent
-                        source:             "/qmlimages/camera_photo.svg"
+                        source:             "/qmlimages/camera_video.svg"
+                        rotation:           45
                         fillMode:           Image.PreserveAspectFit
                         sourceSize.height:  height
-                        color:              _cameraInPhotoMode ? qgcPal.colorGreen : qgcPal.text
+                        color:               _camera.cameraIndex > 0 ? qgcPal.colorGreen : qgcPal.text
 
                         MouseArea {
                             anchors.fill:   parent
-                            enabled:        _cameraInVideoMode ? _videoCaptureIdle : true
-                            onClicked:      _camera.setCameraModePhoto()
+                            enabled:         _camera.cameraIndex <= 0
+                            onClicked:      _camera.setCameraIndex(1)
                         }
                     }
                 }
