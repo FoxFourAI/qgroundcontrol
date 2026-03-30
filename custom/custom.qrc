@@ -7,6 +7,8 @@
         <file alias="eye-0.svg">res/Images/eye-closed.svg</file>
         <file alias="drone.svg">res/Images/drone.svg</file>
         <file alias="drone_fov.svg">res/Images/drone_fov.svg</file>
+        <file alias="arrowc.svg">res/Images/arrowc.svg</file>
+        <file alias="arrowcc.svg">res/Images/arrowcc.svg</file>
     </qresource>
     <qresource prefix="/Custom/res">
         <file alias="TrashDelete.svg">res/Images/TrashDelete.svg</file>

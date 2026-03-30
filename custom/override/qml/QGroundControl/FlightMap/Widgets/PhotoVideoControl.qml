@@ -176,12 +176,20 @@ Rectangle {
                         name: "Front"
                         PropertyChanges{
                             target: drone
-                            x: fov.x - drone.width / 2
+                            x: fov.x - drone.width / 2 - 4
                             y: cameraSwitch.y + (cameraSwitch.height - drone.height) / 2
                         }
                         PropertyChanges {
                             target: fov
                             rotation: -90
+                        }
+                        PropertyChanges {
+                            target: arr_cclockwise
+                            opacity: 0
+                        }
+                        PropertyChanges {
+                            target: arr_clockwise
+                            opacity: 1
                         }
                     },
                     State{
@@ -195,11 +203,19 @@ Rectangle {
                             target: fov
                             rotation: 0
                         }
+                        PropertyChanges {
+                            target: arr_cclockwise
+                            opacity: 1
+                        }
+                        PropertyChanges {
+                            target: arr_clockwise
+                            opacity: 0
+                        }
                     }
                 ]
 
                 transitions: Transition {
-                    NumberAnimation { properties: "x,y,rotation"; easing.type: Easing.InOutQuad; duration: 200 }
+                    NumberAnimation { properties: "x,y,rotation,opacity"; easing.type: Easing.InOutQuad; duration: 200 }
                 }
 
                 MouseArea {
@@ -217,6 +233,7 @@ Rectangle {
                     source:             "/custom/img/drone.svg"
                     fillMode:           Image.PreserveAspectFit
                     sourceSize.height:  height
+                    color:              qgcPal.text
                 }
 
                 QGCColoredImage{
@@ -226,6 +243,36 @@ Rectangle {
                     anchors.centerIn:   parent
                     source:             "/custom/img/drone_fov.svg"
                     sourceSize.height:  height
+                    fillMode:           Image.PreserveAspectFit
+                    color:              qgcPal.text
+                }
+
+                QGCColoredImage{
+                    id: arr_cclockwise
+                    height:             parent.height
+                    width:              height / 3
+                    anchors.right:      parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    source:             "/custom/img/arrowcc.svg"
+                    sourceSize.height:  height
+                    fillMode:           Image.PreserveAspectFit
+                    color:              qgcPal.text
+                }
+
+                QGCColoredImage{
+                    id: arr_clockwise
+                    height:             parent.height / 3
+                    width:              parent.height
+                    anchors.bottom:     parent.bottom
+                    source:             "/custom/img/arrowc.svg"
+                    sourceSize.height:  height
+                    fillMode:           Image.PreserveAspectFit
+                    color:              qgcPal.text
+                }
+
+                QGCColoredImage{
+                    id: toBottom
+
                 }
             }
 
