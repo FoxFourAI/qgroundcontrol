@@ -1113,10 +1113,6 @@ void Joystick::_executeButtonAction(const QString &action, bool buttonDown)
         if (buttonDown) {
             emit gripperAction(QGCMAVLink::GripperActionOpen);
         }
-    } else if (action == _buttonActionGripperStop) {
-        if (buttonDown) {
-            emit gripperAction(QGCMAVLink::GripperActionStop);
-        }
     } else if (action == _buttonActionLandingGearDeploy) {
         if (buttonDown) {
             emit landingGearDeploy();
