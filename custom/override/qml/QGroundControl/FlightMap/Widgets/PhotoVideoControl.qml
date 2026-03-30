@@ -37,7 +37,7 @@ Rectangle {
     property bool   _photoCaptureIntervalIdle:  _camera.photoCaptureStatus === MavlinkCameraControl.PHOTO_CAPTURE_INTERVAL_IDLE
     property bool   _photoCaptureIdle:          _photoCaptureSingleIdle || _photoCaptureIntervalIdle
 
-/*
+    /*
     // Used for testing camera ui options. Set _camera to testCamera to use.
     QtObject {
         id: testCamera
@@ -161,69 +161,119 @@ Rectangle {
                 visible:            _cameraManager.cameras.length > 1
             }
 
-            // Photo/Video Mode Selector
+            // Front/Bottom camera switch
             Rectangle {
+                id:cameraSwitch
                 Layout.alignment:   Qt.AlignHCenter
                 width:              ScreenTools.defaultFontPixelWidth * 10
-                height:             width / 2
-                color:              qgcPal.windowShadeLight
-                radius:             height * 0.5
+                height:             width / 1.6
+                color:              'transparent'
+                radius:             height * 0.2
                 visible:            true //_camera.hasModes
+                state: _camera.cameraIndex > 0 ? "Bottom" : "Front"
 
-                //-- Video Mode
-                Rectangle {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width:                  parent.height
-                    height:                 parent.height
-                    color:                  _cameraInVideoMode ? qgcPal.window : qgcPal.windowShadeLight
-                    radius:                 height * 0.5
-                    anchors.left:           parent.left
-                    border.color:           qgcPal.text
-                    border.width:           _cameraInPhotoMode ? 0 : 1
-
-                    QGCColoredImage {
-                        height:             parent.height * 0.5
-                        width:              height
-                        anchors.centerIn:   parent
-                        source:             "/qmlimages/camera_video.svg"
-                        fillMode:           Image.PreserveAspectFit
-                        sourceSize.height:  height
-                        color:              _cameraInVideoMode ? qgcPal.colorGreen : qgcPal.text
-
-                        MouseArea {
-                            anchors.fill:   parent
-                            enabled:        _cameraInPhotoMode ? _photoCaptureIdle : true
-                            onClicked:      _camera.setCameraModeVideo()
+                states:[
+                    State{
+                        name: "Front"
+                        PropertyChanges{
+                            target: drone
+                            x: fov.x - drone.width / 2 - 4
+                            y: cameraSwitch.y + (cameraSwitch.height - drone.height) / 2
                         }
+                        PropertyChanges {
+                            target: fov
+                            rotation: -90
+                        }
+                        PropertyChanges {
+                            target: arr_cclockwise
+                            opacity: 0
+                        }
+                        PropertyChanges {
+                            target: arr_clockwise
+                            opacity: 1
+                        }
+                    },
+                    State{
+                        name: "Bottom"
+                        PropertyChanges{
+                            target: drone
+                            x: fov.x + (fov.width - drone.width) / 2 - 3
+                            y: cameraSwitch.y - 4
+                        }
+                        PropertyChanges {
+                            target: fov
+                            rotation: 0
+                        }
+                        PropertyChanges {
+                            target: arr_cclockwise
+                            opacity: 1
+                        }
+                        PropertyChanges {
+                            target: arr_clockwise
+                            opacity: 0
+                        }
+                    }
+                ]
+
+                transitions: Transition {
+                    NumberAnimation { properties: "x,y,rotation,opacity"; easing.type: Easing.InOutQuad; duration: 200 }
+                }
+
+                MouseArea {
+                    anchors.fill:   parent
+                    onClicked: {
+                        _camera.setCameraIndex(_camera.cameraIndex > 0 ? 0 : 1);
                     }
                 }
-                
-                //-- Photo Mode
-                Rectangle {
+
+                QGCColoredImage {
+                    id: drone
+                    height:             parent.height - ScreenTools.defaultFontPixelHeight
+                    width:              height
+                    // anchors.centerIn:   parent
+                    source:             "/custom/img/drone.svg"
+                    fillMode:           Image.PreserveAspectFit
+                    sourceSize.height:  height
+                    color:              qgcPal.text
+                }
+
+                QGCColoredImage{
+                    id: fov
+                    height:             parent.height - ScreenTools.defaultFontPixelHeight
+                    width:              height
+                    anchors.centerIn:   parent
+                    source:             "/custom/img/drone_fov.svg"
+                    sourceSize.height:  height
+                    fillMode:           Image.PreserveAspectFit
+                    color:              qgcPal.text
+                }
+
+                QGCColoredImage{
+                    id: arr_cclockwise
+                    height:             parent.height
+                    width:              height / 3
+                    anchors.right:      parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    width:                  parent.height
-                    height:                 parent.height
-                    color:                  _cameraInPhotoMode ? qgcPal.window : qgcPal.windowShadeLight
-                    radius:                 height * 0.5
-                    anchors.right:          parent.right
-                    border.color:           qgcPal.text
-                    border.width:           _cameraInPhotoMode ? 1 : 0
+                    source:             "/custom/img/arrowcc.svg"
+                    sourceSize.height:  height
+                    fillMode:           Image.PreserveAspectFit
+                    color:              qgcPal.text
+                }
 
-                    QGCColoredImage {
-                        height:             parent.height * 0.5
-                        width:              height
-                        anchors.centerIn:   parent
-                        source:             "/qmlimages/camera_photo.svg"
-                        fillMode:           Image.PreserveAspectFit
-                        sourceSize.height:  height
-                        color:              _cameraInPhotoMode ? qgcPal.colorGreen : qgcPal.text
+                QGCColoredImage{
+                    id: arr_clockwise
+                    height:             parent.height / 3
+                    width:              parent.height
+                    anchors.bottom:     parent.bottom
+                    source:             "/custom/img/arrowc.svg"
+                    sourceSize.height:  height
+                    fillMode:           Image.PreserveAspectFit
+                    color:              qgcPal.text
+                }
 
-                        MouseArea {
-                            anchors.fill:   parent
-                            enabled:        _cameraInVideoMode ? _videoCaptureIdle : true
-                            onClicked:      _camera.setCameraModePhoto()
-                        }
-                    }
+                QGCColoredImage{
+                    id: toBottom
+
                 }
             }
 
@@ -259,7 +309,7 @@ Rectangle {
                         property bool _isShootingInVideoMode:   (!_cameraInPhotoMode && _camera.videoCaptureStatus === MavlinkCameraControl.VIDEO_CAPTURE_STATUS_RUNNING)
                         property bool _isShootingInCurrentMode: _cameraInPhotoMode ? _isShootingInPhotoMode : _isShootingInVideoMode
                         property bool _isShootingInOtherMode:   _cameraInPhotoMode ? _isShootingInVideoMode : _isShootingInPhotoMode
-                        property bool _canShootInCurrentMode:   _isShootingInOtherMode ? 
+                        property bool _canShootInCurrentMode:   _isShootingInOtherMode ?
                                                                     (_cameraInPhotoMode ? _camera.photosInVideoMode : _camera.videoInPhotoMode) :
                                                                     true
                     }
