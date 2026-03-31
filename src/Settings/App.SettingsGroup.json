@@ -274,7 +274,7 @@
     "name": "cacheParameters",
     "shortDesc": "Cache Vehicle parameters",
     "type": "bool",
-    "default": true
+    "default": false
 }
 ]
 }
