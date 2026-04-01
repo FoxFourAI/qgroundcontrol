@@ -499,7 +499,6 @@ void FoxFourGstVideoReceiver::_onDemuxPadAdded(GstElement *element, GstPad *pad,
     }
 
     // Prefer current caps; fall back to a query so we always have something.
-    // BUG 4 fix: gst_pad_get_current_caps() can return NULL on dynamic pads.
     GstCaps* caps = gst_pad_get_current_caps(pad);
     if (!caps) {
         caps = gst_pad_query_caps(pad, nullptr);
@@ -524,7 +523,6 @@ void FoxFourGstVideoReceiver::_onDemuxPadAdded(GstElement *element, GstPad *pad,
         qCWarning(GstVideoReceiverLog) << "_onDemuxPadAdded: unknown codec caps, defaulting to H.264";
     }
 
-    // BUG 3 & 5 fix: create the right parser and sync its state after linking
     const char* parserFactory = (self->_isMpegts265) ? "h265parse" : "h264parse";
     self->_parser = gst_element_factory_make(parserFactory, "parser");
     if (!self->_parser) {
