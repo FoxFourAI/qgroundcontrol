@@ -94,6 +94,7 @@ private:
     bool _endOfStream = false;
     bool _isRtsp = false;
     bool _isMpegts = false;
+    bool _isMpegts265 = false;
     bool _isRtp = false;
     bool _isRtp265 = false;
     QSize _videoSize{};
