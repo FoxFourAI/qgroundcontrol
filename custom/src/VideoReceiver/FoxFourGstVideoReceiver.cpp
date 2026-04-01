@@ -229,7 +229,6 @@ bool FoxFourGstVideoReceiver::_createRtspSource()
 
 bool FoxFourGstVideoReceiver::_createMpegtsSource()
 {
-    // udpsrc port=8080 buffer-size=100000000
     _source = gst_element_factory_make("udpsrc", "source");
     if (!_source) {
         qCCritical(GstVideoReceiverLog) << "gst_element_factory_make('udpsrc') failed";
@@ -238,25 +237,20 @@ bool FoxFourGstVideoReceiver::_createMpegtsSource()
 
     QString uri = QString("udp://0.0.0.0:%1").arg(_uri.split('/').last());
 
-    g_object_set(_source,
-                 "uri", uri.toUtf8().constData(),
-                 "buffer-size", 100000000,
-                 "timeout", (guint64)0,
-                 nullptr);
+    g_object_set(_source, "uri", uri.toUtf8().constData(), "buffer-size",
+                 2097152,  // 2 MB — enough headroom without deep buffering
+                 "timeout", (guint64)0, nullptr);
 
-    // tsdemux parse-private-sections=TRUE
     _demux = gst_element_factory_make("tsdemux", "demux");
     if (!_demux) {
         qCCritical(GstVideoReceiverLog) << "gst_element_factory_make('tsdemux') failed";
         return false;
     }
 
-    g_object_set(_demux,
-                 "parse-private-sections", TRUE,
+    g_object_set(_demux, "parse-private-sections", TRUE, "latency", (guint64)0,  // no extra buffering
                  nullptr);
 
     g_signal_connect(_demux, "pad-added", G_CALLBACK(_onDemuxPadAdded), this);
-
     return true;
 }
 
@@ -419,89 +413,158 @@ bool FoxFourGstVideoReceiver::_buildPipeline()
 
 void FoxFourGstVideoReceiver::_onRtspPadAdded(GstElement *element, GstPad *pad, gpointer data)
 {
-    FoxFourGstVideoReceiver *self = static_cast<FoxFourGstVideoReceiver*>(data);
+    Q_UNUSED(element)
+        FoxFourGstVideoReceiver *self = static_cast<FoxFourGstVideoReceiver*>(data);
 
-    GstCaps *caps = gst_pad_get_current_caps(pad);
-    if (!caps) {
-        return;
-    }
+        GstCaps *caps = gst_pad_get_current_caps(pad);
+        if (!caps) return;
 
-    GstStructure *structure = gst_caps_get_structure(caps, 0);
-    const gchar *name = gst_structure_get_name(structure);
+        GstStructure *structure = gst_caps_get_structure(caps, 0);
+        const gchar  *name      = gst_structure_get_name(structure);
 
-    // Check for video-stream
-    if (g_str_has_prefix(name, "application/x-rtp")) {
-        // Initialize depayloader for RTSP
-        GstElement *depay = gst_element_factory_make("rtph264depay", nullptr);
-        GstElement *parser = gst_element_factory_make("h264parse", nullptr);
-
-        if (depay && parser) {
-            g_object_set(parser, "config-interval", -1, nullptr);
-
-            gst_bin_add_many(GST_BIN(self->_pipeline), depay, parser, nullptr);
-
-            GstPad *sinkPad = gst_element_get_static_pad(depay, "sink");
-            if (gst_pad_link(pad, sinkPad) == GST_PAD_LINK_OK) {
-                if (gst_element_link_many(depay, parser, self->_tee, nullptr)) {
-                    gst_element_sync_state_with_parent(depay);
-                    gst_element_sync_state_with_parent(parser);
-
-                    self->_parser = parser;
-
-                    if (!self->_streaming) {
-                        self->_streaming = true;
-                        self->_dispatchSignal([self]() {
-                            emit self->streamingChanged(self->_streaming);
-                        });
-                    }
-                }
-            }
-            gst_clear_object(&sinkPad);
+        if (!g_str_has_prefix(name, "application/x-rtp")) {
+            gst_clear_caps(&caps);
+            return;
         }
-    }
 
-    gst_clear_caps(&caps);
+        // Detect codec from encoding-name field in the RTP caps
+        const gchar *encodingName = gst_structure_get_string(structure, "encoding-name");
+        const bool isH265 = (encodingName && g_ascii_strcasecmp(encodingName, "H265") == 0);
+
+        gst_clear_caps(&caps);
+
+        const char *depayFactory  = isH265 ? "rtph265depay"  : "rtph264depay";
+        const char *parseFactory  = isH265 ? "h265parse"     : "h264parse";
+
+        GstElement *depay  = gst_element_factory_make(depayFactory, nullptr);
+        GstElement *parser = gst_element_factory_make(parseFactory, nullptr);
+
+        if (!depay || !parser) {
+            qCCritical(GstVideoReceiverLog) << "Failed to create depay/parser elements";
+            gst_clear_object(&depay);
+            gst_clear_object(&parser);
+            return;
+        }
+
+        g_object_set(parser, "config-interval", -1, nullptr);
+
+        gst_bin_add_many(GST_BIN(self->_pipeline), depay, parser, nullptr);
+
+        GstPad *sinkPad = gst_element_get_static_pad(depay, "sink");
+        if (gst_pad_link(pad, sinkPad) != GST_PAD_LINK_OK) {
+            qCCritical(GstVideoReceiverLog) << "gst_pad_link(rtspsrc→depay) failed";
+            gst_clear_object(&sinkPad);
+            gst_bin_remove(GST_BIN(self->_pipeline), depay);
+            gst_bin_remove(GST_BIN(self->_pipeline), parser);
+            return;
+        }
+        gst_clear_object(&sinkPad);
+
+        if (gst_element_link_many(depay, parser, self->_tee, nullptr)) {
+            gst_element_sync_state_with_parent(depay);
+            gst_element_sync_state_with_parent(parser);
+            self->_parser = parser;
+
+            if (!self->_streaming) {
+                self->_streaming = true;
+                self->_dispatchSignal([self]() {
+                    emit self->streamingChanged(self->_streaming);
+                });
+            }
+        } else {
+            qCCritical(GstVideoReceiverLog) << "gst_element_link_many(depay→parser→tee) failed";
+            gst_bin_remove(GST_BIN(self->_pipeline), depay);
+            gst_bin_remove(GST_BIN(self->_pipeline), parser);
+        }
 }
 
 void FoxFourGstVideoReceiver::_onDemuxPadAdded(GstElement *element, GstPad *pad, gpointer data)
 {
-    FoxFourGstVideoReceiver *self = static_cast<FoxFourGstVideoReceiver*>(data);
+    Q_UNUSED(element)
+    FoxFourGstVideoReceiver* self = static_cast<FoxFourGstVideoReceiver*>(data);
 
-    GstCaps *caps = gst_pad_get_current_caps(pad);
-    if (!caps) {
+    // tsdemux pads are named "video_XXXX", "audio_XXXX", "private_XXXX"
+    gchar* padName = gst_pad_get_name(pad);
+    const bool isVideoPad = g_str_has_prefix(padName, "video");
+    const bool isKlvPad = g_str_has_prefix(padName, "private");
+    g_free(padName);
+
+    if (isKlvPad) {
+        self->_setupMetadataBranch(pad);
         return;
     }
 
-    GstStructure *structure = gst_caps_get_structure(caps, 0);
-    const gchar *name = gst_structure_get_name(structure);
-
-    if (g_str_has_prefix(name, "video/x-h264")) {
-        // h264parse
-        self->_parser = gst_element_factory_make("h264parse", "parser");
-        if (self->_parser) {
-            gst_bin_add(GST_BIN(self->_pipeline), self->_parser);
-
-            GstPad *sinkPad = gst_element_get_static_pad(self->_parser, "sink");
-            if (gst_pad_link(pad, sinkPad) == GST_PAD_LINK_OK) {
-                if (gst_element_link(self->_parser, self->_tee)) {
-                    gst_element_sync_state_with_parent(self->_parser);
-
-                    if (!self->_streaming) {
-                        self->_streaming = true;
-                        self->_dispatchSignal([self]() {
-                            emit self->streamingChanged(self->_streaming);
-                        });
-                    }
-                }
-            }
-            gst_clear_object(&sinkPad);
-        }
-    } else if (g_str_has_prefix(name, "meta/x-klv")) {
-        // Parse Metadata (KLV)
-        self->_setupMetadataBranch(pad);
+    if (!isVideoPad) {
+        return;  // skip audio and anything else
     }
 
+    // Prefer current caps; fall back to a query so we always have something.
+    GstCaps* caps = gst_pad_get_current_caps(pad);
+    if (!caps) {
+        caps = gst_pad_query_caps(pad, nullptr);
+    }
+    if (!caps) {
+        qCCritical(GstVideoReceiverLog) << "_onDemuxPadAdded: cannot determine caps on video pad";
+        return;
+    }
+
+    GstStructure* structure = gst_caps_get_structure(caps, 0);
+    const gchar* name = gst_structure_get_name(structure);
+
+    const bool isH264 = g_str_has_prefix(name, "video/x-h264");
+    self->_isMpegts265 = g_str_has_prefix(name, "video/x-h265");
+
     gst_clear_caps(&caps);
+
+    if (!isH264 && !self->_isMpegts265) {
+        // Caps may still be ANY at this point on some platforms.
+        // Fall back to pad name heuristic: tsdemux uses programme-specific PIDs
+        // but we can't know the codec — try H.264 as default and let parse fail gracefully.
+        qCWarning(GstVideoReceiverLog) << "_onDemuxPadAdded: unknown codec caps, defaulting to H.264";
+    }
+
+    const char* parserFactory = (self->_isMpegts265) ? "h265parse" : "h264parse";
+    self->_parser = gst_element_factory_make(parserFactory, "parser");
+    if (!self->_parser) {
+        qCCritical(GstVideoReceiverLog) << "gst_element_factory_make('" << parserFactory << "') failed";
+        return;
+    }
+
+    g_object_set(self->_parser, "config-interval", -1,  // inject SPS/PPS before every IDR
+                 nullptr);
+
+    gst_bin_add(GST_BIN(self->_pipeline), self->_parser);
+
+    GstPad* sinkPad = gst_element_get_static_pad(self->_parser, "sink");
+    if (!sinkPad) {
+        qCCritical(GstVideoReceiverLog) << "gst_element_get_static_pad(parser, sink) failed";
+        gst_bin_remove(GST_BIN(self->_pipeline), self->_parser);
+        self->_parser = nullptr;
+        return;
+    }
+
+    if (gst_pad_link(pad, sinkPad) != GST_PAD_LINK_OK) {
+        qCCritical(GstVideoReceiverLog) << "gst_pad_link(demux→parser) failed";
+        gst_clear_object(&sinkPad);
+        gst_bin_remove(GST_BIN(self->_pipeline), self->_parser);
+        self->_parser = nullptr;
+        return;
+    }
+    gst_clear_object(&sinkPad);
+
+    if (!gst_element_link(self->_parser, self->_tee)) {
+        qCCritical(GstVideoReceiverLog) << "gst_element_link(parser→tee) failed";
+        gst_bin_remove(GST_BIN(self->_pipeline), self->_parser);
+        self->_parser = nullptr;
+        return;
+    }
+
+    gst_element_sync_state_with_parent(self->_parser);
+
+    if (!self->_streaming) {
+        self->_streaming = true;
+        self->_dispatchSignal([self]() { emit self->streamingChanged(self->_streaming); });
+    }
 }
 
 void FoxFourGstVideoReceiver::_setupMetadataBranch(GstPad *pad)
@@ -607,7 +670,7 @@ void FoxFourGstVideoReceiver::startDecoding(void *sink)
     }
 
     // avdec_h264
-    if (_isRtp265) {
+    if (_isRtp265 || _isMpegts265) {
         _decoder = gst_element_factory_make("avdec_h265", "decoder");
     } else {
         _decoder = gst_element_factory_make("avdec_h264", "decoder");
