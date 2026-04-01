@@ -46,7 +46,8 @@ bool FoxFourPlugin::overrideSettingsGroupVisibility(const QString& name) {
 
 VideoReceiver* FoxFourPlugin::createVideoReceiver(QObject* parent) {
 #ifdef QGC_GST_STREAMING
-    return new FoxFourGstVideoReceiver(parent);
+    return QGCCorePlugin::createVideoReceiver(parent);
+    // return new FoxFourGstVideoReceiver(parent);
 #elif defined(QGC_QT_STREAMING)
     return QtMultimediaReceiver::createVideoReceiver(parent);
 #else
