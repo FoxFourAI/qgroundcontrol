@@ -206,7 +206,10 @@ void FoxFourCameraControl::_requestTrackingStatus()
 void FoxFourCameraControl::setCameraIndex(int index)
 {
     if(_cameraSwitchFact == nullptr){
-        return;
+       if(!_vehicle->parameterManager()->parameterExists(_vehicle->defaultComponentId(),"SCR_USER3")){
+           return;
+       }
+       _cameraSwitchFact = _vehicle->parameterManager()->getParameter(_vehicle->defaultComponentId(),"SCR_USER3");
     }
     qDebug()<<"setting value to" << index;
     _cameraSwitchFact->setCookedValue(index);
