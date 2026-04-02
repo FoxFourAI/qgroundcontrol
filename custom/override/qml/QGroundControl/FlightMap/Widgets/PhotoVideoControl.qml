@@ -169,7 +169,7 @@ Rectangle {
                 height:             width / 1.6
                 color:              'transparent'
                 radius:             height * 0.2
-                visible:            true //_camera.hasModes
+                visible:            _cameraInVideoMode
                 state: _camera.cameraIndex > 0 ? "Bottom" : "Front"
 
                 states:[

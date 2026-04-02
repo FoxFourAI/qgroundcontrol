@@ -1,3 +1,4 @@
+
 /****************************************************************************
  *
  * (c) 2009-2020 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
@@ -252,8 +253,8 @@ Item {
         onWheel: (wheel) => {
             const WHEEL_DIVIDER = 19;
 
-            console.log(wheel)
-            console.log(wheel.angleDelta)
+            // console.log(wheel)
+            // console.log(wheel.angleDelta)
             if (currentScaleMode == scaleModeHorizontal || currentScaleMode == scaleModeBoth) {
                 targetCanvas.rectWidth = Math.max(0, targetCanvas.rectWidth + Math.floor(Number( wheel.angleDelta.y) / WHEEL_DIVIDER));
             }
