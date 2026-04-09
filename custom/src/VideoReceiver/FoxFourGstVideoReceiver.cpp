@@ -483,10 +483,9 @@ void FoxFourGstVideoReceiver::_onDemuxPadAdded(GstElement *element, GstPad *pad,
     Q_UNUSED(element)
     FoxFourGstVideoReceiver* self = static_cast<FoxFourGstVideoReceiver*>(data);
 
-    // tsdemux pads are named "video_XXXX", "audio_XXXX", "private_XXXX"
     gchar* padName = gst_pad_get_name(pad);
     const bool isVideoPad = g_str_has_prefix(padName, "video");
-    const bool isKlvPad = g_str_has_prefix(padName, "private");
+    const bool isKlvPad   = g_str_has_prefix(padName, "private");
     g_free(padName);
 
     if (isKlvPad) {
@@ -495,87 +494,93 @@ void FoxFourGstVideoReceiver::_onDemuxPadAdded(GstElement *element, GstPad *pad,
     }
 
     if (!isVideoPad) {
-        return;  // skip audio and anything else
+        return;
     }
 
-    // Prefer current caps; fall back to a query so we always have something.
+            // Guard against firing twice (tsdemux can emit pad-added more than once)
+    if (self->_parser) {
+        qCWarning(GstVideoReceiverLog) << "_onDemuxPadAdded: parser already exists, ignoring";
+        return;
+    }
+
     GstCaps* caps = gst_pad_get_current_caps(pad);
     if (!caps) {
         caps = gst_pad_query_caps(pad, nullptr);
     }
-    if (!caps) {
-        qCCritical(GstVideoReceiverLog) << "_onDemuxPadAdded: cannot determine caps on video pad";
-        return;
+
+    bool isMpegts265 = false;
+    if (caps) {
+        GstStructure* structure = gst_caps_get_structure(caps, 0);
+        const gchar*  name      = gst_structure_get_name(structure);
+        isMpegts265 = g_str_has_prefix(name, "video/x-h265");
+        if (!g_str_has_prefix(name, "video/x-h264") && !isMpegts265) {
+            qCWarning(GstVideoReceiverLog) << "_onDemuxPadAdded: unknown codec, defaulting to H.264";
+        }
+        gst_clear_caps(&caps);
+    } else {
+        qCWarning(GstVideoReceiverLog) << "_onDemuxPadAdded: no caps available, defaulting to H.264";
     }
 
-    GstStructure* structure = gst_caps_get_structure(caps, 0);
-    const gchar* name = gst_structure_get_name(structure);
+    self->_isMpegts265 = isMpegts265;
 
-    const bool isH264 = g_str_has_prefix(name, "video/x-h264");
-    self->_isMpegts265 = g_str_has_prefix(name, "video/x-h265");
+    const char* parserFactory = isMpegts265 ? "h265parse" : "h264parse";
 
-    gst_clear_caps(&caps);
+            // Use a unique name to avoid collision if pipeline is reused
+    static std::atomic<int> parserCounter{0};
+    const QByteArray parserName = QStringLiteral("parser_%1").arg(parserCounter++).toUtf8();
 
-    if (!isH264 && !self->_isMpegts265) {
-        // Caps may still be ANY at this point on some platforms.
-        // Fall back to pad name heuristic: tsdemux uses programme-specific PIDs
-        // but we can't know the codec — try H.264 as default and let parse fail gracefully.
-        qCWarning(GstVideoReceiverLog) << "_onDemuxPadAdded: unknown codec caps, defaulting to H.264";
-    }
-
-    const char* parserFactory = (self->_isMpegts265) ? "h265parse" : "h264parse";
-    self->_parser = gst_element_factory_make(parserFactory, "parser");
-    if (!self->_parser) {
+    GstElement* parser = gst_element_factory_make(parserFactory, parserName.constData());
+    if (!parser) {
         qCCritical(GstVideoReceiverLog) << "gst_element_factory_make('" << parserFactory << "') failed";
         return;
     }
 
-    g_object_set(self->_parser, "config-interval", -1,  // inject SPS/PPS before every IDR
-                 nullptr);
+    g_object_set(parser, "config-interval", -1, nullptr);
 
-    if (self->_pipeline == nullptr) {
-        qCDebug(GstVideoReceiverLog) << "demux added without piprline, ignoring...";
+            // Ref before bin_add — gst_bin_add takes ownership (unrefs on both
+            // success AND failure), so we keep our own ref until we're done with it
+    gst_object_ref(parser);
+
+    if (!gst_bin_add(GST_BIN(self->_pipeline), parser)) {
+        qCCritical(GstVideoReceiverLog) << "gst_bin_add(parser) failed";
+        gst_object_unref(parser);  // release our extra ref
         return;
     }
+    // pipeline now holds one ref; we hold one extra ref — safe to use parser
 
-    gst_bin_add(GST_BIN(self->_pipeline), self->_parser);
-    gst_element_sync_state_with_parent(self->_parser);
-
-    GstPad* sinkPad = gst_element_get_static_pad(self->_parser, "sink");
+    GstPad* sinkPad = gst_element_get_static_pad(parser, "sink");
     if (!sinkPad) {
         qCCritical(GstVideoReceiverLog) << "gst_element_get_static_pad(parser, sink) failed";
-        if (self->_pipeline == nullptr) {
-            qCCritical(GstVideoReceiverLog) << "no pipeline exist to remove parser";
-            self->_parser = nullptr;
-            return;
-        }
-        if(self->_parser == nullptr){
-            qCCritical(GstVideoReceiverLog) << "no parser to remove????";
-            return;
-        }
-        gst_bin_remove(GST_BIN(self->_pipeline), self->_parser);
-        qCCritical(GstVideoReceiverLog) << "parser removed from pipeline";
-        self->_parser = nullptr;
+        gst_element_set_state(parser, GST_STATE_NULL);
+        gst_bin_remove(GST_BIN(self->_pipeline), parser);
+        gst_object_unref(parser);
         return;
     }
 
-    if (gst_pad_link(pad, sinkPad) != GST_PAD_LINK_OK) {
-        qCCritical(GstVideoReceiverLog) << "gst_pad_link(demux→parser) failed";
-        gst_clear_object(&sinkPad);
-        gst_bin_remove(GST_BIN(self->_pipeline), self->_parser);
-        self->_parser = nullptr;
-        return;
-    }
+    GstPadLinkReturn linkRet = gst_pad_link(pad, sinkPad);
     gst_clear_object(&sinkPad);
 
-    if (!gst_element_link(self->_parser, self->_tee)) {
-        qCCritical(GstVideoReceiverLog) << "gst_element_link(parser→tee) failed";
-        gst_bin_remove(GST_BIN(self->_pipeline), self->_parser);
-        self->_parser = nullptr;
+    if (linkRet != GST_PAD_LINK_OK) {
+        qCCritical(GstVideoReceiverLog) << "gst_pad_link(demux→parser) failed, ret=" << linkRet;
+        gst_element_set_state(parser, GST_STATE_NULL);
+        gst_bin_remove(GST_BIN(self->_pipeline), parser);
+        gst_object_unref(parser);
         return;
     }
 
-    gst_element_sync_state_with_parent(self->_parser);
+    if (!gst_element_link(parser, self->_tee)) {
+        qCCritical(GstVideoReceiverLog) << "gst_element_link(parser→tee) failed";
+        gst_element_set_state(parser, GST_STATE_NULL);
+        gst_bin_remove(GST_BIN(self->_pipeline), parser);
+        gst_object_unref(parser);
+        return;
+    }
+
+    gst_element_sync_state_with_parent(parser);
+    self->_parser = parser;
+
+            // Release our extra ref — pipeline owns it from here, _parser is just a weak alias
+    gst_object_unref(parser);
 
     if (!self->_streaming) {
         self->_streaming = true;
