@@ -544,7 +544,17 @@ void FoxFourGstVideoReceiver::_onDemuxPadAdded(GstElement *element, GstPad *pad,
     GstPad* sinkPad = gst_element_get_static_pad(self->_parser, "sink");
     if (!sinkPad) {
         qCCritical(GstVideoReceiverLog) << "gst_element_get_static_pad(parser, sink) failed";
+        if (self->_pipeline == nullptr) {
+            qCCritical(GstVideoReceiverLog) << "no pipeline exist to remove parser";
+            self->_parser = nullptr;
+            return;
+        }
+        if(self->_parser == nullptr){
+            qCCritical(GstVideoReceiverLog) << "no parser to remove????";
+            return;
+        }
         gst_bin_remove(GST_BIN(self->_pipeline), self->_parser);
+        qCCritical(GstVideoReceiverLog) << "parser removed from pipeline";
         self->_parser = nullptr;
         return;
     }
