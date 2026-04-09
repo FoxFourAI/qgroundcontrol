@@ -533,7 +533,7 @@ void FoxFourGstVideoReceiver::_onDemuxPadAdded(GstElement *element, GstPad *pad,
     g_object_set(self->_parser, "config-interval", -1,  // inject SPS/PPS before every IDR
                  nullptr);
 
-    if(self->_pipeline == nullptr){
+    if (self->_pipeline == nullptr) {
         qCDebug(GstVideoReceiverLog) << "demux added without piprline, ignoring...";
         return;
     }
