@@ -279,10 +279,8 @@ Popup {
                     onClicked: {
                         console.log("entered")
                         closeTimer.stop()
-                    }
-                    onReleased: {
-                        console.log("leaved")
-                        closeTimer.start()
+                        root.height = ScreenTools.defaultFontPixelHeight * 20
+                        root.width = mainWindow.width * 0.6
                     }
                 }
             }
