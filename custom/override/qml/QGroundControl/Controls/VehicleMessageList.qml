@@ -77,32 +77,6 @@ ColumnLayout{
                 messages.append({ "message": listView.formatMessage(formattedMessage) })
             }
         }
-
-        // FactPanelController {
-        //     id: controller
-        // }
-
-        // onLinkActivated: (link) => {
-        //                      if (link.startsWith('param://')) {
-        //                          var paramName = link.substr(8);
-        //                          _fact = controller.getParameterFact(-1, paramName, true)
-        //                          if (_fact != null) {
-        //                              paramEditorDialogComponent.createObject(mainWindow).open()
-        //                          }
-        //                      } else {
-        //                          Qt.openUrlExternally(link);
-        //                      }
-        //                  }
-
-        // Component {
-        //     id: paramEditorDialogComponent
-
-        //     ParameterEditorDialog {
-        //         title:          qsTr("Edit Parameter")
-        //         fact:           messageText._fact
-        //         destroyOnClose: true
-        //     }
-        // }
     }
     QGCButton{
         text: "Auto Scroll"

@@ -222,14 +222,6 @@ Popup {
         anchors.fill:           parent
         spacing:                _contentMargin
 
-        // QGCLabel {
-        //     id:                 titleLabel
-        //     text:               root.title
-        //     font.pointSize:     ScreenTools.mediumFontPointSize
-        //     verticalAlignment:	Text.AlignVCenter
-        //     visible: width < root.width / 3
-        // }
-
         Rectangle {
             id: body
             Layout.fillHeight:       true
