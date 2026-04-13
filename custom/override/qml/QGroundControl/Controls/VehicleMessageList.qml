@@ -22,6 +22,10 @@ ColumnLayout{
         id: listView
         clip: true
 
+        HoverHandler {
+            cursorShape: listView.dragging ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+        }
+
         property bool _autoScroll: true  // track if we should autoscroll
 
         ScrollBar.vertical: ScrollBar {

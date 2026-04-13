@@ -800,7 +800,15 @@ ApplicationWindow {
             criticalVehicleMessagePopup.criticalVehicleMessage      = message
             criticalVehicleMessagePopup.additionalCriticalMessagesReceived = false
             criticalVehicleMessagePopup.open()
+            criticalTimeout.start()
         }
+    }
+
+    Timer{
+        id: criticalTimeout
+        interval: 15000
+        running: false
+        onTriggered: criticalVehicleMessagePopup.close()
     }
 
     Popup {
