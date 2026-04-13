@@ -32,6 +32,7 @@
         <file alias="QGroundControl/Controls/ParameterEditor.qml">override/qml/QGroundControl/Controls/ParameterEditor.qml</file>
         <file alias="QGroundControl/Controls/InstrumentValueValue.qml">override/qml/QGroundControl/QmlControls/InstrumentValueValue.qml</file>
         <file alias="QGroundControl/Controls/InstrumentValueLabel.qml">override/qml/QGroundControl/QmlControls/InstrumentValueLabel.qml</file>
+        <file alias="QGroundControl/Controls/SettingsGroupLayout.qml">override/qml/QGroundControl/QmlControls/SettingsGroupLayout.qml</file>
         <file alias="QGroundControl/MainWindow.qml">override/qml/MainWindow.qml</file>
         <file alias="QGroundControl/FlightDisplay/FlyViewVideo.qml">override/qml/QGroundControl/FlightDisplay/FlyViewVideo.qml</file>
         <file alias="QGroundControl/FlightDisplay/FlyViewTopRightColumnLayout.qml">override/qml/QGroundControl/FlightDisplay/FlyViewTopRightColumnLayout.qml</file>

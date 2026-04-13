@@ -222,13 +222,13 @@ Popup {
         anchors.fill:           parent
         spacing:                _contentMargin
 
-        QGCLabel {
-            id:                 titleLabel
-            text:               root.title
-            font.pointSize:     ScreenTools.mediumFontPointSize
-            verticalAlignment:	Text.AlignVCenter
-            visible: width < root.width / 3
-        }
+        // QGCLabel {
+        //     id:                 titleLabel
+        //     text:               root.title
+        //     font.pointSize:     ScreenTools.mediumFontPointSize
+        //     verticalAlignment:	Text.AlignVCenter
+        //     visible: width < root.width / 3
+        // }
 
         Rectangle {
             id: body
@@ -279,10 +279,8 @@ Popup {
                     onClicked: {
                         console.log("entered")
                         closeTimer.stop()
-                    }
-                    onReleased: {
-                        console.log("leaved")
-                        closeTimer.start()
+                        root.height = ScreenTools.defaultFontPixelHeight * 20
+                        root.width = mainWindow.width * 0.6
                     }
                 }
             }
