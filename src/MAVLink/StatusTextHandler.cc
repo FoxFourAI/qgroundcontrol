@@ -74,7 +74,7 @@ QString StatusTextHandler::formattedMessages() const
 {
     QString result;
     for (const StatusText *message: messages()) {
-        (void) result.prepend(message->getFormattedText());
+        (void) result.append(message->getFormattedText());
     }
 
     return result;

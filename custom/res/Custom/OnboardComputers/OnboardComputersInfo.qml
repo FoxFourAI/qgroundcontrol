@@ -7,7 +7,7 @@ import QGroundControl.Controls
 
 import QGroundControl.FactControls
 
-Rectangle {
+Row {
 
     readonly property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
     readonly property var _onboardCompManager: _activeVehicle ? _activeVehicle.autopilotPlugin.onboardComputersManager : 0
@@ -16,7 +16,6 @@ Rectangle {
     // anchors.fill:   parent
     anchors.rightMargin: ScreenTools.defaultFontPixelWidth
     anchors.leftMargin:  ScreenTools.defaultFontPixelWidth
-    color:          qgcPal.window
 
     Repeater{
         model: _onboardCompManager.computersInfo

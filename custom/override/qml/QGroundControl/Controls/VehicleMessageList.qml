@@ -14,65 +14,83 @@ import QtQuick.Layouts
 import QGroundControl
 import QGroundControl.Controls
 
-ScrollView{
+ColumnLayout{
     anchors.fill: parent
-    TextArea {
-        id:                     messageText
-        readOnly:               true
-        textFormat:             TextEdit.RichText
-        color:                  qgcPal.text
-        placeholderText:        qsTr("No Messages")
-        placeholderTextColor:   qgcPal.text
-        padding:                0
-        wrapMode:               TextEdit.Wrap
+    ListView{
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        id: listView
+        clip: true
 
-        property bool noMessages: messageText.length === 0
+        HoverHandler {
+            cursorShape: listView.dragging ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+        }
 
-        property var _fact: null
+        property bool _autoScroll: true  // track if we should autoscroll
+
+        ScrollBar.vertical: ScrollBar {
+            id: scrollBar
+            policy: ScrollBar.AlwaysOff
+            onActiveChanged: listView._autoScroll = false
+        }
+
+        // Fire AFTER contentHeight settles, not before
+        onContentHeightChanged: {
+            if (_autoScroll) positionViewAtEnd()
+        }
+
+        ListModel {
+            id: messages
+        }
+
+        model: messages
+
+        delegate: TextEdit {
+            required property string message
+            text:       message
+            enabled:    false
+            textFormat: TextEdit.RichText
+            width:      listView.width - scrollBar.width
+            wrapMode:   TextEdit.WordWrap
+            color:      qgcPal.text
+        }
+
+        Component.onCompleted: {
+            let rawMsges = _activeVehicle.formattedMessages.split('<br/>')
+            for (let message of rawMsges) {
+                if (message === "") continue
+                messages.append({ "message": formatMessage(message) })
+            }
+        }
 
         function formatMessage(message) {
             message = message.replace(new RegExp("<#E>", "g"), "color: " + qgcPal.warningText + "; font: " + (ScreenTools.defaultFontPointSize.toFixed(0) - 1) + "pt monospace;");
             message = message.replace(new RegExp("<#I>", "g"), "color: " + qgcPal.warningText + "; font: " + (ScreenTools.defaultFontPointSize.toFixed(0) - 1) + "pt monospace;");
             message = message.replace(new RegExp("<#N>", "g"), "color: " + qgcPal.text + "; font: " + (ScreenTools.defaultFontPointSize.toFixed(0) - 1) + "pt monospace;");
-            return message;
-        }
-
-        Component.onCompleted: {
-            messageText.text = messageText.formatMessage(_activeVehicle.formattedMessages)
-            if (_activeVehicle) {
-                _activeVehicle.resetAllMessages()
-            }
+            message = message.replace(new RegExp("<br\\s*/?>", "gi"), "")
+            return message.trim()
         }
 
         Connections {
             target: _activeVehicle
-            function onNewFormattedMessage(formattedMessage) { messageText.insert(0, messageText.formatMessage(formattedMessage)) }
-        }
-
-        FactPanelController {
-            id: controller
-        }
-
-        onLinkActivated: (link) => {
-                             if (link.startsWith('param://')) {
-                                 var paramName = link.substr(8);
-                                 _fact = controller.getParameterFact(-1, paramName, true)
-                                 if (_fact != null) {
-                                     paramEditorDialogComponent.createObject(mainWindow).open()
-                                 }
-                             } else {
-                                 Qt.openUrlExternally(link);
-                             }
-                         }
-
-        Component {
-            id: paramEditorDialogComponent
-
-            ParameterEditorDialog {
-                title:          qsTr("Edit Parameter")
-                fact:           messageText._fact
-                destroyOnClose: true
+            function onNewFormattedMessage(formattedMessage) {
+                messages.append({ "message": listView.formatMessage(formattedMessage) })
             }
         }
     }
+    QGCButton{
+        text: "Auto Scroll"
+        checkable: true
+        checked: listView._autoScroll
+        onCheckedChanged: {
+            if(checked){
+                listView.positionViewAtEnd()
+            }
+
+            listView._autoScroll = checked
+        }
+        Layout.fillWidth: true
+    }
 }
+
+
