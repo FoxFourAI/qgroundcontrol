@@ -21,7 +21,6 @@ void TrajectoryPoints::_vehicleCoordinateChanged(QGeoCoordinate coordinate,uint8
 {
     // The goal of this algorithm is to limit the number of trajectory points whic represent the vehicle path.
     // Fewer points means higher performance of map display.
-    qDebug()<<"handle "<<src<<"trajectory";
     auto &trajectory =_trajectories[src];
     if ( trajectory.lastPoint.isValid()) {
         double distance =  trajectory.lastPoint.distanceTo(coordinate);

@@ -20,4 +20,5 @@ private slots:
 private:
     Vehicle *_vehicle = nullptr;
     QVariantList _anchors;
+    int _maxWaypoints = -1;
 };
