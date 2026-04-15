@@ -296,6 +296,17 @@ FlightMap {
         }
     }
 
+    MapItemView{
+        model: _activeVehicle.autopilotPlugin.mapMatching.anchors
+        delegate: MapCircle{
+            center: modelData
+            radius: 3
+            color: "orange"
+            border.color: "red"
+            border.width: 3
+        }
+    }
+
     // Add the vehicles to the map
     MapItemView {
         model: QGroundControl.multiVehicleManager.vehicles
