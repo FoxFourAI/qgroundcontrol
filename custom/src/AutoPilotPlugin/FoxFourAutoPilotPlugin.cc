@@ -18,6 +18,7 @@
 
 FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent)
     : APMAutoPilotPlugin(vehicle, parent) {
+    _buttonList = new ButtonList(vehicle,this);
     _ekSources = new EKSources(vehicle, this);
     _onboardComputersMngr = new OnboardComputersManager(vehicle, this);
     _vioGpsComparer = new VioGpsComparer(vehicle, this);
@@ -68,13 +69,9 @@ void FoxFourAutoPilotPlugin::setEK3Source(int index) {
     _vehicle->sendCommand(_vehicle->defaultComponentId(), MAV_CMD_SET_EKF_SOURCE_SET, false, index);
 }
 
-void FoxFourAutoPilotPlugin::flipServo(int servo) {
-    if (servo < 0 || servo >= _servoCount) {
-        return;
-    }
+void FoxFourAutoPilotPlugin::setServo(int servo, int value) {
     _vehicle->sendMavCommand(_vehicle->defaultComponentId(), MAV_CMD_DO_SET_SERVO, false, servo,
-                             _servoActive[servo] ? SERVO_MIN : SERVO_MAX);
-    _servoActive[servo] = !_servoActive[servo];
+                             value);
 }
 
 OnboardComputersManager* FoxFourAutoPilotPlugin::onboardComputersManager() { return _onboardComputersMngr; }

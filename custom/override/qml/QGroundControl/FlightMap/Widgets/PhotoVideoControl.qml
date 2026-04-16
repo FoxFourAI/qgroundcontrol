@@ -28,6 +28,7 @@ Rectangle {
     property real   _margins:                   ScreenTools.defaultFontPixelHeight / 2
     property real   _smallMargins:              ScreenTools.defaultFontPixelWidth / 2
     property var    _activeVehicle:             globals.activeVehicle
+    property var    _buttonList:                   _activeVehicle.autopilotPlugin.buttonList
     property var    _cameraManager:             _activeVehicle.cameraManager
     property var    _camera:                    _cameraManager.currentCameraInstance
     property bool   _cameraInPhotoMode:         _camera.cameraMode === MavlinkCameraControl.CAM_MODE_PHOTO
@@ -733,7 +734,7 @@ Rectangle {
 
     }
 
-    RowLayout{
+    ColumnLayout{
         id:dropList
         property var vehicle: globals.activeVehicle
         property var ap : vehicle.autopilotPlugin
@@ -744,50 +745,173 @@ Rectangle {
         anchors.right: parent.right
         anchors.rightMargin: parent._smallMargins
         anchors.bottomMargin: parent._smallMargins
-        // anchors.verticalCenter: parent.verticalCenter
-        // anchors.left: parent.left
-        visible: vehicle != undefined /*&& ap.isDropper*/
+        visible: vehicle != undefined
         spacing: ScreenTools.defaultFontPixelWidth / 2
 
-        QGCDelayButton{
-            Layout.fillWidth: true
-            text: qsTr("7")
-            onActivated: {
-                parent.ap.flipServo(7)
+        Repeater{
+            model:_buttonList.buttons
+            delegate: QGCDelayButton{
+                Layout.fillWidth: true
+                text: modelData.name
+                onActivated:{
+                    dropList.ap.setServo(modelData.servoIndex,modelData.activeValue)
+                    timeout.start()
+                    dropList.enabled = false
+                }
+                Timer{
+                    id: timeout
+                    interval: 500
+                    repeat: false
+                    running: false
+                    onTriggered: {
+                        dropList.ap.setServo(modelData.servoIndex,modelData.defaultValue)
+                        dropList.enabled = true
+                    }
+                }
             }
-            QGCColoredImage{
-                // anchors.fill: parent
-                anchors.topMargin: root._smallMargins
-                anchors.bottomMargin: root._smallMargins
-                x: parent.width / 2 - width / 2 + 1
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                width: height
-                source: "qrc:/custom/img/drop.svg"
-                color: qgcPal.text
-                fillMode: Image.PreserveAspectFit
+        }
+        QGCButton{
+            Layout.fillWidth: true
+            text: qsTr("Manage Buttons")
+            onClicked: servoButtonEditor.createObject(mainWindow).open()
+        }
+
+        Component{
+            id: servoButtonEditor
+
+            QGCPopupDialog {
+                title:      qsTr("Buttons Editor")
+                buttons:    Dialog.Close
+
+                ColumnLayout{
+                    RowLayout{
+                        spacing:_margins
+                        ColumnLayout{
+                            QGCLabel{
+                                text:qsTr("Btn. name")
+                            }
+                            Repeater{
+                                model:_buttonList.buttons
+                                delegate: QGCTextField{
+                                    text: modelData.name
+                                    onTextChanged: modelData.name = text
+                                }
+                            }
+                        }
+                        //servo index
+                        ColumnLayout{
+                            QGCLabel{
+                                text:qsTr("Servo indx")
+                            }
+                            Repeater{
+                                model:_buttonList.buttons
+                                delegate: QGCComboBox{
+                                    Layout.fillWidth: true
+                                    model: [1,2,3,4,5,6,7,8,9]
+                                    currentIndex: modelData.servoIndex - 1
+                                    onCurrentIndexChanged: modelData.servoIndex = currentIndex + 1
+                                }
+                            }
+                        }
+                        //default value
+                        ColumnLayout{
+                            QGCLabel{
+                                text:qsTr("Default val.")
+                            }
+                            Repeater{
+                                model:_buttonList.buttons
+                                delegate: QGCTextField{
+                                    text: modelData.defaultValue
+                                    onTextChanged: modelData.defaultValue = text
+                                }
+                            }
+                        }
+                        //active value
+                        ColumnLayout{
+                            QGCLabel{
+                                text:qsTr("Active val.")
+                            }
+                            Repeater{
+                                model:_buttonList.buttons
+                                delegate: QGCTextField{
+                                    text: modelData.activeValue
+                                    onTextChanged: modelData.activeValue = text
+                                }
+                            }
+                        }
+                        ColumnLayout{
+                            QGCLabel{
+                                text:qsTr("Remove")
+                            }
+                            Repeater{
+                                model:_buttonList.buttons
+                                delegate: Rectangle{
+                                    border.width: 1
+                                    border.color: qgcPal.buttonBorder
+                                    radius: ScreenTools.buttonBorderRadius
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    QGCLabel{
+                                    text: qsTr("X")
+                                    color: qgcPal.buttonText
+                                    anchors.centerIn: parent
+                                    }
+                                    MouseArea{
+                                        anchors.fill: parent
+                                        onClicked: _buttonList.removeAt(index)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    QGCButton{
+                        text:qsTr("Add")
+                        Layout.fillWidth: true
+                        onClicked: _buttonList.append()
+                    }
+                }
             }
         }
 
-        QGCDelayButton{
-            Layout.fillWidth: true
-            text: qsTr("9")
-            onActivated: {
-                parent.ap.flipServo(9)
-            }
-            QGCColoredImage{
-                // anchors.fill: parent
-                anchors.topMargin: root._smallMargins
-                anchors.bottomMargin: root._smallMargins
-                x: parent.width / 2 - width / 2 + 1
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                width: height
-                source: "qrc:/custom/img/drop.svg"
-                color: qgcPal.text
-                fillMode: Image.PreserveAspectFit
-            }
-        }
+        // QGCDelayButton{
+        //     Layout.fillWidth: true
+        //     text: qsTr("7")
+        //     onActivated: {
+        //         parent.ap.flipServo(7)
+        //     }
+        //     QGCColoredImage{
+        //         // anchors.fill: parent
+        //         anchors.topMargin: root._smallMargins
+        //         anchors.bottomMargin: root._smallMargins
+        //         x: parent.width / 2 - width / 2 + 1
+        //         anchors.top: parent.top
+        //         anchors.bottom: parent.bottom
+        //         width: height
+        //         source: "qrc:/custom/img/drop.svg"
+        //         color: qgcPal.text
+        //         fillMode: Image.PreserveAspectFit
+        //     }
+        // }
+
+        // QGCDelayButton{
+        //     Layout.fillWidth: true
+        //     text: qsTr("9")
+        //     onActivated: {
+        //         parent.ap.flipServo(9)
+        //     }
+        //     QGCColoredImage{
+        //         // anchors.fill: parent
+        //         anchors.topMargin: root._smallMargins
+        //         anchors.bottomMargin: root._smallMargins
+        //         x: parent.width / 2 - width / 2 + 1
+        //         anchors.top: parent.top
+        //         anchors.bottom: parent.bottom
+        //         width: height
+        //         source: "qrc:/custom/img/drop.svg"
+        //         color: qgcPal.text
+        //         fillMode: Image.PreserveAspectFit
+        //     }
+        // }
         // Repeater{
             // model: [7,9]
             // delegate:
