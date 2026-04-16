@@ -100,4 +100,55 @@ Item {
             duration: 1000
         }
     }
+    Rectangle {
+        id: sliderBox
+        visible: false
+        radius: 4
+        color: Qt.rgba(qgcPal.window.r, qgcPal.window.g, qgcPal.window.b, 0.5)
+        width: expText.implicitWidth + ScreenTools.defaultFontPixelWidth * 2
+        height: parent.height * 0.4
+        anchors.left: parent.left
+        anchors.leftMargin: ScreenTools.defaultFontPixelWidth
+        anchors.verticalCenter: parent.verticalCenter
+        ColumnLayout{
+            anchors.fill: parent
+            QGCLabel{
+                id: expText
+                text:qsTr("Exp.")
+                Layout.alignment: Qt.AlignHCenter
+            }
+            QGCSlider{
+                id:expSlider
+                orientation: Qt.Vertical
+                Layout.alignment: Qt.AlignHCenter
+                from: 1
+                to: 15
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                snapMode: Slider.SnapAlways
+                stepSize: 1
+                onValueChanged: {
+                    let goldenRatio = 1.61803398875
+                    let compId = globalShortcuts.currentComputerId
+                    let paramSetter = globalShortcuts.parameterSetter
+                    let newExposure = Math.ceil(2 * Math.pow(goldenRatio,value))
+                    paramSetter.setParameter(compId, "CAM_EXPOSURE", newExposure)
+                }
+                Connections{
+                    target:globals.activeVehicle.parameterManager
+                    onParametersReadyChanged: (ready)=>{
+                        if (!ready) {
+                            return;
+                        }
+                        let compId = globalShortcuts.currentComputerId
+                        let paramSetter = globalShortcuts.parameterSetter
+                        let exposure = Math.floor(paramSetter.getParameter(compId, "CAM_EXPOSURE"))
+                        let goldenRatio = 1.61803398875
+                        expSlider.value = Math.round(Math.log(exposure / 2) / Math.log(goldenRatio))
+                        sliderBox.visible = ture
+                    }
+                }
+            }
+        }
+    }
 }
