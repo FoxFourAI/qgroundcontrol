@@ -20,9 +20,6 @@ import QGroundControl.Controls
 import QGroundControl.FlightDisplay
 import QGroundControl.FlightMap
 
-
-
-
 FlightMap {
     id:                         _root
     allowGCSLocationCenter:     true
@@ -129,18 +126,18 @@ FlightMap {
     // used for detecting if the vehicle has flown under the instrument panel, virtual joystick etc
     function _insetCornerRects() {
         var rects = {
-        "topleft":      Qt.rect(0,0,
-                               toolInsets.leftEdgeTopInset,
-                               toolInsets.topEdgeLeftInset),
-        "topright":     Qt.rect(_root.width-toolInsets.rightEdgeTopInset,0,
-                               toolInsets.rightEdgeTopInset,
-                               toolInsets.topEdgeRightInset),
-        "bottomleft":   Qt.rect(0,_root.height-toolInsets.bottomEdgeLeftInset,
-                               toolInsets.leftEdgeBottomInset,
-                               toolInsets.bottomEdgeLeftInset),
-        "bottomright":  Qt.rect(_root.width-toolInsets.rightEdgeBottomInset,_root.height-toolInsets.bottomEdgeRightInset,
-                               toolInsets.rightEdgeBottomInset,
-                               toolInsets.bottomEdgeRightInset)}
+            "topleft":      Qt.rect(0,0,
+                                    toolInsets.leftEdgeTopInset,
+                                    toolInsets.topEdgeLeftInset),
+            "topright":     Qt.rect(_root.width-toolInsets.rightEdgeTopInset,0,
+                                    toolInsets.rightEdgeTopInset,
+                                    toolInsets.topEdgeRightInset),
+            "bottomleft":   Qt.rect(0,_root.height-toolInsets.bottomEdgeLeftInset,
+                                    toolInsets.leftEdgeBottomInset,
+                                    toolInsets.bottomEdgeLeftInset),
+            "bottomright":  Qt.rect(_root.width-toolInsets.rightEdgeBottomInset,_root.height-toolInsets.bottomEdgeRightInset,
+                                    toolInsets.rightEdgeBottomInset,
+                                    toolInsets.bottomEdgeRightInset)}
         return rects
     }
 
@@ -293,6 +290,40 @@ FlightMap {
             function onPointAdded(coordinate, src) {console.log(src);if(src === trajectoryPolyline._src) trajectoryPolyline.addCoordinate(coordinate) }
             function onUpdateLastPoint(coordinate, src) {if( src === trajectoryPolyline._src) trajectoryPolyline.replaceCoordinate(trajectoryPolyline.pathLength() - 1, coordinate) }
             function onPointsCleared() { trajectoryPolyline.path = [] }
+        }
+    }
+
+    Canvas {
+        id: anchorCanvas
+        anchors.fill: parent
+
+        onPaint: {
+                var ctx = getContext("2d");
+                ctx.clearRect(0, 0, width, height);
+                if (!_activeVehicle) return;
+
+                ctx.fillStyle = "blue";
+                var anchors = _activeVehicle.autopilotPlugin.mapMatching.anchors;
+
+                for (var i = 0; i < anchors.length; i++) {
+                    var pt = _root.fromCoordinate(anchors[i], false);
+                    ctx.beginPath();
+                    ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+        Connections {
+            target: _activeVehicle.autopilotPlugin.mapMatching
+            onAnchorsChanged: anchorCanvas.requestPaint()
+        }
+
+        Connections {
+            target: _root
+            onCenterChanged:    anchorCanvas.requestPaint()
+            onZoomLevelChanged: anchorCanvas.requestPaint()
+            onWidthChanged:     anchorCanvas.requestPaint()
+            onHeightChanged:    anchorCanvas.requestPaint()
         }
     }
 
@@ -517,9 +548,9 @@ FlightMap {
         function _commitCoordinate() {
             // Must deep copy
             _committedCoordinate = QtPositioning.coordinate(
-                coordinate.latitude,
-                coordinate.longitude
-            );
+                        coordinate.latitude,
+                        coordinate.longitude
+                        );
         }
 
         function _restoreCoordinate() {
@@ -603,13 +634,13 @@ FlightMap {
         MouseArea {
             anchors.fill: parent
             onClicked: (position) => {
-                position = Qt.point(position.x, position.y)
-                var clickCoord = _root.toCoordinate(position, false /* clipToViewPort */)
-                // For some strange reason using mainWindow in mapToItem doesn't work, so we use globals.parent instead which also gets us mainWindow
-                position = mapToItem(globals.parent, position)
-                var dropPanel = roiEditDropPanelComponent.createObject(mainWindow, { clickRect: Qt.rect(position.x, position.y, 0, 0) })
-                dropPanel.open()
-            }
+                           position = Qt.point(position.x, position.y)
+                           var clickCoord = _root.toCoordinate(position, false /* clipToViewPort */)
+                           // For some strange reason using mainWindow in mapToItem doesn't work, so we use globals.parent instead which also gets us mainWindow
+                           position = mapToItem(globals.parent, position)
+                           var dropPanel = roiEditDropPanelComponent.createObject(mainWindow, { clickRect: Qt.rect(position.x, position.y, 0, 0) })
+                           dropPanel.open()
+                       }
         }
 
         sourceItem: MissionItemIndexLabel {
@@ -681,7 +712,7 @@ FlightMap {
                     QGCButton {
                         Layout.fillWidth:   true
                         text:               qsTr("Edit Position")
-                        onClicked: {         
+                        onClicked: {
                             roiEditPositionDialogComponent.createObject(mainWindow, { showSetPositionFromVehicle: false }).open()
                             roiEditDropPanel.close()
                         }
@@ -792,19 +823,19 @@ FlightMap {
     }
 
     onMapClicked: (position) => {
-        if (!globals.guidedControllerFlyView.guidedUIVisible && 
-            (globals.guidedControllerFlyView.showGotoLocation || globals.guidedControllerFlyView.showOrbit ||
-             globals.guidedControllerFlyView.showROI || globals.guidedControllerFlyView.showSetHome ||
-             globals.guidedControllerFlyView.showSetEstimatorOrigin)) {
+                      if (!globals.guidedControllerFlyView.guidedUIVisible &&
+                          (globals.guidedControllerFlyView.showGotoLocation || globals.guidedControllerFlyView.showOrbit ||
+                           globals.guidedControllerFlyView.showROI || globals.guidedControllerFlyView.showSetHome ||
+                           globals.guidedControllerFlyView.showSetEstimatorOrigin)) {
 
-            position = Qt.point(position.x, position.y)
-            var clickCoord = _root.toCoordinate(position, false /* clipToViewPort */)
-            // For some strange reason using mainWindow in mapToItem doesn't work, so we use globals.parent instead which also gets us mainWindow
-            position = _root.mapToItem(globals.parent, position)
-            var dropPanel = mapClickDropPanelComponent.createObject(mainWindow, { mapClickCoord: clickCoord, clickRect: Qt.rect(position.x, position.y, 0, 0) })
-            dropPanel.open()
-        }
-    }
+                          position = Qt.point(position.x, position.y)
+                          var clickCoord = _root.toCoordinate(position, false /* clipToViewPort */)
+                          // For some strange reason using mainWindow in mapToItem doesn't work, so we use globals.parent instead which also gets us mainWindow
+                          position = _root.mapToItem(globals.parent, position)
+                          var dropPanel = mapClickDropPanelComponent.createObject(mainWindow, { mapClickCoord: clickCoord, clickRect: Qt.rect(position.x, position.y, 0, 0) })
+                          dropPanel.open()
+                      }
+                  }
 
     MapScale {
         id:                 mapScale
@@ -819,3 +850,4 @@ FlightMap {
     }
 
 }
+

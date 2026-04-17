@@ -127,6 +127,14 @@ SettingsPage {
             visible:            true
         }
 
+        LabelledFactTextField{
+            Layout.fillWidth:  true
+            label:              qsTr("Map-matching dots amount")
+            fact:               _flyViewSettings.mapMatchingPointsCnt
+            textField.numericValuesOnly: true
+            visible: true
+        }
+
         FactCheckBoxSlider {
             Layout.fillWidth:   true
             text:               qsTr("Update return to home position based on device location.")

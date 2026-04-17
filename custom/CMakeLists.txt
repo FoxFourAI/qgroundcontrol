@@ -109,6 +109,8 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VioGpsComparer/VioGpsComparer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EKSources/EKSources.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EKSources/EKSources.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MapMatching/MapMatching.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MapMatching/MapMatching.cpp
     CACHE INTERNAL "adding custom sources" FORCE
 )
 
