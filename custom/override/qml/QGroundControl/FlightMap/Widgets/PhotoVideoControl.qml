@@ -849,6 +849,7 @@ Rectangle {
                                     border.width: 1
                                     border.color: qgcPal.buttonBorder
                                     radius: ScreenTools.buttonBorderRadius
+                                    color: qgcPal.button
                                     Layout.fillWidth: true
                                     Layout.fillHeight: true
                                     QGCLabel{
