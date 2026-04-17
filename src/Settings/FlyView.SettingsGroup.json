@@ -130,6 +130,15 @@
     "default":          2,
     "min":              1,
     "max":              10000
+},
+{
+    "name":             "mapMatchingPointsCnt",
+    "shortDesc":        "Map matching max points count",
+    "longDesc":         "Define the number of map-matching points to be drawn on the map. Old points are removed on overflow.",
+    "type":             "uint32",
+    "default":          2000,
+    "min":              500,
+    "max":              10000
 }
 ]
 }

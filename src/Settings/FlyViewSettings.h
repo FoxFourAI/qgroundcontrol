@@ -42,4 +42,5 @@ public:
     DEFINE_SETTINGFACT(showGPSrawTrajectory)
     DEFINE_SETTINGFACT(enableVGMDialect)
     DEFINE_SETTINGFACT(trackingRate)
+    DEFINE_SETTINGFACT(mapMatchingPointsCnt)
 };
