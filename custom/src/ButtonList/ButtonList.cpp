@@ -91,7 +91,6 @@ void ButtonList::append()
 void ButtonList::_loadList() {
     QSettings settings;
     int size = settings.beginReadArray(listKey);
-    qDebug()<< " loading settings with size " << size;
     if (size == 0) {
         return;
     }
@@ -102,7 +101,6 @@ void ButtonList::_loadList() {
         info->setServoIndex(settings.value(ButtonInfo::servoIndexKey).toInt());
         info->setDefaultValue(settings.value(ButtonInfo::defaultValueKey).toInt());
         info->setActiveValue(settings.value(ButtonInfo::activeValueKey).toInt());
-        qDebug()<< "loaded button: "<<info->name() << ", "<< info->servoIndex() << ", "<< info->defaultValue() << ", "<< info->activeValue();
         _buttons.append(info);
     }
     settings.endArray();
@@ -117,7 +115,6 @@ void ButtonList::_saveList() {
     for (auto entry : _buttons) {
         settings.setArrayIndex(indx);
         auto cast = reinterpret_cast<ButtonInfo*>(entry);
-        qDebug()<< "saving button: "<<cast->name() << ", "<< cast->servoIndex() << ", "<< cast->defaultValue() << ", "<< cast->activeValue();
         settings.setValue(ButtonInfo::nameKey, cast->name());
         settings.setValue(ButtonInfo::servoIndexKey, cast->servoIndex());
         settings.setValue(ButtonInfo::defaultValueKey, cast->defaultValue());
