@@ -69,7 +69,7 @@ void VioGpsComparer::_handleTrajectory(QGeoCoordinate coordinate, uint8_t src){
 
 void VioGpsComparer::_handleTimeout()
 {
-    if( !_vehicle){
+    if( !_vehicle || !_vehicle->parameterManager()->parametersReady()){
         return ;
     }
 
