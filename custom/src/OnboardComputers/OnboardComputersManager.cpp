@@ -48,6 +48,10 @@ OnboardComputersManager::OnboardComputersManager(Vehicle* vehicle, QObject *pare
 void OnboardComputersManager::_vehicleReady(bool ready) { _vehicleReadyState = ready; }
 
 void OnboardComputersManager::_mavlinkMessageReceived(const mavlink_message_t& message) {
+    if(!_vehicle->parameterManager()->parametersReady()) {
+        return;
+    }
+
     if (message.sysid == _vehicle->id() &&
             (message.compid >= MAV_COMP_ID_ONBOARD_COMPUTER && message.compid <= MAV_COMP_ID_ONBOARD_COMPUTER4)) {
         switch (message.msgid) {

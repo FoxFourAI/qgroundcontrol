@@ -32,7 +32,6 @@ ColumnLayout {
     property real   _width:                         0
     property real   _height:                        0
 
-    Component.onCompleted: console.log("font size is " + nstrumentValueData.factValueGrid.fontSize)
     QGCLabel {
         id:                 label
         Layout.alignment:   Qt.AlignVCenter
