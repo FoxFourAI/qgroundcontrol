@@ -851,7 +851,7 @@ Rectangle {
                     width: exposureTimeoutLabel.implicitWidth + ScreenTools.defaultFontPixelWidth
                     height: exposureTimeoutLabel.implicitHeight + ScreenTools.defaultFontPixelHeight
                     radius: ScreenTools.buttonBorderRadius
-                    color: qgcPal.button,100
+                    color: qgcPal.button
                     visible: false
                     QGCLabel{
                         id: exposureTimeoutLabel
