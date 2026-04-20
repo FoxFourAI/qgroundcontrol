@@ -240,7 +240,7 @@ jobs:
           package_name: ${{ env.INSTALLER_NAME }}
   
   build-macOS:
-    if: ${{ github.event.inputs.os == 'gnu-linux' }}
+    if: ${{ github.event.inputs.os == 'macOS' }}
     runs-on: macos-latest
 
     strategy:
