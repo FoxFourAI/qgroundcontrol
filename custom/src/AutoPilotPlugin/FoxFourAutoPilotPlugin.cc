@@ -15,12 +15,15 @@
 #include "QGCCameraManager.h"
 #include "QGCCorePlugin.h"
 #include "Vehicle.h"
+#include "f4_autonomy/f4_autonomy.h"
 
 FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent)
     : APMAutoPilotPlugin(vehicle, parent) {
     _ekSources = new EKSources(vehicle, this);
     _onboardComputersMngr = new OnboardComputersManager(vehicle, this);
     _vioGpsComparer = new VioGpsComparer(vehicle, this);
+    _mapMatching = new MapMatching(vehicle,this);
+    emit mapMatchingCreated();
     auto cameraMgr = vehicle->cameraManager();
     connect(cameraMgr, &QGCCameraManager::currentCameraChanged, this, [this, cameraMgr]() {
         if (_cameraConnection) {

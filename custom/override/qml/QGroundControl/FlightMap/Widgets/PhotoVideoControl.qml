@@ -170,7 +170,7 @@ Rectangle {
                 color:              'transparent'
                 radius:             height * 0.2
                 visible:            _cameraInVideoMode
-                state: _camera.cameraIndex > 0 ? "Bottom" : "Front"
+                state: _camera.cameraIndex > 1 ? "Bottom" : "Front"
 
                 states:[
                     State{
@@ -223,7 +223,7 @@ Rectangle {
                     id: cameraSwitchTrigger
                     anchors.fill:   parent
                     onClicked: {
-                        _camera.setCameraIndex(_camera.cameraIndex > 0 ? 0 : 1);
+                        _camera.setCameraIndex(_camera.cameraIndex > 1 ? 1 : 2);
                         enabled = false
                         cameraSwitchTimeout.start()
                         timeoutLabelRect.visible = true
