@@ -220,10 +220,38 @@ Rectangle {
                 }
 
                 MouseArea {
+                    id: cameraSwitchTrigger
                     anchors.fill:   parent
                     onClicked: {
                         _camera.setCameraIndex(_camera.cameraIndex > 0 ? 0 : 1);
+                        enabled = false
+                        cameraSwitchTimeout.start()
+                        timeoutLabelRect.visible = true
                     }
+                }
+
+
+
+                Timer{
+                    property int elapsed: 0
+                    property int timeout: 3000
+                    id: cameraSwitchTimeout
+                    interval: 1000
+                    running: false
+                    repeat: true
+                    onTriggered: {
+                        elapsed+=interval
+                        if(elapsed >= timeout){
+                            running = false
+                            elapsed = 0
+                            cameraSwitchTrigger.enabled = true
+                            timeoutLabelRect.visible = false
+                            timeoutLabel.text = Math.round(timeout/1000) + " s"
+                        } else {
+                            timeoutLabel.text = Math.round((timeout - elapsed)/1000) + " s"
+                        }
+                    }
+                    Component.onCompleted: timeoutLabel.text = Math.round(timeout/1000) + " s"
                 }
 
                 QGCColoredImage {
@@ -274,6 +302,22 @@ Rectangle {
                 QGCColoredImage{
                     id: toBottom
 
+                }
+
+                Rectangle{
+                    id: timeoutLabelRect
+                    anchors.centerIn: parent
+                    width: timeoutLabel.implicitWidth + ScreenTools.defaultFontPixelWidth
+                    height: timeoutLabel.implicitHeight + ScreenTools.defaultFontPixelHeight
+                    radius: ScreenTools.buttonBorderRadius
+                    color: qgcPal.button
+                    visible: false
+                    QGCLabel{
+                        id: timeoutLabel
+                        anchors.centerIn: parent
+                        font.pointSize: ScreenTools.largeFontPointSize
+                        color: qgcPal.buttonText
+                    }
                 }
             }
 
@@ -741,7 +785,30 @@ Rectangle {
                 font.pointSize:     ScreenTools.smallFontPointSize
             }
 
+            Timer{
+                property int elapsed: 0
+                property int timeout: 3000
+                id: exposureSliderTimeout
+                interval: 1000
+                running: false
+                repeat: true
+                onTriggered: {
+                    elapsed+=interval
+                    if(elapsed >= timeout){
+                        running = false
+                        elapsed = 0
+                        expSlider.enabled = true
+                        exposureTimeoutRect.visible = false
+                        exposureTimeoutLabel.text = Math.round(timeout/1000) + "s"
+                    } else {
+                        exposureTimeoutLabel.text = Math.round((timeout - elapsed)/1000) + "s"
+                    }
+                }
+                Component.onCompleted: exposureTimeoutLabel.text = Math.round(timeout/1000) + " s"
+            }
+
             QGCSlider {
+                live: false
                 id: expSlider
                 orientation: Qt.Vertical
                 Layout.alignment: Qt.AlignHCenter
@@ -751,12 +818,19 @@ Rectangle {
                 snapMode: Slider.SnapAlways
                 stepSize: 1
 
-                onValueChanged: {
+                onPressedChanged: {
+                    if(pressed){
+                        return;
+                    }
+
                     let goldenRatio = 1.61803398875
                     let compId = globalShortcuts.currentComputerId
                     let paramSetter = globalShortcuts.parameterSetter
                     let newExposure = Math.ceil(2 * Math.pow(goldenRatio, value))
                     paramSetter.setParameter(compId, "CAM_EXPOSURE", newExposure)
+                    enabled = false
+                    exposureSliderTimeout.start()
+                    exposureTimeoutRect.visible = true
                 }
 
                 Connections {
@@ -768,6 +842,23 @@ Rectangle {
                         let exposure = Math.floor(paramSetter.getParameter(compId, "CAM_EXPOSURE"))
                         let goldenRatio = 1.61803398875
                         expSlider.value = Math.round(Math.log(exposure / 2) / Math.log(goldenRatio))
+                    }
+                }
+                Rectangle{
+                    z: 100
+                    id: exposureTimeoutRect
+                    anchors.centerIn: parent
+                    width: exposureTimeoutLabel.implicitWidth + ScreenTools.defaultFontPixelWidth
+                    height: exposureTimeoutLabel.implicitHeight + ScreenTools.defaultFontPixelHeight
+                    radius: ScreenTools.buttonBorderRadius
+                    color: qgcPal.button,100
+                    visible: false
+                    QGCLabel{
+                        id: exposureTimeoutLabel
+                        anchors.centerIn: parent
+                        // visible: false
+                        font.pointSize: ScreenTools.largeFontPointSize
+                        color: qgcPal.buttonText
                     }
                 }
             }
