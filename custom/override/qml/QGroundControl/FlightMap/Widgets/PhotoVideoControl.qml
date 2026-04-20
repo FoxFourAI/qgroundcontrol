@@ -731,6 +731,47 @@ Rectangle {
             }
         }
 
+        ColumnLayout{
+            Layout.fillHeight: true
+            spacing:0
+
+            QGCLabel {
+                Layout.alignment:   Qt.AlignHCenter
+                text:               qsTr("Exp.")
+                font.pointSize:     ScreenTools.smallFontPointSize
+            }
+
+            QGCSlider {
+                id: expSlider
+                orientation: Qt.Vertical
+                Layout.alignment: Qt.AlignHCenter
+                Layout.fillHeight: true
+                from: 1
+                to: 15
+                snapMode: Slider.SnapAlways
+                stepSize: 1
+
+                onValueChanged: {
+                    let goldenRatio = 1.61803398875
+                    let compId = globalShortcuts.currentComputerId
+                    let paramSetter = globalShortcuts.parameterSetter
+                    let newExposure = Math.ceil(2 * Math.pow(goldenRatio, value))
+                    paramSetter.setParameter(compId, "CAM_EXPOSURE", newExposure)
+                }
+
+                Connections {
+                    target: globals.activeVehicle.parameterManager
+                    onParametersReadyChanged: (ready) => {
+                        if (!ready) return
+                        let compId = globalShortcuts.currentComputerId
+                        let paramSetter = globalShortcuts.parameterSetter
+                        let exposure = Math.floor(paramSetter.getParameter(compId, "CAM_EXPOSURE"))
+                        let goldenRatio = 1.61803398875
+                        expSlider.value = Math.round(Math.log(exposure / 2) / Math.log(goldenRatio))
+                    }
+                }
+            }
+        }
     }
 
     RowLayout{
