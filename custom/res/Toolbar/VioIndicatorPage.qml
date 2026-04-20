@@ -24,14 +24,14 @@ ToolIndicatorPage{
                 QGCSwitch{
                     text: qsTr("Enable")
                     onToggled: {
-                        let fact = parameterSetter.getFact(1, "SCR_USER2", false)
+                        let fact = parameterSetter.getFact(activeVehicle.id, "SCR_USER2", false)
                         if(fact === undefined){
                             return;
                         }
                         fact.value = checked
                     }
                     Component.onCompleted: {
-                        let fact = parameterSetter.getFact(1, "SCR_USER2", false)
+                        let fact = parameterSetter.getFact(activeVehicle.id, "SCR_USER2", false)
                         if(fact === undefined){
                             checked = false
                         }
