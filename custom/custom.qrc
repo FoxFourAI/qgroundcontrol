@@ -13,6 +13,7 @@
     </qresource>
     <qresource prefix="/Custom/res">
         <file alias="TrashDelete.svg">res/Images/TrashDelete.svg</file>
+        <file alias="QGCLogoFull.svg">res/Custom/Logo.png</file>
     </qresource>
     <qresource prefix="/Custom/qmlimages">
         <file alias="PaperPlane.svg">res/Images/CustomVehicleIcon.svg</file>
