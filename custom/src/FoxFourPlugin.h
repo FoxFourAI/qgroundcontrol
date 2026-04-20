@@ -46,6 +46,7 @@ public:
 
     QQmlApplicationEngine *createQmlApplicationEngine(QObject *parent) final;
 
+    void paletteOverride(const QString &colorName, QGCPalette::PaletteColorInfo_t &colorInfo) override;
 private slots:
     void _advancedChanged(bool advanced);
 
@@ -56,6 +57,7 @@ private:
     QQmlApplicationEngine *_qmlEngine = nullptr;
     class CustomOverrideInterceptor *_selector = nullptr;
     QVariantList _customSettingsList; // Not to be mixed up with QGCCorePlugin implementation
+
 
 };
 
