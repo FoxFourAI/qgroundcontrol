@@ -10,6 +10,7 @@ on:
         options:
         - gnu-linux
         - ms-windows
+        - macOS
 
 jobs:
   build-linux:
@@ -237,3 +238,115 @@ jobs:
         with:
           artifact_name: ${{ env.INSTALLER_FILE }}
           package_name: ${{ env.INSTALLER_NAME }}
+  
+  build-macOS:
+    if: ${{ github.event.inputs.os == 'gnu-linux' }}
+    runs-on: macos-latest
+
+    strategy:
+      matrix:
+        BuildType: [Release]
+
+    defaults:
+      run:
+        shell: bash
+
+    env:
+      QT_VERSION: 6.10.0
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Initial Setup
+        uses: ./.github/actions/common
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '<=16.x'
+
+      - name: Install Dependencies (include GStreamer)
+        working-directory: ${{ github.workspace }}/tools/setup
+        run: sh install-dependencies-osx.sh
+
+      - name: Setup Caching
+        uses: ./.github/actions/cache
+        with:
+          host: mac
+          target: clang_64
+          build-type: ${{ matrix.BuildType }}
+          cpm-modules: ${{ runner.temp }}/build/cpm_modules
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: mac
+          target: desktop
+          arch: clang_64
+          dir: ${{ runner.temp }}
+          modules: qtcharts qtlocation qtpositioning qtspeech qt5compat qtmultimedia qtserialport qtimageformats qtshadertools qtconnectivity qtquick3d qtsensors qtscxml
+          setup-python: false
+          cache: true
+
+      - name: CMake configure
+        working-directory: ${{ runner.temp }}/build
+        run: ${{ env.QT_ROOT_DIR }}/bin/qt-cmake -S ${{ github.workspace }} -B . -G Ninja
+              -DCMAKE_BUILD_TYPE=${{ matrix.BuildType }}
+              -DQGC_STABLE_BUILD=${{ github.ref_type == 'tag' || contains(github.ref, 'Stable') && 'ON' || 'OFF' }}
+              -DQGC_MACOS_SIGN_WITH_IDENTITY='OFF'
+
+      - name: Build
+        working-directory: ${{ runner.temp }}/build
+        run: cmake --build . --target all --config ${{ matrix.BuildType }} --parallel
+
+      - name: Sanity check dev build executable
+        working-directory: ${{ runner.temp }}/build/Release/QGroundControl.app/Contents/MacOS
+        run: ./QGroundControl --simple-boot-test
+
+      - name: Create DMG
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: ${{ runner.temp }}/build
+        run: cmake --install . --config ${{ matrix.BuildType }}
+
+      - name: Find DMG file
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        working-directory: ${{ runner.temp }}/build
+        run: |
+          DMG=$(find . -maxdepth 1 -name "MacOS-QGroundControl-*.dmg" -type f | head -n 1)
+          if [ -z "$DMG" ]; then
+            echo "DMG not found!"
+            exit 1
+          fi
+          DMG_NAME=$(basename "$DMG")
+          DMG_NAME_NO_EXT=$(basename "$DMG" .dmg)
+          echo "DMG_FILE=$DMG_NAME" >> $GITHUB_ENV
+          echo "DMG_NAME=$DMG_NAME_NO_EXT" >> $GITHUB_ENV
+          echo "Found DMG: $DMG_NAME"
+
+      - name: Mount DMG
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: ${{ runner.temp }}/build
+        run: hdiutil attach "${{ env.DMG_FILE }}"
+
+      - name: Sanity check DMG executable
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: /Volumes/QGroundControl/QGroundControl.app/Contents/MacOS
+        run: ./QGroundControl --simple-boot-test
+
+      - name: Unmount DMG
+        if: startsWith(github.ref, 'refs/tags/')
+        run: hdiutil detach /Volumes/QGroundControl || true
+
+      - name: Upload Build File
+        if: matrix.BuildType == 'Release' && startsWith(github.ref, 'refs/tags/')
+        uses: ./.github/actions/upload
+        with:
+          artifact_name: ${{ env.DMG_FILE }}
+          package_name: ${{ env.DMG_NAME }}
+
