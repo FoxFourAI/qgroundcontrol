@@ -309,12 +309,10 @@ jobs:
         run: ./QGroundControl --simple-boot-test
 
       - name: Create DMG
-        if: startsWith(github.ref, 'refs/tags/')
         working-directory: ${{ runner.temp }}/build
         run: cmake --install . --config ${{ matrix.BuildType }}
 
       - name: Find DMG file
-        if: startsWith(github.ref, 'refs/tags/')
         shell: bash
         working-directory: ${{ runner.temp }}/build
         run: |
@@ -330,21 +328,17 @@ jobs:
           echo "Found DMG: $DMG_NAME"
 
       - name: Mount DMG
-        if: startsWith(github.ref, 'refs/tags/')
         working-directory: ${{ runner.temp }}/build
         run: hdiutil attach "${{ env.DMG_FILE }}"
 
       - name: Sanity check DMG executable
-        if: startsWith(github.ref, 'refs/tags/')
         working-directory: /Volumes/QGroundControl/QGroundControl.app/Contents/MacOS
         run: ./QGroundControl --simple-boot-test
 
       - name: Unmount DMG
-        if: startsWith(github.ref, 'refs/tags/')
         run: hdiutil detach /Volumes/QGroundControl || true
 
       - name: Upload Build File
-        if: matrix.BuildType == 'Release' && startsWith(github.ref, 'refs/tags/')
         uses: ./.github/actions/upload
         with:
           artifact_name: ${{ env.DMG_FILE }}
