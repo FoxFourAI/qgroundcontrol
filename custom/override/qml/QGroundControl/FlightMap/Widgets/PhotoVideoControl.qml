@@ -873,49 +873,5 @@ Rectangle {
                 }
             }
         }
-
-        // QGCDelayButton{
-        //     Layout.fillWidth: true
-        //     text: qsTr("7")
-        //     onActivated: {
-        //         parent.ap.flipServo(7)
-        //     }
-        //     QGCColoredImage{
-        //         // anchors.fill: parent
-        //         anchors.topMargin: root._smallMargins
-        //         anchors.bottomMargin: root._smallMargins
-        //         x: parent.width / 2 - width / 2 + 1
-        //         anchors.top: parent.top
-        //         anchors.bottom: parent.bottom
-        //         width: height
-        //         source: "qrc:/custom/img/drop.svg"
-        //         color: qgcPal.text
-        //         fillMode: Image.PreserveAspectFit
-        //     }
-        // }
-
-        // QGCDelayButton{
-        //     Layout.fillWidth: true
-        //     text: qsTr("9")
-        //     onActivated: {
-        //         parent.ap.flipServo(9)
-        //     }
-        //     QGCColoredImage{
-        //         // anchors.fill: parent
-        //         anchors.topMargin: root._smallMargins
-        //         anchors.bottomMargin: root._smallMargins
-        //         x: parent.width / 2 - width / 2 + 1
-        //         anchors.top: parent.top
-        //         anchors.bottom: parent.bottom
-        //         width: height
-        //         source: "qrc:/custom/img/drop.svg"
-        //         color: qgcPal.text
-        //         fillMode: Image.PreserveAspectFit
-        //     }
-        // }
-        // Repeater{
-            // model: [7,9]
-            // delegate:
-        // }
     }
 }
