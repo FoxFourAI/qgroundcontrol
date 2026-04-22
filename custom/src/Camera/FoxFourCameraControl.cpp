@@ -216,7 +216,6 @@ void FoxFourCameraControl::setCameraIndex(int index)
     _cameraSwitchFact->valueChanged(index);
     auto vgmCompId = reinterpret_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager()->currentComputerComponent();
     _vehicle->sendMavCommand(vgmCompId,MAV_CMD_VIDEO_START_STREAMING,false,index);
-    // _vehicle->sendMavCommand(_vehicle->defaultComponentId(),MAV_CMD_VIDEO_START_STREAMING,false,index);
     emit cameraSwitched();
 }
 
