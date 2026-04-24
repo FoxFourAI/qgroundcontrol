@@ -91,9 +91,25 @@ Rectangle {
         spacing:            ScreenTools.defaultFontPixelHeight
 
         ColumnLayout {
-            Layout.fillHeight:  true
+            Layout.fillWidth:  true
             spacing:            0
             visible:            _camera.hasZoom
+
+            QGCColoredImage {
+                Layout.alignment:       Qt.AlignHCenter
+                source:                 "/res/gear-black.svg"
+                mipmap:                 true
+                Layout.preferredHeight: ScreenTools.defaultFontPixelHeight * 1.5
+                Layout.preferredWidth:  Layout.preferredHeight
+                sourceSize.height:      Layout.preferredHeight
+                color:                  qgcPal.text
+                fillMode:               Image.PreserveAspectFit
+
+                QGCMouseArea {
+                    fillItem:   parent
+                    onClicked:  settingsDialogComponent.createObject(mainWindow).open()
+                }
+            }
 
             QGCLabel {
                 Layout.alignment:   Qt.AlignHCenter
@@ -118,34 +134,27 @@ Rectangle {
 
             // Zoom button
             Rectangle {
+                Layout.topMargin: ScreenTools.defaultFontPixelWidth / 2
                 id: zoomResetButton
                 Layout.alignment:   Qt.AlignHCenter
                 color:              _camera && _camera.zoomEnabled ? qgcPal.colorRed : qgcPal.windowShadeLight
-                width:              ScreenTools.defaultFontPixelWidth * 5
+                width:              ScreenTools.defaultFontPixelWidth * 4
                 height:             width
                 radius:             width * 0.5
                 border.color:       qgcPal.buttonText
-                border.width:       3
-                // Connections{
-                //     target: _camera
-                //     function onZoomLevelChanged (){
-                //         zoomResetButton.color =  _camera.zoomLevel > 1 ? qgcPal.colorRed : qgcPal.windowShadeLight;
-                //     }
-                // }
+                border.width:       2
 
                 QGCColoredImage {
                     height:             parent.height * 0.5
                     width:              height
                     anchors.centerIn:   parent
                     source:             "/qmlimages/ZoomMinus.svg"
-                    fillMode:           Image.PreserveAspectFit
-                    // sourceSize.height:  height
+                    fillMode:           Image.PreserveAspectCrop
                     color:              qgcPal.text
                     MouseArea {
                         anchors.fill:   parent
                         onClicked: {
                             _camera.zoomLevel = 1
-                            // zoomSlider.value = 0;
                         }
                     }
                 }
@@ -473,22 +482,6 @@ Rectangle {
                     Layout.alignment:   Qt.AlignHCenter
                     text:               qsTr("Camera Tracking")
                     font.pointSize:     ScreenTools.smallFontPointSize
-                }
-            }
-
-            QGCColoredImage {
-                Layout.alignment:       Qt.AlignHCenter
-                source:                 "/res/gear-black.svg"
-                mipmap:                 true
-                Layout.preferredHeight: ScreenTools.defaultFontPixelHeight * 1.5
-                Layout.preferredWidth:  Layout.preferredHeight
-                sourceSize.height:      Layout.preferredHeight
-                color:                  qgcPal.text
-                fillMode:               Image.PreserveAspectFit
-
-                QGCMouseArea {
-                    fillItem:   parent
-                    onClicked:  settingsDialogComponent.createObject(mainWindow).open()
                 }
             }
         }
