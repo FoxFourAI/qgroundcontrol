@@ -43,6 +43,7 @@ private slots:
     }
 
 private:
+    QString parceUri(QString uri);
     // Pipeline creation methods
     bool _createSource();
     bool _createRtspSource();

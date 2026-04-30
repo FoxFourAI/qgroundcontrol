@@ -236,19 +236,8 @@ bool FoxFourGstVideoReceiver::_createMpegtsSource()
     }
 
 
-    bool onlyPort = false;
-    QString uriBody = _uri.split('/').last();
-    int port =uriBody.toInt(&onlyPort);
-    QUrl url(_uri);
-    if(onlyPort){
-        url.setHost("0.0.0.0");
-        url.setPort(port);
-        if(url.port() == -1){
-            qCCritical(GstVideoReceiverLog) << "incorrect port: " << port;
-        }
-    }
-    url.setScheme("udp");
-    QString uri = url.toString(); // "udp://0.0.0.0:5600"
+
+    QString uri = parceUri(_uri); // "udp://0.0.0.0:5600"
 
     g_object_set(_source, "uri", uri.toUtf8().constData(), "buffer-size",
                  2097152,  // 2 MB — enough headroom without deep buffering
@@ -276,20 +265,7 @@ bool FoxFourGstVideoReceiver::_createRtpSource()
         return false;
     }
 
-
-    bool onlyPort = false;
-    QString uriBody = _uri.split('/').last();
-    int port =uriBody.toInt(&onlyPort);
-    QUrl url(_uri);
-    if(onlyPort){
-        url.setHost("0.0.0.0");
-        url.setPort(port);
-        if(url.port() == -1){
-            qCCritical(GstVideoReceiverLog) << "incorrect port: " << port;
-        }
-    }
-    url.setScheme("udp");
-    QString uri = url.toString(); // "udp://0.0.0.0:5600"
+    QString uri = parceUri(_uri); // "udp://0.0.0.0:5600"
 
     g_object_set(_source,
                  "uri", uri.toUtf8().constData(),
@@ -337,19 +313,7 @@ bool FoxFourGstVideoReceiver::_createRtp265Source()
         return false;
     }
 
-    bool onlyPort = false;
-    QString uriBody = _uri.split('/').last();
-    int port =uriBody.toInt(&onlyPort);
-    QUrl url(_uri);
-    if(onlyPort){
-        url.setHost("0.0.0.0");
-        url.setPort(port);
-        if(url.port() == -1){
-            qCCritical(GstVideoReceiverLog) << "incorrect port: " << port;
-        }
-    }
-    url.setScheme("udp");
-    QString uri = url.toString(); // "udp://0.0.0.0:5600"
+    QString uri = parceUri(_uri); // "udp://0.0.0.0:5600"
 
     g_object_set(_source,
                  "uri", uri.toUtf8().constData(),
@@ -1116,6 +1080,23 @@ void FoxFourGstVideoReceiver::_watchdog()
             }
         }
     });
+}
+
+QString FoxFourGstVideoReceiver::parceUri(QString uri)
+{
+    bool onlyPort = false;
+    QString uriBody = _uri.split('/').last();
+    int port =uriBody.toInt(&onlyPort);
+    QUrl url(_uri);
+    if(onlyPort){
+        url.setHost("0.0.0.0");
+        url.setPort(port);
+        if(url.port() == -1){
+            qCCritical(GstVideoReceiverLog) << "incorrect port: " << port;
+        }
+    }
+    url.setScheme("udp");
+    return url.toString();
 }
 
 void FoxFourGstVideoReceiver::_cleanup()
