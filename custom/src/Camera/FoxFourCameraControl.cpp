@@ -163,7 +163,6 @@ void FoxFourCameraControl::_connectFact(int componentId, Fact *fact)
         if( fact->name() == "VID_ZOOM_MAX"  && _maxZoomFact == nullptr){
             _maxZoomFact = fact;
             connect(_maxZoomFact, &Fact::valueChanged, this, [this](const QVariant& value){
-                    qDebug()<<"changed max";
                     emit maxZoomLevelChanged();
             });
             emit maxZoomLevelChanged();
@@ -172,7 +171,6 @@ void FoxFourCameraControl::_connectFact(int componentId, Fact *fact)
         //signing  to the camera source
         if(fact->name() == "SCR_USER3" && _cameraSwitchFact == nullptr){
             _cameraSwitchFact = fact;
-            qDebug()<<"assigning SCR_USER3";
             connect(_cameraSwitchFact, &Fact::valueChanged, this, [this](const QVariant &value){
                 Q_UNUSED(value)
                emit cameraSwitched();
@@ -184,7 +182,6 @@ void FoxFourCameraControl::_connectFact(int componentId, Fact *fact)
         if( fact->name() == "VID_ZOOM_MIN" && _minZoomFact == nullptr){
             _minZoomFact = fact;
             connect(_minZoomFact, &Fact::valueChanged, this, [this](const QVariant& value){
-                    qDebug()<<"changed min";
                     emit minZoomLevelChanged();
             });
             emit minZoomLevelChanged();
@@ -211,11 +208,10 @@ void FoxFourCameraControl::setCameraIndex(int index)
        }
        _cameraSwitchFact = _vehicle->parameterManager()->getParameter(_vehicle->defaultComponentId(),"SCR_USER3");
     }
-    qDebug()<<"setting value to" << index;
+
+    _vehicle->sendMavCommand(_compID,MAV_CMD_VIDEO_START_STREAMING,false,index);
     _cameraSwitchFact->setCookedValue(index);
     _cameraSwitchFact->valueChanged(index);
-    auto vgmCompId = reinterpret_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager()->currentComputerComponent();
-    _vehicle->sendMavCommand(vgmCompId,MAV_CMD_VIDEO_START_STREAMING,false,index);
     emit cameraSwitched();
 }
 
