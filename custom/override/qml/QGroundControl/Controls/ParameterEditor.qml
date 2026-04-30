@@ -314,7 +314,6 @@ Item {
                 Component.onCompleted: {
                     return
                     if (tableView.columnWidth(column) < width) {
-                        console.log("setColumnWidth", column, width)
                         tableView.setColumnWidth(column, width)
                     }
                 }

@@ -47,7 +47,6 @@ Item{
         Connections{
             target :comparer
             onVioStatusChanged:{
-                console.log("vio status is: "+ comparer.vioStatus)
             }
         }
 

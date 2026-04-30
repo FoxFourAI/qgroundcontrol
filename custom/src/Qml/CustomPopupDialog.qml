@@ -247,7 +247,6 @@ Popup {
                     //we close the dialog on each button, but have a different priority.
                     Keys.onPressed: (event) => {
                         if (event.key === Qt.Key_Escape) {
-                            console.log("rejected")
                             if( _rejectAllowed ) {
                                 _reject()
                             } else {
@@ -269,7 +268,6 @@ Popup {
                     width:  parent.width
                     height: parent.height
                     onClicked: {
-                        console.log("entered")
                         closeTimer.stop()
                         root.height = ScreenTools.defaultFontPixelHeight * 20
                         root.width = mainWindow.width * 0.6

@@ -79,7 +79,6 @@ Item {
             onShortcutPressed: function(description,value){
                 infoLabel.label = description
                 infoLabel.labelText = value
-                console.log(description.length * ScreenTools.defaultFontPixelWidth)
                 shortcutIndicator.width = description.length * ScreenTools.defaultFontPixelWidth + value.length * ScreenTools.defaultFontPixelWidth + shortcutIndicator._spacing
                 shortcutIndicator.opacity = 1
                 fadeOutTimer.restart()
