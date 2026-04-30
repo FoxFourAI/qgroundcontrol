@@ -44,11 +44,6 @@ Item{
 
             }
         }
-        Connections{
-            target :comparer
-            onVioStatusChanged:{
-            }
-        }
 
         Column{
             anchors.top: parent.top
