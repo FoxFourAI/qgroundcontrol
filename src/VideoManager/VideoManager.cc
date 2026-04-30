@@ -451,17 +451,17 @@ bool VideoManager::_updateAutoStream(VideoReceiver *receiver)
         url = pInfo->uri();
         break;
     case VIDEO_STREAM_TYPE_RTPUDP:
-        if (pInfo->encoding() == VIDEO_STREAM_ENCODING_H265) {
+        if (pInfo->encoding() == VIDEO_STREAM_ENCODING_H265 || pInfo->uri().startsWith("udp265")) {
             source = VideoSettings::videoSourceUDPH265;
-            url = pInfo->uri().contains("udp265://") ? pInfo->uri() : QStringLiteral("udp265://0.0.0.0:%1").arg(pInfo->uri());
+            url = pInfo->uri().startsWith("udp265") ? pInfo->uri() : QStringLiteral("udp265://0.0.0.0:%1").arg(pInfo->uri());
         } else {
             source = VideoSettings::videoSourceUDPH264;
-            url = pInfo->uri().contains("udp://") ? pInfo->uri() : QStringLiteral("udp://0.0.0.0:%1").arg(pInfo->uri());
+            url = pInfo->uri().startsWith("udp") ? pInfo->uri() : QStringLiteral("udp://0.0.0.0:%1").arg(pInfo->uri());
         }
         break;
     case VIDEO_STREAM_TYPE_MPEG_TS:
         source = VideoSettings::videoSourceMPEGTS;
-        url = pInfo->uri().contains("mpegts://") ? pInfo->uri() : QStringLiteral("mpegts://0.0.0.0:%1").arg(pInfo->uri());
+        url = pInfo->uri().startsWith("mpegts") ? pInfo->uri() : QStringLiteral("mpegts://0.0.0.0:%1").arg(pInfo->uri());
         break;
     default:
         qCWarning(VideoManagerLog) << "Unknown VIDEO_STREAM_TYPE";
@@ -496,7 +496,6 @@ bool VideoManager::_updateVideoUri(VideoReceiver *receiver, const QString &uri)
     qCDebug(VideoManagerLog) << "New Video URI" << uri;
 
     receiver->setUri(uri);
-
     return true;
 }
 
@@ -521,6 +520,10 @@ bool VideoManager::_updateSettings(VideoReceiver *receiver)
 
     settingsChanged |= _updateUVC(receiver);
     settingsChanged |= _updateAutoStream(receiver);
+
+    if(autoStreamConfigured()){
+        return true;
+    }
 
     const QString source = _videoSettings->videoSource()->rawValue().toString();
     if (source == VideoSettings::videoSourceUDPH264) {
