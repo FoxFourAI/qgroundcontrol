@@ -19,7 +19,6 @@
 #include "QGCCameraIO.h"
 #include "QGCCorePlugin.h"
 #include "SettingsManager.h"
-#include "Vehicle.h"
 #include "VideoManager.h"
 
 //-----------------------------------------------------------------------------
@@ -153,8 +152,9 @@ void FoxFourCameraControl::_connectFact(int componentId, Fact* fact) {
     // signing  to the camera source
     if (fact->name() == "SCR_USER3" && _cameraSwitchFact == nullptr) {
         _cameraSwitchFact = fact;
-        connect(_cameraSwitchFact, &Fact::valueChanged, this, [this](const QVariant& value) {
-            Q_UNUSED(value)
+        _cameraIndex = _cameraSwitchFact->rawValue().toInt();
+        _cameraSwitchConnection = connect(_cameraSwitchFact, &Fact::valueChanged, this, [this](const QVariant& value) {
+            _cameraIndex = value.toInt();
             emit cameraSwitched();
         });
         emit cameraSwitched();
@@ -175,19 +175,49 @@ void FoxFourCameraControl::_requestTrackingStatus() {
                              rate);  // Interval (us)
 }
 
+void FoxFourCameraControl::_unsubscribeFromCameraFact() {
+    _commandSwitch = true;
+    disconnect(_cameraSwitchConnection);
+    _cameraSwitchFact = nullptr;
+}
+
 //-----------------------------------------------------------------------------
-void FoxFourCameraControl::setCameraIndex(int index) {
-    if (_cameraSwitchFact == nullptr) {
-        if (!_vehicle->parameterManager()->parameterExists(_vehicle->defaultComponentId(), "SCR_USER3")) {
-            return;
-        }
-        _cameraSwitchFact = _vehicle->parameterManager()->getParameter(_vehicle->defaultComponentId(), "SCR_USER3");
+
+// handler for camera switch responce
+void _cameraSwitchHandler(void* resultHandlerData, int compId, const mavlink_command_ack_t& ack,
+                          Vehicle::MavCmdResultFailureCode_t failureCode) {
+    if (ack.result != MAV_RESULT_ACCEPTED) {
+        qCDebug(CameraControlLog) << "error occured while switching cameras!";
     }
 
-    _vehicle->sendMavCommand(_compID, MAV_CMD_VIDEO_START_STREAMING, false, index);
-    _cameraSwitchFact->setCookedValue(index);
-    _cameraSwitchFact->valueChanged(index);
-    emit cameraSwitched();
+    FoxFourCameraControl* ctrl = static_cast<FoxFourCameraControl*>(resultHandlerData);
+    if (ctrl->_cameraSwitchFact) {
+        ctrl->_unsubscribeFromCameraFact();
+    }
+    qCDebug(CameraControlLog) << "camera swiched successfully";
+    ctrl->_cameraIndex += 1;
+    if (ctrl->_cameraIndex > 2 ) {
+        ctrl->_cameraIndex = 1;
+    }
+    emit ctrl->cameraSwitched();
+}
+
+void FoxFourCameraControl::setCameraIndex(int index) {
+    if (!_commandSwitch) {
+        if (_cameraSwitchFact == nullptr && _vehicle->parameterManager()->parameterExists(_vehicle->defaultComponentId(), "SCR_USER3")) {
+            _cameraSwitchFact = _vehicle->parameterManager()->getParameter(_vehicle->defaultComponentId(), "SCR_USER3");
+        }
+        if (_cameraSwitchFact) {
+            _cameraSwitchFact->setCookedValue(index);
+            _cameraSwitchFact->valueChanged(index);
+            emit cameraSwitched();
+        }
+    }
+
+    Vehicle::MavCmdAckHandlerInfo_t handler;
+    handler.resultHandler = _cameraSwitchHandler;
+    handler.resultHandlerData = this;
+    _vehicle->sendMavCommandWithHandler(&handler, _compID, MAV_CMD_VIDEO_START_STREAMING, index);
 }
 
 //-----------------------------------------------------------------------------

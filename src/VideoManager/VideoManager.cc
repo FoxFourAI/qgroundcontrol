@@ -80,6 +80,7 @@ void VideoManager::init(QQuickWindow* mainWindow) {
     (void)connect(_videoSettings->udpUrl(), &Fact::rawValueChanged, this, &VideoManager::_videoSourceChanged);
     (void)connect(_videoSettings->rtspUrl(), &Fact::rawValueChanged, this, &VideoManager::_videoSourceChanged);
     (void)connect(_videoSettings->tcpUrl(), &Fact::rawValueChanged, this, &VideoManager::_videoSourceChanged);
+    (void)connect(_videoSettings->autoConfigure(), &Fact::rawValueChanged, this, &VideoManager::_videoSourceChanged);
     (void)connect(_videoSettings->aspectRatio(), &Fact::rawValueChanged, this, &VideoManager::aspectRatioChanged);
     (void)connect(_videoSettings->lowLatencyMode(), &Fact::rawValueChanged, this, [this](const QVariant& value) {
         Q_UNUSED(value);
@@ -487,12 +488,14 @@ bool VideoManager::_updateSettings(VideoReceiver* receiver) {
     }
 
     settingsChanged |= _updateUVC(receiver);
-    settingsChanged |= _updateAutoStream(receiver);
 
-    if (autoStreamConfigured()) {
-        return true;
+    //if we enable auto configuration, ignore the manual configuration part
+    if (_videoSettings->autoConfigure()->rawValue().toBool()) {
+        qDebug()<< "setting autoConfiguration";
+        settingsChanged |= _updateAutoStream(receiver);
+        return settingsChanged;
     }
-
+    qDebug()<< "manual config";
     const QString source = _videoSettings->videoSource()->rawValue().toString();
     if (source == VideoSettings::videoSourceUDPH264) {
         settingsChanged |=

@@ -4,7 +4,7 @@
 
 #include "MavlinkCameraControl.h"
 #include "VehicleCameraControl.h"
-
+#include "Vehicle.h"
 class FoxFourCameraControl : public VehicleCameraControl {
     Q_OBJECT
     Q_PROPERTY(bool zoomEnabled READ zoomEnabled NOTIFY zoomEnabledChanged)
@@ -44,10 +44,7 @@ public:
     }
 
     int cameraIndex() {
-        if (_cameraSwitchFact == nullptr) {
-            return -1;
-        }
-        return _cameraSwitchFact->rawValue().toInt();
+        return _cameraIndex;
     }
 
 signals:
@@ -65,13 +62,17 @@ protected slots:
 
 protected:
     void _requestTrackingStatus() override;
-
+    void _unsubscribeFromCameraFact();
 protected:
+    friend void _cameraSwitchHandler(void *resultHandlerData, int compId, const mavlink_command_ack_t &ack, Vehicle::MavCmdResultFailureCode_t failureCode);
+    int         _cameraIndex = 1;
     const double _defaultMaxZoom = 16;
     const double _defaultMinZoom = 1;
     Fact    *_maxZoomFact = nullptr,
             *_minZoomFact = nullptr,
             *_cameraSwitchFact = nullptr;
+    bool     _commandSwitch = false;
+    QMetaObject::Connection _cameraSwitchConnection;
     QTimer _videoRecordTimeUpdateTimer;
     QElapsedTimer _videoRecordTimeElapsedTimer;
     bool _zoomEnabled = false;
