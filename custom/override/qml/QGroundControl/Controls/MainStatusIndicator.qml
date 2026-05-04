@@ -270,7 +270,6 @@ RowLayout {
                     interval: 1000
                     repeat: false
                     onTriggered: {
-                        console.log("rebooting")
                         app.rebootOnboardComputers()
                     }
                 }

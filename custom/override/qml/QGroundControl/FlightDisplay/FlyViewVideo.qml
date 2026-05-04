@@ -243,7 +243,6 @@ Item {
                 if(latestFrameTimestamp === undefined){
                     latestFrameTimestamp = 0;
                 }
-                console.log("Latest timestamp in js: " + latestFrameTimestamp);
                 let rec = Qt.rect(x0, y0, x1 - x0, y1 - y0)
                 videoStreaming._camera.startTracking(rec, latestFrameTimestamp, false)
             }
@@ -253,8 +252,6 @@ Item {
         onWheel: (wheel) => {
             const WHEEL_DIVIDER = 19;
 
-            // console.log(wheel)
-            // console.log(wheel.angleDelta)
             if (currentScaleMode == scaleModeHorizontal || currentScaleMode == scaleModeBoth) {
                 targetCanvas.rectWidth = Math.max(0, targetCanvas.rectWidth + Math.floor(Number( wheel.angleDelta.y) / WHEEL_DIVIDER));
             }

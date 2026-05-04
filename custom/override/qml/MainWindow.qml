@@ -325,7 +325,6 @@ ApplicationWindow {
         delegate: Action{
             shortcut: sequence
             onTriggered:{
-                console.log("Shortcut pressed: "+sequence)
                 let result = action()
                 shortcutPressed(description,result)
             }

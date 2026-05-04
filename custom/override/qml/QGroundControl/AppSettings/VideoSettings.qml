@@ -35,11 +35,13 @@ SettingsPage {
     property real   _urlFieldWidth:             ScreenTools.defaultFontPixelWidth * 40
     property bool   _requiresUDPUrl:            _isUDP264 || _isUDP265 || _isMPEGTS
 
+
+
     SettingsGroupLayout {
         Layout.fillWidth:   true
         heading:            qsTr("Video Source")
         headingDescription: _videoAutoStreamConfig ? qsTr("Mavlink camera stream is automatically configured") : ""
-        enabled:            !_videoAutoStreamConfig
+        enabled:            !autoConfigure.checked
 
         LabelledFactComboBox {
             Layout.fillWidth:   true
@@ -53,7 +55,7 @@ SettingsPage {
     SettingsGroupLayout {
         Layout.fillWidth:   true
         heading:            qsTr("Connection")
-        visible:            !_videoSourceDisabled && !_videoAutoStreamConfig && (_isTCP || _isRTSP | _requiresUDPUrl)
+        visible:            !_videoSourceDisabled && !autoConfigure.checked && (_isTCP || _isRTSP | _requiresUDPUrl)
 
         LabelledFactTextField {
             Layout.fillWidth:           true
@@ -86,18 +88,26 @@ SettingsPage {
         heading:            qsTr("Settings")
         visible:            !_videoSourceDisabled
 
+        FactCheckBoxSlider{
+            Layout.fillWidth: true
+            id: autoConfigure
+            text: "Auto configurate stream"
+            // visible: _videoAutoStreamConfig
+            fact: _videoSettings.autoConfigure
+        }
+
         LabelledFactTextField {
             Layout.fillWidth:   true
             label:              qsTr("Aspect Ratio")
             fact:               _videoSettings.aspectRatio
-            visible:            !_videoAutoStreamConfig && _isStreamSource && _videoSettings.aspectRatio.visible
+            visible:            !autoConfigure.checked && _isStreamSource && _videoSettings.aspectRatio.visible
         }
 
         FactCheckBoxSlider {
             Layout.fillWidth:   true
             text:               qsTr("Stop recording when disarmed")
             fact:               _videoSettings.disableWhenDisarmed
-            visible:            !_videoAutoStreamConfig && _isStreamSource && fact.visible
+            visible:            !autoConfigure.checked && _isStreamSource && fact.visible
         }
 
         FactCheckBoxSlider {

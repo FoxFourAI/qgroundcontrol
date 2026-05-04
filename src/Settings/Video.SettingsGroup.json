@@ -1,3 +1,4 @@
+
 {
     "version":      1,
     "fileType":  "FactMetaData",
@@ -142,6 +143,13 @@
     "enumValues":       "0,1,8,2,3,4,5,6,7",
     "default":           0,
     "qgcRebootRequired": true
+},
+{
+    "name":      "autoConfigure",
+    "type":      "bool",
+    "default":   false,
+    "shortDesc": "Auto configure video stream",
+    "longDesc":  "Use video stream configureation provided by board if available"
 }
 ]
 }

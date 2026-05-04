@@ -162,7 +162,6 @@ Rectangle {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
             onClicked: {
-                console.log(qsTr("Component ") + _computersManager.currentComputerComponent)
                 showVehicleConfigParametersPageComponent(qsTr("Component ") + _computersManager.currentComputerComponent)
             }
         }

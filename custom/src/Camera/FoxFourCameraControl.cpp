@@ -1,39 +1,34 @@
 #include "FoxFourCameraControl.h"
-#include "QGCCameraIO.h"
-#include "VideoManager.h"
-#include "FTPManager.h"
-#include "QGCCorePlugin.h"
-#include "Vehicle.h"
-#include "MissionCommandTree.h"
-#include "FoxFourAutoPilotPlugin.h"
-#include "ParameterSetter.h"
-#include "ParameterManager.h"
-#include "FoxFourPlugin.h"
 
-#include "SettingsManager.h"
-#include "FlyViewSettings.h"
-
-#include <QtNetwork/QNetworkAccessManager>
 #include <QtCore/QDir>
 #include <QtCore/QSettings>
-#include <QtXml/QDomDocument>
-#include <QtXml/QDomNodeList>
-#include <QtQml/QQmlEngine>
+#include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkProxy>
 #include <QtNetwork/QNetworkReply>
+#include <QtQml/QQmlEngine>
+#include <QtXml/QDomDocument>
+#include <QtXml/QDomNodeList>
 
-
+#include "FTPManager.h"
+#include "FlyViewSettings.h"
+#include "FoxFourAutoPilotPlugin.h"
+#include "FoxFourPlugin.h"
+#include "MissionCommandTree.h"
+#include "ParameterManager.h"
+#include "ParameterSetter.h"
+#include "QGCCameraIO.h"
+#include "QGCCorePlugin.h"
+#include "SettingsManager.h"
+#include "VideoManager.h"
 
 //-----------------------------------------------------------------------------
-static bool
-read_attribute(QDomNode& node, const char* tagName, bool& target)
-{
+static bool read_attribute(QDomNode& node, const char* tagName, bool& target) {
     QDomNamedNodeMap attrs = node.attributes();
-    if(!attrs.count()) {
+    if (!attrs.count()) {
         return false;
     }
     QDomNode subNode = attrs.namedItem(tagName);
-    if(subNode.isNull()) {
+    if (subNode.isNull()) {
         return false;
     }
     target = subNode.nodeValue() != "0";
@@ -41,15 +36,13 @@ read_attribute(QDomNode& node, const char* tagName, bool& target)
 }
 
 //-----------------------------------------------------------------------------
-static bool
-read_attribute(QDomNode& node, const char* tagName, int& target)
-{
+static bool read_attribute(QDomNode& node, const char* tagName, int& target) {
     QDomNamedNodeMap attrs = node.attributes();
-    if(!attrs.count()) {
+    if (!attrs.count()) {
         return false;
     }
     QDomNode subNode = attrs.namedItem(tagName);
-    if(subNode.isNull()) {
+    if (subNode.isNull()) {
         return false;
     }
     target = subNode.nodeValue().toInt();
@@ -57,25 +50,23 @@ read_attribute(QDomNode& node, const char* tagName, int& target)
 }
 
 //-----------------------------------------------------------------------------
-FoxFourCameraControl::FoxFourCameraControl(const mavlink_camera_information_t *info, Vehicle* vehicle, int compID, QObject* parent)
-    : VehicleCameraControl(info,vehicle, compID, parent)
-{
-    _cameraMode      = CAM_MODE_VIDEO;
-    connect(VideoManager::instance(), &VideoManager::recordingChanged,this,&FoxFourCameraControl::_processRecordingChanged);
-    qCDebug(CameraControlLog)<< "FoxFour camera control initialized";
+FoxFourCameraControl::FoxFourCameraControl(const mavlink_camera_information_t* info, Vehicle* vehicle, int compID,
+                                           QObject* parent)
+    : VehicleCameraControl(info, vehicle, compID, parent) {
+    _cameraMode = CAM_MODE_VIDEO;
+    connect(VideoManager::instance(), &VideoManager::recordingChanged, this,
+            &FoxFourCameraControl::_processRecordingChanged);
+    qCDebug(CameraControlLog) << "FoxFour camera control initialized";
     _info.flags |= CAMERA_CAP_FLAGS_HAS_VIDEO_STREAM;
-
-
 
     // _requestZoomBoundriesTimer.setInterval(1000);
     // connect(&_requestZoomBoundriesTimer,&QTimer::timeout,this,&FoxFourCameraControl::_requestFacts);
     // _requestZoomBoundriesTimer.start();
-    connect(vehicle->parameterManager(), &ParameterManager::factAdded, this,&FoxFourCameraControl::_connectFact);
+    connect(vehicle->parameterManager(), &ParameterManager::factAdded, this, &FoxFourCameraControl::_connectFact);
 }
 
 //-----------------------------------------------------------------------------
-FoxFourCameraControl::~FoxFourCameraControl()
-{
+FoxFourCameraControl::~FoxFourCameraControl() {
     // Stop all timers to prevent them from firing during or after destruction
     _captureStatusTimer.stop();
     _videoRecordTimeUpdateTimer.stop();
@@ -89,19 +80,17 @@ FoxFourCameraControl::~FoxFourCameraControl()
 }
 
 //-----------------------------------------------------------------------------
-bool
-FoxFourCameraControl::startVideoRecording()
-{
-    if(!_resetting) {
+bool FoxFourCameraControl::startVideoRecording() {
+    if (!_resetting) {
         qCDebug(CameraControlLog) << "startVideoRecording()";
         //-- Check if camera can capture videos or if it can capture it while in Photo Mode
-        if((cameraMode() == CAM_MODE_PHOTO && !videoInPhotoMode())) {
+        if ((cameraMode() == CAM_MODE_PHOTO && !videoInPhotoMode())) {
             return false;
-        } else if ( !capturesVideo()) {
+        } else if (!capturesVideo()) {
             // If camera can't record video, just do the normal ground station recording here
             VideoManager::instance()->startRecording();
 
-            if(videoCaptureStatus() == VIDEO_CAPTURE_STATUS_RUNNING) {
+            if (videoCaptureStatus() == VIDEO_CAPTURE_STATUS_RUNNING) {
                 qCWarning(CameraControlLog) << "startVideoRecording: Camera already recording";
                 return false;
             }
@@ -113,7 +102,7 @@ FoxFourCameraControl::startVideoRecording()
             return true;
         }
 
-        if(videoCaptureStatus() != VIDEO_CAPTURE_STATUS_RUNNING) {
+        if (videoCaptureStatus() != VIDEO_CAPTURE_STATUS_RUNNING) {
             return true;
         }
     }
@@ -121,10 +110,9 @@ FoxFourCameraControl::startVideoRecording()
 }
 
 //-----------------------------------------------------------------------------
-void
-FoxFourCameraControl::handleSettings(const mavlink_camera_settings_t& settings)
-{
-    qCDebug(CameraControlLog) << "Received CAMERA_SETTINGS Mode:" << settings.mode_id << "- stopping timer, resetting retries";
+void FoxFourCameraControl::handleSettings(const mavlink_camera_settings_t& settings) {
+    qCDebug(CameraControlLog) << "Received CAMERA_SETTINGS Mode:" << settings.mode_id
+                              << "- stopping timer, resetting retries";
     _cameraSettingsTimer.stop();
     _cameraSettingsRetries = 0;
     // FIXME: for now just hardcoding to support older VGM firmware with mode_id hardcoded to photo in mavsdk
@@ -137,104 +125,116 @@ FoxFourCameraControl::handleSettings(const mavlink_camera_settings_t& settings)
     //     _zoomLevel = z;
     //     emit zoomLevelChanged();
     // }
-    if(std::isfinite(f) && f != _focusLevel) {
+    if (std::isfinite(f) && f != _focusLevel) {
         _focusLevel = f;
         emit focusLevelChanged();
     }
 }
 
 //-----------------------------------------------------------------------------
-void
-FoxFourCameraControl::_processRecordingChanged()
-{
+void FoxFourCameraControl::_processRecordingChanged() {
     bool isRecording = VideoManager::instance()->recording();
-    if(!isRecording &&
-       !capturesVideo() &&
-        _videoCaptureStatus == VIDEO_CAPTURE_STATUS_RUNNING) {
+    if (!isRecording && !capturesVideo() && _videoCaptureStatus == VIDEO_CAPTURE_STATUS_RUNNING) {
         _videoRecordTimeUpdateTimer.stop();
         _setVideoStatus(VIDEO_CAPTURE_STATUS_STOPPED);
     }
 }
 
 //-----------------------------------------------------------------------------
-void FoxFourCameraControl::_connectFact(int componentId, Fact *fact)
-{
-        //signing to maximal zoom value
-        if( fact->name() == "VID_ZOOM_MAX"  && _maxZoomFact == nullptr){
-            _maxZoomFact = fact;
-            connect(_maxZoomFact, &Fact::valueChanged, this, [this](const QVariant& value){
-                    qDebug()<<"changed max";
-                    emit maxZoomLevelChanged();
-            });
-            emit maxZoomLevelChanged();
-        }
+void FoxFourCameraControl::_connectFact(int componentId, Fact* fact) {
+    // signing to maximal zoom value
+    if (fact->name() == "VID_ZOOM_MAX" && _maxZoomFact == nullptr) {
+        _maxZoomFact = fact;
+        connect(_maxZoomFact, &Fact::valueChanged, this, [this](const QVariant& value) { emit maxZoomLevelChanged(); });
+        emit maxZoomLevelChanged();
+    }
 
-        //signing  to the camera source
-        if(fact->name() == "SCR_USER3" && _cameraSwitchFact == nullptr){
-            _cameraSwitchFact = fact;
-            qDebug()<<"assigning SCR_USER3";
-            connect(_cameraSwitchFact, &Fact::valueChanged, this, [this](const QVariant &value){
-                Q_UNUSED(value)
-               emit cameraSwitched();
-            });
+    // signing  to the camera source
+    if (fact->name() == "SCR_USER3" && _cameraSwitchFact == nullptr) {
+        _cameraSwitchFact = fact;
+        _cameraIndex = _cameraSwitchFact->rawValue().toInt();
+        _cameraSwitchConnection = connect(_cameraSwitchFact, &Fact::valueChanged, this, [this](const QVariant& value) {
+            _cameraIndex = value.toInt();
+            emit cameraSwitched();
+        });
+        emit cameraSwitched();
+    }
+
+    // signing to minimal zoom value
+    if (fact->name() == "VID_ZOOM_MIN" && _minZoomFact == nullptr) {
+        _minZoomFact = fact;
+        connect(_minZoomFact, &Fact::valueChanged, this, [this](const QVariant& value) { emit minZoomLevelChanged(); });
+        emit minZoomLevelChanged();
+    }
+}
+
+//-----------------------------------------------------------------------------
+void FoxFourCameraControl::_requestTrackingStatus() {
+    uint64_t rate = 1'000'000 / SettingsManager::instance()->flyViewSettings()->trackingRate()->rawValue().toInt();
+    _vehicle->sendMavCommand(_compID, MAV_CMD_SET_MESSAGE_INTERVAL, true, MAVLINK_MSG_ID_CAMERA_TRACKING_IMAGE_STATUS,
+                             rate);  // Interval (us)
+}
+
+void FoxFourCameraControl::_unsubscribeFromCameraFact() {
+    _commandSwitch = true;
+    disconnect(_cameraSwitchConnection);
+    _cameraSwitchFact = nullptr;
+}
+
+//-----------------------------------------------------------------------------
+
+// handler for camera switch responce
+void _cameraSwitchHandler(void* resultHandlerData, int compId, const mavlink_command_ack_t& ack,
+                          Vehicle::MavCmdResultFailureCode_t failureCode) {
+    if (ack.result != MAV_RESULT_ACCEPTED) {
+        qCDebug(CameraControlLog) << "error occured while switching cameras!";
+    }
+
+    FoxFourCameraControl* ctrl = static_cast<FoxFourCameraControl*>(resultHandlerData);
+    if (ctrl->_cameraSwitchFact) {
+        ctrl->_unsubscribeFromCameraFact();
+    }
+    qCDebug(CameraControlLog) << "camera swiched successfully";
+    ctrl->_cameraIndex += 1;
+    if (ctrl->_cameraIndex > 2 ) {
+        ctrl->_cameraIndex = 1;
+    }
+    emit ctrl->cameraSwitched();
+}
+
+void FoxFourCameraControl::setCameraIndex(int index) {
+    if (!_commandSwitch) {
+        if (_cameraSwitchFact == nullptr && _vehicle->parameterManager()->parameterExists(_vehicle->defaultComponentId(), "SCR_USER3")) {
+            _cameraSwitchFact = _vehicle->parameterManager()->getParameter(_vehicle->defaultComponentId(), "SCR_USER3");
+        }
+        if (_cameraSwitchFact) {
+            _cameraSwitchFact->setCookedValue(index);
+            _cameraSwitchFact->valueChanged(index);
             emit cameraSwitched();
         }
-
-        //signing to minimal zoom value
-        if( fact->name() == "VID_ZOOM_MIN" && _minZoomFact == nullptr){
-            _minZoomFact = fact;
-            connect(_minZoomFact, &Fact::valueChanged, this, [this](const QVariant& value){
-                    qDebug()<<"changed min";
-                    emit minZoomLevelChanged();
-            });
-            emit minZoomLevelChanged();
-        }
-}
-
-//-----------------------------------------------------------------------------
-void FoxFourCameraControl::_requestTrackingStatus()
-{
-    uint64_t rate = 1'000'000 / SettingsManager::instance()->flyViewSettings()->trackingRate()->rawValue().toInt();
-    _vehicle->sendMavCommand(_compID,
-                             MAV_CMD_SET_MESSAGE_INTERVAL,
-                             true,
-                             MAVLINK_MSG_ID_CAMERA_TRACKING_IMAGE_STATUS,
-                             rate); // Interval (us)
-}
-
-//-----------------------------------------------------------------------------
-void FoxFourCameraControl::setCameraIndex(int index)
-{
-    if(_cameraSwitchFact == nullptr){
-       if(!_vehicle->parameterManager()->parameterExists(_vehicle->defaultComponentId(),"SCR_USER3")){
-           return;
-       }
-       _cameraSwitchFact = _vehicle->parameterManager()->getParameter(_vehicle->defaultComponentId(),"SCR_USER3");
     }
-    qDebug()<<"setting value to" << index;
-    _cameraSwitchFact->setCookedValue(index);
-    _cameraSwitchFact->valueChanged(index);
-    emit cameraSwitched();
+
+    Vehicle::MavCmdAckHandlerInfo_t handler;
+    handler.resultHandler = _cameraSwitchHandler;
+    handler.resultHandlerData = this;
+    _vehicle->sendMavCommandWithHandler(&handler, _compID, MAV_CMD_VIDEO_START_STREAMING, index);
 }
 
 //-----------------------------------------------------------------------------
-void FoxFourCameraControl::handleStorageInfo(const mavlink_storage_information_t &st)
-{
+void FoxFourCameraControl::handleStorageInfo(const mavlink_storage_information_t& st) {
     auto oldCapacity = _storageFree;
     VehicleCameraControl::handleStorageInfo(st);
     // if(_storageFree != oldCapacity){
-        emit storageCapacityChanged(_storageTotal,_storageFree);
+    emit storageCapacityChanged(_storageTotal, _storageFree);
     // }
 }
 
 //-----------------------------------------------------------------------------
-bool
-FoxFourCameraControl::stopVideoRecording()
-{
-    if(!_resetting) {
+bool FoxFourCameraControl::stopVideoRecording() {
+    if (!_resetting) {
         if (!capturesVideo()) {
             // Again, if camera doesn't have the recording, do one on the ground station
-            if(videoCaptureStatus() != VIDEO_CAPTURE_STATUS_RUNNING) {
+            if (videoCaptureStatus() != VIDEO_CAPTURE_STATUS_RUNNING) {
                 qCWarning(CameraControlLog) << "stopVideoRecording: Camera not recording";
                 return false;
             }
@@ -247,12 +247,11 @@ FoxFourCameraControl::stopVideoRecording()
 
         // Firstly, stop video recording on the UAV
         qCDebug(CameraControlLog) << "stopVideoRecording()";
-        if(videoCaptureStatus() == VIDEO_CAPTURE_STATUS_RUNNING) {
-            _vehicle->sendMavCommand(
-                _compID,                                    // Target component
-                MAV_CMD_VIDEO_STOP_CAPTURE,                 // Command id
-                false,                                      // Don't Show Error (handle locally)
-                0);                                         // Reserved (Set to 0)
+        if (videoCaptureStatus() == VIDEO_CAPTURE_STATUS_RUNNING) {
+            _vehicle->sendMavCommand(_compID,                     // Target component
+                                     MAV_CMD_VIDEO_STOP_CAPTURE,  // Command id
+                                     false,                       // Don't Show Error (handle locally)
+                                     0);                          // Reserved (Set to 0)
 
             VideoManager::instance()->stopRecording();
 
@@ -262,27 +261,24 @@ FoxFourCameraControl::stopVideoRecording()
     return false;
 }
 //-----------------------------------------------------------------------------
-void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp, bool zoom)
-{
+void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp, bool zoom) {
     uint64_t time = timestamp.toULongLong();
-    if(_trackingMarquee != rec) {
+    if (_trackingMarquee != rec) {
         _trackingMarquee = rec;
 
-        qCDebug(CameraControlLog) << "Start Tracking (Rectangle: ["
-                                  << static_cast<float>(rec.x()) << ", "
-                                  << static_cast<float>(rec.y()) << "] - ["
-                                  << static_cast<float>(rec.x() + rec.width()) << ", "
-                                  << static_cast<float>(rec.y() + rec.height()) << "]"
-                                  << ", Timestamp: "<< timestamp;
-        //if we are zooming, calculating new zoom level and setting it.
-        if(zoom){
-            //for now zoom is just a bit in timestamp
-            time = time | (1ULL<<63);
-            double newZoomLevel = qMin(1.0/rec.width(), 1.0/rec.height());
-            if( _zoomLevel != newZoomLevel){
+        qCDebug(CameraControlLog) << "Start Tracking (Rectangle: [" << static_cast<float>(rec.x()) << ", "
+                                  << static_cast<float>(rec.y()) << "] - [" << static_cast<float>(rec.x() + rec.width())
+                                  << ", " << static_cast<float>(rec.y() + rec.height()) << "]"
+                                  << ", Timestamp: " << timestamp;
+        // if we are zooming, calculating new zoom level and setting it.
+        if (zoom) {
+            // for now zoom is just a bit in timestamp
+            time = time | (1ULL << 63);
+            double newZoomLevel = qMin(1.0 / rec.width(), 1.0 / rec.height());
+            if (_zoomLevel != newZoomLevel) {
                 _zoomLevel = newZoomLevel;
                 double minZoomLevel = _minZoomFact ? _minZoomFact->rawValue().toDouble() : _defaultMinZoom;
-                if( (_zoomLevel > minZoomLevel) != _zoomEnabled) {
+                if ((_zoomLevel > minZoomLevel) != _zoomEnabled) {
                     _zoomEnabled = !_zoomEnabled;
                     emit zoomEnabledChanged();
                 }
@@ -292,20 +288,14 @@ void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp, bool zoo
         uint32_t timestampLow = static_cast<uint32_t>(time);
         uint32_t timestampHight = static_cast<uint32_t>(time >> 32);
 
-        float param5,param6;
+        float param5, param6;
 
         std::memcpy(&param5, &timestampLow, sizeof(param5));
         std::memcpy(&param6, &timestampHight, sizeof(param6));
 
-        _vehicle->sendMavCommand(_compID,
-                                 MAV_CMD_CAMERA_TRACK_RECTANGLE,
-                                 true,
-                                 static_cast<float>(rec.x()),
-                                 static_cast<float>(rec.y()),
-                                 static_cast<float>(rec.x() + rec.width()),
-                                 static_cast<float>(rec.y() + rec.height()),
-                                 param5,
-                                 param6);
+        _vehicle->sendMavCommand(_compID, MAV_CMD_CAMERA_TRACK_RECTANGLE, true, static_cast<float>(rec.x()),
+                                 static_cast<float>(rec.y()), static_cast<float>(rec.x() + rec.width()),
+                                 static_cast<float>(rec.y() + rec.height()), param5, param6);
 
         // Request tracking status
         _requestTrackingStatus();
@@ -313,29 +303,22 @@ void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp, bool zoo
 }
 
 //-----------------------------------------------------------------------------
-void FoxFourCameraControl::stopTracking(uint64_t timestamp)
-{
+void FoxFourCameraControl::stopTracking(uint64_t timestamp) {
     qCDebug(CameraControlLog) << "Stop Tracking";
 
     uint32_t timestampLow = static_cast<uint32_t>(timestamp);
     uint32_t timestampHight = static_cast<uint32_t>(timestamp >> 32);
 
-    float param1,param2;
+    float param1, param2;
 
     std::memcpy(&param1, &timestampLow, sizeof(param1));
     std::memcpy(&param2, &timestampLow, sizeof(param2));
 
-
     //-- Stop Tracking
-    _vehicle->sendMavCommand(_compID,
-                             MAV_CMD_CAMERA_STOP_TRACKING,
-                             true);
+    _vehicle->sendMavCommand(_compID, MAV_CMD_CAMERA_STOP_TRACKING, true);
 
     //-- Stop Sending Tracking Status
-    _vehicle->sendMavCommand(_compID,
-                             MAV_CMD_SET_MESSAGE_INTERVAL,
-                             true,
-                             MAVLINK_MSG_ID_CAMERA_TRACKING_IMAGE_STATUS,
+    _vehicle->sendMavCommand(_compID, MAV_CMD_SET_MESSAGE_INTERVAL, true, MAVLINK_MSG_ID_CAMERA_TRACKING_IMAGE_STATUS,
                              -1);
 
     // reset tracking image rectangle
@@ -343,18 +326,13 @@ void FoxFourCameraControl::stopTracking(uint64_t timestamp)
 }
 
 //-----------------------------------------------------------------------------
-void FoxFourCameraControl::setZoomLevel(qreal level)
-{
+void FoxFourCameraControl::setZoomLevel(qreal level) {
     VehicleCameraControl::setZoomLevel(level);
     _zoomLevel = level;
     double minZoom = _minZoomFact ? _minZoomFact->rawValue().toDouble() : _defaultMinZoom;
-    if((_zoomLevel > minZoom) != _zoomEnabled){
+    if ((_zoomLevel > minZoom) != _zoomEnabled) {
         _zoomEnabled = !_zoomEnabled;
         emit zoomEnabledChanged();
     }
     emit zoomLevelChanged();
 }
-
-
-
-
