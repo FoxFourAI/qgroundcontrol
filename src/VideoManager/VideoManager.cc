@@ -491,11 +491,11 @@ bool VideoManager::_updateSettings(VideoReceiver* receiver) {
 
     //if we enable auto configuration, ignore the manual configuration part
     if (_videoSettings->autoConfigure()->rawValue().toBool()) {
-        qDebug()<< "setting autoConfiguration";
-        settingsChanged |= _updateAutoStream(receiver);
-        return settingsChanged;
+        qCDebug(VideoManagerLog)<< "setting is auto configured";
+        _updateAutoStream(receiver);
+        return true;
     }
-    qDebug()<< "manual config";
+    qCDebug(VideoManagerLog)<< "manual config";
     const QString source = _videoSettings->videoSource()->rawValue().toString();
     if (source == VideoSettings::videoSourceUDPH264) {
         settingsChanged |=
