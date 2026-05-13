@@ -56,12 +56,12 @@ ParameterManager::ParameterManager(Vehicle *vehicle)
     (void) connect(&_initialRequestTimeoutTimer, &QTimer::timeout, this, &ParameterManager::_initialRequestTimeout);
 
     auto mp = reinterpret_cast<FoxFourPlugin*>(QGCCorePlugin::instance())->mandatoryParameters();
-    if(!mp->parameters().isEmpty()) {
+    if (!mp->parameters().isEmpty()) {
         _disableAllRetries = true;
-        connect(mp,&MandatoryParameters::parametersReadyChanged,this,[=](bool ready){
-           _parametersReady = ready;
-           _missingParameters = true;
-           emit parametersReadyChanged(ready);
+        connect(mp, &MandatoryParameters::parametersReadyChanged, this, [=](bool ready) {
+            _parametersReady = ready;
+            _missingParameters = true;
+            emit parametersReadyChanged(ready);
         });
     }
 
