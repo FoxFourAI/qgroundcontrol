@@ -322,7 +322,6 @@ void InitialConnectStateMachine::_stateRequestParameters(StateMachine* stateMach
                 mavlink_param_value_t paramMsg;
                 mavlink_msg_param_value_decode(&msg, &paramMsg);
                 if (lastMParameter == QLatin1String(paramMsg.param_id)) {
-                    qDebug() << "load all mandatory parameters from the FCU";
                     disconnect(connectMachine->_msgRecieveConnection);
 
                     for (int i = MAV_COMP_ID_ONBOARD_COMPUTER; i <= MAV_COMP_ID_ONBOARD_COMPUTER4; ++i) {
