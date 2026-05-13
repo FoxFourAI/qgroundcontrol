@@ -90,6 +90,14 @@ Item {
                                                          Dialog.Cancel | Dialog.Reset,
                                                          function() { controller.resetAllToVehicleConfiguration() })
         }
+        QGCMenuItem{
+            text:           qsTr("Reset mandatory parameters")
+            onTriggered:    mainWindow.showMessageDialog(qsTr("Reset mandatory parameters?"),
+                                                         qsTr("Select Reset to reset mandatory parameters to the defaults."),
+                                                         Dialog.Cancel | Dialog.Reset,
+                                                         function() { QGroundControl.corePlugin.mandatoryParameters.loadDefaultParameters() })
+        }
+
         QGCMenuSeparator { }
         QGCMenuItem {
             text:           qsTr("Load from file for review...")

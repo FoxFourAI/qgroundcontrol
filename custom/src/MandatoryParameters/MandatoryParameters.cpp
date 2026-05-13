@@ -52,6 +52,7 @@ void MandatoryParameters::loadDefaultParameters() {
         "EK3_SRC1_POSZ",   "EK3_SRC1_VELXY",  "EK3_SRC1_VELZ",    "EK3_SRC1_YAW",    "EK3_SRC2_POSXY", "EK3_SRC2_POSZ",
         "EK3_SRC2_VELXY",  "EK3_SRC2_VELZ",   "EK3_SRC2_YAW",     "EK3_SRC3_POSXY",  "EK3_SRC3_POSZ",  "EK3_SRC3_VELXY",
         "EK3_SRC3_VELZ",   "EK3_SRC3_YAW",    "EK3_SRC_OPTIONS",  "EK3_OPTIONS"};
+    emit parametersChanged();
 }
 
 void MandatoryParameters::setParametersReady(bool ready) {
