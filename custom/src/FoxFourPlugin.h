@@ -20,6 +20,7 @@
 #endif
 
 #include "ParameterSetter/ParameterSetter.h"
+#include "MandatoryParameters/MandatoryParameters.h"
 class QQmlApplicationEngine;
 
 Q_DECLARE_LOGGING_CATEGORY(FoxFourLog)
@@ -29,6 +30,7 @@ class FoxFourPlugin : public QGCCorePlugin
     Q_OBJECT
     Q_PROPERTY(QString version MEMBER _version)
     Q_PROPERTY (ParameterSetter *parameterSetter READ parameterSetter MEMBER _parameterSetter)
+    Q_PROPERTY (MandatoryParameters* mandatoryParameters READ mandatoryParameters MEMBER _mandatoryParameters)
 public:
     explicit FoxFourPlugin(QObject *parent = nullptr);
 
@@ -37,7 +39,7 @@ public:
 
     void cleanup() final;
     QGCOptions *options() final { return _options; }
-
+    MandatoryParameters* mandatoryParameters();
     bool overrideSettingsGroupVisibility(const QString &name) final;
 
     VideoReceiver *createVideoReceiver(QObject *parent);
@@ -57,7 +59,7 @@ private:
     QQmlApplicationEngine *_qmlEngine = nullptr;
     class CustomOverrideInterceptor *_selector = nullptr;
     QVariantList _customSettingsList; // Not to be mixed up with QGCCorePlugin implementation
-
+    MandatoryParameters* _mandatoryParameters = nullptr;
 
 };
 

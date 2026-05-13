@@ -7,7 +7,7 @@
 #include "BrandImageSettings.h"
 #include "QGCLoggingCategory.h"
 #include "QGCPalette.h"
-
+#include "MandatoryParameters/MandatoryParameters.h"
 QGC_LOGGING_CATEGORY(CustomLog, "FoxFour.Plugin")
 
 Q_APPLICATION_STATIC(FoxFourPlugin, _customPluginInstance);
@@ -18,6 +18,7 @@ FoxFourPlugin::FoxFourPlugin(QObject* parent)
     QCoreApplication::setApplicationName("FoxFour-QGroundControl");
     _options= new QGCOptions(this);
     _parameterSetter = new ParameterSetter(this);
+    _mandatoryParameters = new MandatoryParameters(this);
     _version = QString(QGC_CUSTOM_VERSION);
     _showAdvancedUI = true;
     (void)connect(this, &FoxFourPlugin::showAdvancedUIChanged, this, &FoxFourPlugin::_advancedChanged);
@@ -26,11 +27,17 @@ FoxFourPlugin::FoxFourPlugin(QObject* parent)
 QGCCorePlugin* FoxFourPlugin::instance() { return _customPluginInstance(); }
 
 void FoxFourPlugin::cleanup() {
+
     if (_qmlEngine) {
         _qmlEngine->removeUrlInterceptor(_selector);
     }
 
     delete _selector;
+}
+
+MandatoryParameters *FoxFourPlugin::mandatoryParameters()
+{
+    return _mandatoryParameters;
 }
 
 void FoxFourPlugin::_advancedChanged(bool changed) {

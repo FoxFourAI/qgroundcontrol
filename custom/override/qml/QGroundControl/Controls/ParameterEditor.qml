@@ -22,7 +22,6 @@ import QGroundControl.FactControls
 
 Item {
     id:         _root
-
     property Fact   _editorDialogFact: Fact { }
     property int    _rowHeight:         ScreenTools.defaultFontPixelHeight * 2
     property int    _rowWidth:          10 // Dynamic adjusted at runtime
@@ -270,13 +269,18 @@ Item {
         }
     }
 
-    TableView {
-        id:                 tableView
+    ColumnLayout{
+        id: tableColumn
         anchors.leftMargin: ScreenTools.defaultFontPixelWidth
         anchors.top:        header.bottom
         anchors.bottom:     parent.bottom
         anchors.left:       _searchFilter ? parent.left : groupScroll.right
         anchors.right:      parent.right
+
+        TableView {
+        id:                 tableView
+        Layout.fillWidth: true
+        Layout.fillHeight: true
         columnSpacing:      ScreenTools.defaultFontPixelWidth
         rowSpacing:         ScreenTools.defaultFontPixelHeight / 4
         model:              controller.parameters
@@ -339,9 +343,46 @@ Item {
 
             QGCMouseArea {
                 anchors.fill: parent
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
                 onClicked: mouse => {
-                    _editorDialogFact = fact
-                    editorDialogComponent.createObject(mainWindow).open()
+                        if(mouse.button === Qt.LeftButton){
+                            _editorDialogFact = fact
+                            editorDialogComponent.createObject(mainWindow).open()
+                        }
+
+                        if(mouse.button === Qt.RightButton && fact.componentId === _activeVehicle.id) {
+                            QGroundControl.corePlugin.mandatoryParameters.addParameter(fact.name)
+                        }
+                }
+            }
+
+        }
+    }
+
+        SectionHeader{
+            text: qsTr("Mandatory parameters")
+            font.pixelSize: ScreenTools.largeFontPointSize
+            Layout.fillWidth: true
+        }
+
+        ListView {
+            id: mandatoryParameters
+            Layout.fillWidth: true
+            implicitHeight: parent.height * 0.2
+            model: QGroundControl.corePlugin.mandatoryParameters.parameters
+            delegate: Item{
+                implicitHeight: paramName.height
+                implicitWidth: parent.width
+                QGCLabel{
+                    id: paramName
+                text: modelData
+                }
+                QGCMouseArea{
+                    acceptedButtons: Qt.RightButton
+                    anchors.fill: parent
+                    onClicked: mouse =>{
+                            QGroundControl.corePlugin.mandatoryParameters.removeParameter(modelData)
+                    }
                 }
             }
         }

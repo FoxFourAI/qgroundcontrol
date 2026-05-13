@@ -20,6 +20,8 @@
 #include "RallyPointManager.h"
 #include "QGCLoggingCategory.h"
 
+#include "FoxFourPlugin.h"
+
 QGC_LOGGING_CATEGORY(InitialConnectStateMachineLog, "Vehicle.InitialConnectStateMachine")
 
 InitialConnectStateMachine::InitialConnectStateMachine(Vehicle *vehicle, QObject *parent)
@@ -303,7 +305,36 @@ void InitialConnectStateMachine::_stateRequestParameters(StateMachine* stateMach
     qCDebug(InitialConnectStateMachineLog) << "_stateRequestParameters";
     connect(vehicle->_parameterManager, &ParameterManager::loadProgressChanged, connectMachine,
             &InitialConnectStateMachine::gotProgressUpdate);
-    vehicle->_parameterManager->refreshAllParameters();
+
+    MandatoryParameters* mp = reinterpret_cast<FoxFourPlugin*>(QGCCorePlugin::instance())->mandatoryParameters();
+    ParameterManager* paramMgr = vehicle->parameterManager();
+
+    if (!mp->parameters().isEmpty()) {
+        // updating mandatory parameters from FCU
+        for (const QString& parameter : mp->parameters()) {
+            vehicle->parameterManager()->refreshParameter(MAV_COMP_ID_AUTOPILOT1, parameter);
+        }
+        QString lastMParameter = mp->parameters().last();
+        connectMachine->_msgRecieveConnection = connect(
+                    vehicle, &Vehicle::mavlinkMessageReceived, connectMachine,
+                    [paramMgr, lastMParameter, connectMachine, mp](const mavlink_message_t& msg) {
+            if (msg.msgid == MAVLINK_MSG_ID_PARAM_VALUE) {
+                mavlink_param_value_t paramMsg;
+                mavlink_msg_param_value_decode(&msg, &paramMsg);
+                if (lastMParameter == QLatin1String(paramMsg.param_id)) {
+                    qDebug() << "load all mandatory parameters from the FCU";
+                    disconnect(connectMachine->_msgRecieveConnection);
+
+                    for (int i = MAV_COMP_ID_ONBOARD_COMPUTER; i <= MAV_COMP_ID_ONBOARD_COMPUTER4; ++i) {
+                        paramMgr->refreshAllParameters(i);
+                    }
+                    mp->setParametersReady(true);
+                }
+            }
+        });
+    } else {
+        vehicle->_parameterManager->refreshAllParameters();
+    }
 }
 
 void InitialConnectStateMachine::_stateRequestMission(StateMachine* stateMachine)

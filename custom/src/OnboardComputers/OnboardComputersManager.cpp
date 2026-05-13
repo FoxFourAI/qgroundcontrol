@@ -226,7 +226,6 @@ void OnboardComputersManager::_handleHeartbeat(const mavlink_message_t& message)
             setCurrentComputerComponent(computerId);
         }
         emit computersListChanged();
-        _vehicle->parameterManager()->refreshAllParameters();
     }
 }
 
