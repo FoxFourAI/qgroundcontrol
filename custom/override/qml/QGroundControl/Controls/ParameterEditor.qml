@@ -75,6 +75,11 @@ Item {
             onTriggered:	controller.refresh()
 
         }
+        QGCMenuItem{
+            text:           qsTr("Pull All parameters")
+            onTriggered:    controller.pullAllParameters()
+        }
+
         QGCMenuItem {
             text:           qsTr("Reset all to firmware's defaults")
             onTriggered:    mainWindow.showMessageDialog(qsTr("Reset All"),
@@ -358,8 +363,8 @@ Item {
                             editorDialogComponent.createObject(mainWindow).open()
                         }
 
-                        if(mouse.button === Qt.RightButton && fact.componentId === _activeVehicle.id) {
-                            QGroundControl.corePlugin.mandatoryParameters.addParameter(fact.name)
+                        if(mouse.button === Qt.RightButton) {
+                            QGroundControl.corePlugin.mandatoryParameters.addParameter(fact.name, fact.componentId)
                         }
                 }
             }
@@ -373,23 +378,68 @@ Item {
             Layout.fillWidth: true
         }
 
+        ListModel{
+            id: mandatoryList
+        }
+
+        Component.onCompleted: rebuildTree()
+
+        function rebuildTree(){
+            mandatoryParameters.model = null
+            mandatoryList.clear()
+            var map = QGroundControl.corePlugin.mandatoryParameters.parameters
+            var keys = Object.keys(map)
+
+            for (var i = 0; i < keys.length; i++) {
+                var key = keys[i]
+                var compId = key
+                var children = map[key]
+
+                mandatoryList.append({
+                    label:       compId,
+                    depth:       0,
+                    isParent:    true,
+                    compId: compId
+                })
+
+                for (var j = 0; j < children.length; j++) {
+                    mandatoryList.append({
+                        label:       children[j],
+                        depth:       1,
+                        isParent:    false,
+                        expanded:    false,
+                        compId:   compId
+                    })
+                }
+            }
+            mandatoryParameters.model = mandatoryList
+        }
+
+        Connections {
+                target: QGroundControl.corePlugin.mandatoryParameters
+                onParametersChanged: tableColumn.rebuildTree()
+            }
+
         ListView {
             id: mandatoryParameters
             Layout.fillWidth: true
             implicitHeight: parent.height * 0.2
-            model: QGroundControl.corePlugin.mandatoryParameters.parameters
+            model: mandatoryList
             delegate: Item{
-                implicitHeight: paramName.height
-                implicitWidth: parent.width
+                implicitHeight: name.implicitHeight + ScreenTools.defaultFontPixelHeight * 0.5
+                width: mandatoryParameters.width
                 QGCLabel{
-                    id: paramName
-                text: modelData
+                    id: name
+                    text: model.isParent ? "" + model.label :" - " + model.label
+                    font.pointSize: model.isParent ? ScreenTools.largeFontPointSize : ScreenTools.defaultFontPointSize
                 }
                 QGCMouseArea{
                     acceptedButtons: Qt.RightButton
                     anchors.fill: parent
                     onClicked: mouse =>{
-                            QGroundControl.corePlugin.mandatoryParameters.removeParameter(modelData)
+                            if(!model.isParent){
+                            QGroundControl.corePlugin.mandatoryParameters.removeParameter(model.label, model.compId)
+                        }
                     }
                 }
             }

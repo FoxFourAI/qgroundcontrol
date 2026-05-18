@@ -471,6 +471,11 @@ void ParameterEditorController::refresh(void)
     _parameterMgr->refreshAllParameters();
 }
 
+void ParameterEditorController::pullAllParameters()
+{
+    _parameterMgr->pullAllParameters();
+}
+
 void ParameterEditorController::resetAllToDefaults(void)
 {
     _parameterMgr->resetAllParametersToDefaults();

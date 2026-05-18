@@ -64,6 +64,8 @@ public:
     /// Request a refresh on the specific parameter
     void refreshParameter(int componentId, const QString &paramName);
 
+    void pullAllParameters();
+
     /// Request a refresh on all parameters that begin with the specified prefix
     void refreshParametersPrefix(int componentId, const QString &namePrefix);
 

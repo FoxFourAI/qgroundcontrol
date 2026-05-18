@@ -43,4 +43,5 @@ public:
     DEFINE_SETTINGFACT(enableVGMDialect)
     DEFINE_SETTINGFACT(trackingRate)
     DEFINE_SETTINGFACT(mapMatchingPointsCnt)
+    DEFINE_SETTINGFACT(minimalMode)
 };

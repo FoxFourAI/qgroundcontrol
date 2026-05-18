@@ -239,7 +239,6 @@ void OnboardComputersManager::_handleCompanionVersion(const mavlink_message_t &m
     }
 
     auto &comp = _onboardComputers[computerId];
-    //TODO: CUSTOM MAV_LINK DIALECT
     mavlink_msg_companion_version_decode(&message, &comp.info);
 
     if( comp.osVersion.toUint32() != 0 &&

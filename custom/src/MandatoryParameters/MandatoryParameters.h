@@ -2,29 +2,40 @@
 
 #include "QObject"
 
+
+
+
 class Vehicle;
 class MandatoryParameters : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QStringList parameters READ parameters NOTIFY parametersChanged FINAL)
+    Q_PROPERTY(QVariantMap parameters READ parameters NOTIFY parametersChanged FINAL)
 public:
+
+    enum ComponentType {
+        FCU = 0,
+        VGM,
+        Unknown
+    };
+    QStringList componentNames{
+        "FCU",
+        "VGM"
+    };
+
     MandatoryParameters(QObject* parent);
     ~MandatoryParameters();
-    const QStringList& parameters();
-    Q_INVOKABLE void removeParameter(const QString& parameter);
-    Q_INVOKABLE void addParameter(const QString& parameter);
+    const QVariantMap parameters();
+    const QMap<ComponentType,QStringList>& rawParameters();
+    Q_INVOKABLE void removeParameter(const QString& parameter, const QString component);
+    Q_INVOKABLE void addParameter(const QString& parameter, const int componentId);
     Q_INVOKABLE void loadDefaultParameters();
-    void setParametersReady(bool ready);
 signals:
     void parametersChanged();
-    void parametersReadyChanged(bool ready);
-
 private:
     void _saveParameters();
     void _loadParameters();
 
 private:
-    QStringList _parameters;
+    QMap<ComponentType,QStringList> _parameters;
     bool _parametersReady = false;
     static constexpr std::string _groupKey = "mandatoryParams";
-    static constexpr std::string _paramListName = "list";
 };

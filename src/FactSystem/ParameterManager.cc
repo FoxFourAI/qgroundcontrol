@@ -18,6 +18,9 @@
 #include "QGC.h"
 #include "QGCApplication.h"
 #include "QGCLoggingCategory.h"
+
+#include "SettingsManager.h"
+#include "FlyViewSettings.h"
 #include "Vehicle.h"
 #include "QGCStateMachine.h"
 #include "MultiVehicleManager.h"
@@ -55,14 +58,8 @@ ParameterManager::ParameterManager(Vehicle *vehicle)
     _initialRequestTimeoutTimer.setInterval(5000);
     (void) connect(&_initialRequestTimeoutTimer, &QTimer::timeout, this, &ParameterManager::_initialRequestTimeout);
 
-    auto mp = reinterpret_cast<FoxFourPlugin*>(QGCCorePlugin::instance())->mandatoryParameters();
-    if (!mp->parameters().isEmpty()) {
+    if (SettingsManager::instance()->flyViewSettings()->minimalMode()->rawValue().toBool()) {
         _disableAllRetries = true;
-        connect(mp, &MandatoryParameters::parametersReadyChanged, this, [=](bool ready) {
-            _parametersReady = ready;
-            _missingParameters = true;
-            emit parametersReadyChanged(ready);
-        });
     }
 
     _waitingParamTimeoutTimer.setSingleShot(true);
@@ -649,6 +646,21 @@ void ParameterManager::refreshParameter(int componentId, const QString &paramNam
     qCDebug(ParameterManagerLog) << _logVehiclePrefix(componentId) << "refreshParameter - name:" << paramName << ")";
 
     _mavlinkParamRequestRead(componentId, paramName, -1, true /* notifyFailure */);
+}
+
+void ParameterManager::pullAllParameters()
+{
+    _paramCountMap.clear();
+    _disableAllRetries = false;
+    _waitingReadParamIndexMap.clear();
+    _failedReadParamIndexMap.clear();
+    _parametersReady = false;
+    _missingParameters = false;
+    _initialLoadComplete = false;
+    _waitingForDefaultComponent = true;
+    emit parametersReadyChanged(_parametersReady);
+    emit missingParametersChanged(_missingParameters);
+    refreshAllParameters();
 }
 
 void ParameterManager::refreshParametersPrefix(int componentId, const QString &namePrefix)
