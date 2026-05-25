@@ -261,7 +261,7 @@ bool FoxFourCameraControl::stopVideoRecording() {
     return false;
 }
 //-----------------------------------------------------------------------------
-void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp, bool zoom) {
+void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp) {
     uint64_t time = timestamp.toULongLong();
     if (_trackingMarquee != rec) {
         _trackingMarquee = rec;
@@ -270,21 +270,6 @@ void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp, bool zoo
                                   << static_cast<float>(rec.y()) << "] - [" << static_cast<float>(rec.x() + rec.width())
                                   << ", " << static_cast<float>(rec.y() + rec.height()) << "]"
                                   << ", Timestamp: " << timestamp;
-        // if we are zooming, calculating new zoom level and setting it.
-        if (zoom) {
-            // for now zoom is just a bit in timestamp
-            time = time | (1ULL << 63);
-            double newZoomLevel = qMin(1.0 / rec.width(), 1.0 / rec.height());
-            if (_zoomLevel != newZoomLevel) {
-                _zoomLevel = newZoomLevel;
-                double minZoomLevel = _minZoomFact ? _minZoomFact->rawValue().toDouble() : _defaultMinZoom;
-                if ((_zoomLevel > minZoomLevel) != _zoomEnabled) {
-                    _zoomEnabled = !_zoomEnabled;
-                    emit zoomEnabledChanged();
-                }
-                emit zoomLevelChanged();
-            }
-        }
         uint32_t timestampLow = static_cast<uint32_t>(time);
         uint32_t timestampHight = static_cast<uint32_t>(time >> 32);
 
@@ -335,4 +320,39 @@ void FoxFourCameraControl::setZoomLevel(qreal level) {
         emit zoomEnabledChanged();
     }
     emit zoomLevelChanged();
+}
+
+void FoxFourCameraControl::zoomToRegion(QRectF rec, QString timestamp)
+{
+    int vgmCompID = reinterpret_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager()->currentComputerComponent();
+    if(vgmCompID == 0){
+        return;
+    }
+    uint64_t time = timestamp.toULongLong();
+    double newZoomLevel = qMin(1.0 / rec.width(), 1.0 / rec.height());
+    if (_zoomLevel != newZoomLevel) {
+        _zoomLevel = newZoomLevel;
+        double minZoomLevel = _minZoomFact ? _minZoomFact->rawValue().toDouble() : _defaultMinZoom;
+        if ((_zoomLevel > minZoomLevel) != _zoomEnabled) {
+            _zoomEnabled = !_zoomEnabled;
+            emit zoomEnabledChanged();
+        }
+        emit zoomLevelChanged();
+    }
+
+    uint32_t timestampLow = static_cast<uint32_t>(time);
+    uint32_t timestampHight = static_cast<uint32_t>(time >> 32);
+
+    float param5, param6;
+
+    std::memcpy(&param5, &timestampLow, sizeof(param5));
+    std::memcpy(&param6, &timestampHight, sizeof(param6));
+
+    //TODO: for now VGM is handling this command, but the perfect scenario is to move this to the camera instance.
+
+    _vehicle->sendMavCommand(vgmCompID, MAV_CMD_DO_REGION_ZOOM,true,
+                             rec.topLeft().x(),
+                             rec.topLeft().y(),
+                             rec.width(),
+                             rec.height());
 }

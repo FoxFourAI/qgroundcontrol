@@ -16,13 +16,14 @@ public:
                          QObject* parent = nullptr);
     virtual ~FoxFourCameraControl();
 
-    Q_INVOKABLE virtual bool startVideoRecording();
-    Q_INVOKABLE virtual bool stopVideoRecording();
-    Q_INVOKABLE virtual void startTracking(QRectF rec, QString timestamp, bool zoom);
+    Q_INVOKABLE virtual bool startVideoRecording() override;
+    Q_INVOKABLE virtual bool stopVideoRecording() override;
+    Q_INVOKABLE virtual void startTracking(QRectF rec, QString timestamp);
     Q_INVOKABLE virtual void stopTracking(uint64_t timestamp = 0);
     Q_INVOKABLE void setCameraIndex(int index);
     // Q_INVOKABLE virtual void zoom                   (QRectF rec);
-    void setZoomLevel(qreal level);
+    Q_INVOKABLE void zoomToRegion(QRectF rec,QString timestamp);
+    void setZoomLevel(qreal level) override;
 
     virtual void handleSettings(const mavlink_camera_settings_t& settings);
     void handleStorageInfo(const mavlink_storage_information_t& st);
@@ -69,8 +70,8 @@ protected:
     const double _defaultMaxZoom = 16;
     const double _defaultMinZoom = 1;
     Fact    *_maxZoomFact = nullptr,
-            *_minZoomFact = nullptr,
-            *_cameraSwitchFact = nullptr;
+    *_minZoomFact = nullptr,
+    *_cameraSwitchFact = nullptr;
     bool     _commandSwitch = false;
     QMetaObject::Connection _cameraSwitchConnection;
     QTimer _videoRecordTimeUpdateTimer;

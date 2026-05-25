@@ -193,7 +193,7 @@ Item {
             }
             let latestFrameTimestamp = QGroundControl.videoManager.lastKlvTimestamp;
             let camera = videoStreaming._camera
-            camera.startTracking(rec, latestFrameTimestamp, true)
+            camera.zoomToRegion(rec, latestFrameTimestamp)
         }
 
         onDoubleClicked: QGroundControl.videoManager.fullScreen = !QGroundControl.videoManager.fullScreen
