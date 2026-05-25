@@ -155,6 +155,7 @@ public:
     Q_INVOKABLE void clearDiff                      (void);
     Q_INVOKABLE void sendDiff                       (void);
     Q_INVOKABLE void refresh                        (void);
+    Q_INVOKABLE void pullAllParameters              (void);
     Q_INVOKABLE void resetAllToDefaults             (void);
     Q_INVOKABLE void resetAllToVehicleConfiguration (void);
 

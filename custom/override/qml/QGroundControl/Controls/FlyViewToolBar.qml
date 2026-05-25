@@ -66,10 +66,6 @@ Rectangle {
         color:          qgcPal.windowTransparent
     }
 
-    ParameterDownloadProgress {
-        anchors.fill: parent
-    }
-
     RowLayout {
         id:                     mainLayout
         anchors.bottomMargin:   1
@@ -138,7 +134,6 @@ Rectangle {
 
             FlyViewToolBarIndicators {
                 id: toolIndicators
-
             }
         }
 
@@ -165,5 +160,8 @@ Rectangle {
                 showVehicleConfigParametersPageComponent(qsTr("Component ") + _computersManager.currentComputerComponent)
             }
         }
+    }
+    ParameterDownloadProgress {
+        anchors.fill: parent
     }
 }

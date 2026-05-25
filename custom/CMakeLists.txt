@@ -113,6 +113,8 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ButtonList/ButtonList.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MapMatching/MapMatching.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MapMatching/MapMatching.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MandatoryParameters/MandatoryParameters.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MandatoryParameters/MandatoryParameters.cpp
     CACHE INTERNAL "adding custom sources" FORCE
 )
 

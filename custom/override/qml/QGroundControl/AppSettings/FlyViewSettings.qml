@@ -49,6 +49,13 @@ SettingsPage {
         Layout.fillWidth:   true
         heading:            qsTr("General")
 
+        FactCheckBoxSlider{
+            Layout.fillWidth: true
+            text:               qsTr("Minimal mode")
+            fact:               _minimalMode
+            property Fact       _minimalMode: _flyViewSettings.minimalMode
+        }
+
         FactCheckBoxSlider {
             id:                 useCheckList
             Layout.fillWidth:   true
