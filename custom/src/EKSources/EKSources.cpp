@@ -32,7 +32,7 @@ void EKSources::_fetchSources(bool ready) {
     if (!ready) {
         return;
     }
-    qCDebug(EKSourcesLog) << "fetching sources";
+    _sources.clear();
     auto parameterManager = _vehicle->parameterManager();
     QMap<int, QString> names = {{-1, "----"},        {0, "NONE"}, {3, "GPS"},          {4, "Beacon"},
                                 {5, "Optical Flow"}, {6, "VIO"},  {7, "Wheel Encoder"}};

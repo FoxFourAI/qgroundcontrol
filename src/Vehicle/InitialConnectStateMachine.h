@@ -60,6 +60,8 @@ private:
 
     int _progressWeightTotal;
 
+    QMetaObject::Connection _msgRecieveConnection;
+
     static constexpr const StateMachine::StateFn _rgStates[] = {
         _stateRequestAutopilotVersion,
         _stateRequestProtocolVersion,

@@ -266,7 +266,7 @@ Rectangle {
 
             ConfigButton {
                 id:                 parametersButton
-                visible:            QGroundControl.multiVehicleManager.parameterReadyVehicleAvailable &&
+                visible:            _activeVehicle.parametersManager.parametersReady &&
                                     !QGroundControl.multiVehicleManager.activeVehicle.usingHighLatencyLink
                 text:               qsTr("Parameters")
                 Layout.fillWidth:   true

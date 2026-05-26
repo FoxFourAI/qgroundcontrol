@@ -22,7 +22,6 @@ import QGroundControl.FactControls
 
 Item {
     id:         _root
-
     property Fact   _editorDialogFact: Fact { }
     property int    _rowHeight:         ScreenTools.defaultFontPixelHeight * 2
     property int    _rowWidth:          10 // Dynamic adjusted at runtime
@@ -76,6 +75,11 @@ Item {
             onTriggered:	controller.refresh()
 
         }
+        QGCMenuItem{
+            text:           qsTr("Pull All parameters")
+            onTriggered:    controller.pullAllParameters()
+        }
+
         QGCMenuItem {
             text:           qsTr("Reset all to firmware's defaults")
             onTriggered:    mainWindow.showMessageDialog(qsTr("Reset All"),
@@ -91,6 +95,14 @@ Item {
                                                          Dialog.Cancel | Dialog.Reset,
                                                          function() { controller.resetAllToVehicleConfiguration() })
         }
+        QGCMenuItem{
+            text:           qsTr("Reset mandatory parameters")
+            onTriggered:    mainWindow.showMessageDialog(qsTr("Reset mandatory parameters?"),
+                                                         qsTr("Select Reset to reset mandatory parameters to the defaults."),
+                                                         Dialog.Cancel | Dialog.Reset,
+                                                         function() { QGroundControl.corePlugin.mandatoryParameters.loadDefaultParameters() })
+        }
+
         QGCMenuSeparator { }
         QGCMenuItem {
             text:           qsTr("Load from file for review...")
@@ -270,13 +282,18 @@ Item {
         }
     }
 
-    TableView {
-        id:                 tableView
+    ColumnLayout{
+        id: tableColumn
         anchors.leftMargin: ScreenTools.defaultFontPixelWidth
         anchors.top:        header.bottom
         anchors.bottom:     parent.bottom
         anchors.left:       _searchFilter ? parent.left : groupScroll.right
         anchors.right:      parent.right
+
+        TableView {
+        id:                 tableView
+        Layout.fillWidth: true
+        Layout.fillHeight: true
         columnSpacing:      ScreenTools.defaultFontPixelWidth
         rowSpacing:         ScreenTools.defaultFontPixelHeight / 4
         model:              controller.parameters
@@ -339,9 +356,91 @@ Item {
 
             QGCMouseArea {
                 anchors.fill: parent
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
                 onClicked: mouse => {
-                    _editorDialogFact = fact
-                    editorDialogComponent.createObject(mainWindow).open()
+                        if(mouse.button === Qt.LeftButton){
+                            _editorDialogFact = fact
+                            editorDialogComponent.createObject(mainWindow).open()
+                        }
+
+                        if(mouse.button === Qt.RightButton) {
+                            QGroundControl.corePlugin.mandatoryParameters.addParameter(fact.name, fact.componentId)
+                        }
+                }
+            }
+
+        }
+    }
+
+        SectionHeader{
+            text: qsTr("Mandatory parameters")
+            font.pixelSize: ScreenTools.largeFontPointSize
+            Layout.fillWidth: true
+        }
+
+        ListModel{
+            id: mandatoryList
+        }
+
+        Component.onCompleted: rebuildTree()
+
+        function rebuildTree(){
+            mandatoryParameters.model = null
+            mandatoryList.clear()
+            var map = QGroundControl.corePlugin.mandatoryParameters.parameters
+            var keys = Object.keys(map)
+
+            for (var i = 0; i < keys.length; i++) {
+                var key = keys[i]
+                var compId = key
+                var children = map[key]
+
+                mandatoryList.append({
+                    label:       compId,
+                    depth:       0,
+                    isParent:    true,
+                    compId: compId
+                })
+
+                for (var j = 0; j < children.length; j++) {
+                    mandatoryList.append({
+                        label:       children[j],
+                        depth:       1,
+                        isParent:    false,
+                        expanded:    false,
+                        compId:   compId
+                    })
+                }
+            }
+            mandatoryParameters.model = mandatoryList
+        }
+
+        Connections {
+                target: QGroundControl.corePlugin.mandatoryParameters
+                onParametersChanged: tableColumn.rebuildTree()
+            }
+
+        ListView {
+            id: mandatoryParameters
+            Layout.fillWidth: true
+            implicitHeight: parent.height * 0.2
+            model: mandatoryList
+            delegate: Item{
+                implicitHeight: name.implicitHeight + ScreenTools.defaultFontPixelHeight * 0.5
+                width: mandatoryParameters.width
+                QGCLabel{
+                    id: name
+                    text: model.isParent ? "" + model.label :" - " + model.label
+                    font.pointSize: model.isParent ? ScreenTools.largeFontPointSize : ScreenTools.defaultFontPointSize
+                }
+                QGCMouseArea{
+                    acceptedButtons: Qt.RightButton
+                    anchors.fill: parent
+                    onClicked: mouse =>{
+                            if(!model.isParent){
+                            QGroundControl.corePlugin.mandatoryParameters.removeParameter(model.label, model.compId)
+                        }
+                    }
                 }
             }
         }

@@ -139,6 +139,12 @@
     "default":          2000,
     "min":              500,
     "max":              10000
+},
+{
+    "name": "minimalMode",
+    "shortDesc":"Mode in which QGC pull only mandatory parameters specified by user",
+    "type":"bool",
+    "default": true
 }
 ]
 }
