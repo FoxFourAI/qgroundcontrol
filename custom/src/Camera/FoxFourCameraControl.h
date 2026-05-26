@@ -28,7 +28,7 @@ public:
     virtual void handleSettings(const mavlink_camera_settings_t& settings);
     void handleStorageInfo(const mavlink_storage_information_t& st);
 
-    int maxZoomLevel() {
+    float maxZoomLevel() {
         if (_maxZoomFact) {
             return _maxZoomFact->rawValue().toDouble();
         } else {
@@ -36,7 +36,7 @@ public:
         }
     }
 
-    int minZoomLevel() {
+    float minZoomLevel() {
         if (_minZoomFact) {
             return _minZoomFact->rawValue().toDouble();
         } else {
@@ -64,6 +64,7 @@ protected slots:
 protected:
     void _requestTrackingStatus() override;
     void _unsubscribeFromCameraFact();
+    static void _zoomResponse(void* resultHandlerData, int compId, const mavlink_command_ack_t& ack, Vehicle::MavCmdResultFailureCode_t failureCode);
 protected:
     friend void _cameraSwitchHandler(void *resultHandlerData, int compId, const mavlink_command_ack_t &ack, Vehicle::MavCmdResultFailureCode_t failureCode);
     int         _cameraIndex = 1;
