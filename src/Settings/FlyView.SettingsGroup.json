@@ -145,6 +145,12 @@
     "shortDesc":"Mode in which QGC pull only mandatory parameters specified by user",
     "type":"bool",
     "default": true
+},
+{
+    "name": "useOldZoom",
+    "shortDesc":"Use old zoom messages (deprecated)",
+    "type":"bool",
+    "default":false
 }
 ]
 }

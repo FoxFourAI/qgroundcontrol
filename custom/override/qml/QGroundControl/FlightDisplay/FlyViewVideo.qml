@@ -192,8 +192,14 @@ Item {
                 return;
             }
             let latestFrameTimestamp = QGroundControl.videoManager.lastKlvTimestamp;
-            let camera = videoStreaming._camera
-            camera.zoomToRegion(rec, latestFrameTimestamp)
+            let camera = videoStreaming._camera;
+            let useOldZoom = QGroundControl.settingsManager.flyViewSettings.useOldZoom.rawValue;
+            if (useOldZoom) {
+                camera.startTracking(rec, latestFrameTimestamp, true)
+            } else {
+                camera.zoomToRegion(rec, latestFrameTimestamp)
+            }
+
         }
 
         onDoubleClicked: QGroundControl.videoManager.fullScreen = !QGroundControl.videoManager.fullScreen
@@ -237,7 +243,7 @@ Item {
             //use point message if rectangle is very small
             if (targetCanvas.rectWidth < 2 && targetCanvas.rectHeight < 2) {
                 let pt  = Qt.point(targetCanvas.rectCenterX, targetCanvas.rectCenterY)
-                videoStreaming._camera.startTracking(pt,  targetCanvas.rectWidth / 2)
+                videoStreaming._camera.startTracking(pt,  targetCanvas.rectWidth / 2, false)
             } else {
                 let latestFrameTimestamp = QGroundControl.videoManager.lastKlvTimestamp;
                 if(latestFrameTimestamp === undefined){

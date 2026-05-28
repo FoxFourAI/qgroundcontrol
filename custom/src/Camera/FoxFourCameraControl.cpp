@@ -273,7 +273,7 @@ bool FoxFourCameraControl::stopVideoRecording() {
 }
 
 //-----------------------------------------------------------------------------
-void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp) {
+void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp, bool isZooming) {
     uint64_t time = timestamp.toULongLong();
     if (_trackingMarquee != rec) {
         _trackingMarquee = rec;
@@ -282,6 +282,23 @@ void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp) {
                                   << static_cast<float>(rec.y()) << "] - [" << static_cast<float>(rec.x() + rec.width())
                                   << ", " << static_cast<float>(rec.y() + rec.height()) << "]"
                                   << ", Timestamp: " << timestamp;
+
+        // TODO: deprecated.
+        if (isZooming) {
+            // for now zoom is just a bit in timestamp
+            time = time | (1ULL << 63);
+            double newZoomLevel = qMin(1.0 / rec.width(), 1.0 / rec.height());
+            if (_zoomLevel != newZoomLevel) {
+                _zoomLevel = newZoomLevel;
+                double minZoomLevel = _minZoomFact ? _minZoomFact->rawValue().toDouble() : _defaultMinZoom;
+                if ((_zoomLevel > minZoomLevel) != _zoomEnabled) {
+                    _zoomEnabled = !_zoomEnabled;
+                    emit zoomEnabledChanged();
+                }
+                emit zoomLevelChanged();
+            }
+        }
+
         uint32_t timestampLow = static_cast<uint32_t>(time);
         uint32_t timestampHight = static_cast<uint32_t>(time >> 32);
 

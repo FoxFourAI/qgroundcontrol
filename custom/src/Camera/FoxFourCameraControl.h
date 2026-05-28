@@ -18,7 +18,7 @@ public:
 
     Q_INVOKABLE virtual bool startVideoRecording() override;
     Q_INVOKABLE virtual bool stopVideoRecording() override;
-    Q_INVOKABLE virtual void startTracking(QRectF rec, QString timestamp);
+    Q_INVOKABLE virtual void startTracking(QRectF rec, QString timestamp, bool isZooming = false);
     Q_INVOKABLE virtual void stopTracking(uint64_t timestamp = 0);
     Q_INVOKABLE void setCameraIndex(int index);
     // Q_INVOKABLE virtual void zoom                   (QRectF rec);

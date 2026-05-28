@@ -49,13 +49,6 @@ SettingsPage {
         Layout.fillWidth:   true
         heading:            qsTr("General")
 
-        FactCheckBoxSlider{
-            Layout.fillWidth: true
-            text:               qsTr("Minimal mode")
-            fact:               _minimalMode
-            property Fact       _minimalMode: _flyViewSettings.minimalMode
-        }
-
         FactCheckBoxSlider {
             id:                 useCheckList
             Layout.fillWidth:   true
@@ -108,20 +101,38 @@ SettingsPage {
 
         FactCheckBoxSlider {
             Layout.fillWidth:   true
+            text:               qsTr("Update return to home position based on device location.")
+            fact:               _updateHomePosition
+            visible:            _updateHomePosition.visible
+            property Fact _updateHomePosition: _flyViewSettings.updateHomePosition
+        }
+
+        FactCheckBoxSlider {
+            Layout.fillWidth:   true
+            text:               qsTr("Show Joystick Status in Toolbar")
+            fact:               _flyViewSettings.showJoystickIndicatorInToolbar
+            visible:            fact.visible
+        }
+    }
+
+    SettingsGroupLayout {
+        Layout.fillWidth: true
+        heading: qsTr("FoxFour Settings")
+
+        FactCheckBoxSlider{
+            Layout.fillWidth: true
+            text:               qsTr("Minimal mode")
+            fact:               _minimalMode
+            property Fact       _minimalMode: _flyViewSettings.minimalMode
+        }
+
+        FactCheckBoxSlider {
+            Layout.fillWidth:   true
             text:               qsTr("Show GPS_RAW_INT trajectory on map")
             fact:               _showGPSrawTrajectory
             visible:            _showGPSrawTrajectory.visible
 
             property Fact   _showGPSrawTrajectory: _flyViewSettings.showGPSrawTrajectory
-        }
-
-        FactCheckBoxSlider {
-            Layout.fillWidth:   true
-            text:               qsTr("Enable VGM dialect")
-            fact:               _enableVGMDiaclect
-            visible:            _enableVGMDiaclect.visible
-
-            property Fact   _enableVGMDiaclect: _flyViewSettings.enableVGMDialect
         }
 
         LabelledFactTextField {
@@ -142,19 +153,11 @@ SettingsPage {
             visible: true
         }
 
-        FactCheckBoxSlider {
-            Layout.fillWidth:   true
-            text:               qsTr("Update return to home position based on device location.")
-            fact:               _updateHomePosition
-            visible:            _updateHomePosition.visible
-            property Fact _updateHomePosition: _flyViewSettings.updateHomePosition
-        }
-
-        FactCheckBoxSlider {
-            Layout.fillWidth:   true
-            text:               qsTr("Show Joystick Status in Toolbar")
-            fact:               _flyViewSettings.showJoystickIndicatorInToolbar
-            visible:            fact.visible
+        FactCheckBoxSlider{
+            Layout.fillWidth: true
+            text:             qsTr("Use Old Zoom message (deprecated)")
+            fact:             _useOldZoom
+            property Fact _useOldZoom : _flyViewSettings.useOldZoom
         }
     }
 
