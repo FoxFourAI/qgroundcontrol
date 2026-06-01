@@ -125,6 +125,13 @@ ApplicationWindow {
             }
         }
         ListElement{
+            description:"Open vehicle logs"
+            sequence: "TAB"
+            action: function() {
+                flyView.toolBar.dropMainStatusIndicatorTool()
+            }
+        }
+        ListElement{
             description:"Switch tracking selection"
             sequence:"Ctrl+T"
             action:function(){
