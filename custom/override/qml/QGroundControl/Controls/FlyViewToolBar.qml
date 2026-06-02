@@ -14,7 +14,7 @@ import QtQuick.Dialogs
 
 import QGroundControl
 import QGroundControl.Controls
-
+import Custom.Widgets
 Rectangle {
     id:     control
     width:  parent.width
@@ -138,29 +138,17 @@ Rectangle {
         }
 
     }
-    Image {
-        id:foxFourLogo
+
+    FoxFourControlPage{
+        id: f4ControlPage
         anchors.right:          parent.right
         anchors.top:            parent.top
         anchors.bottom:         parent.bottom
-        anchors.margins:        ScreenTools.defaultFontPixelHeight / 2
-        source:                 _outdoorPalette ? "/custom/img/FoxFourTextLogo_dark.svg" : "/custom/img/FoxFourTextLogo_light.svg"
+        anchors.rightMargin:    ScreenTools.defaultFontPixelHeight / 2
         visible:                _computersManager &&
-                                // checkForVGM(_computersManager.computersInfo) &&
                                 x > (indicatorsFlickable.x + indicatorsFlickable.contentWidth + ScreenTools.defaultFontPixelWidth)
-        mipmap:                 true
-        fillMode:               Image.PreserveAspectFit
-
-        property bool   _outdoorPalette:        qgcPal.globalTheme === QGCPalette.Light
-
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            onClicked: {
-                showVehicleConfigParametersPageComponent(qsTr("Component ") + _computersManager.currentComputerComponent)
-            }
-        }
     }
+
     ParameterDownloadProgress {
         anchors.fill: parent
     }

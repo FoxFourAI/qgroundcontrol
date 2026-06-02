@@ -126,7 +126,7 @@ ApplicationWindow {
         }
         ListElement{
             description:"Open vehicle logs"
-            sequence: "TAB"
+            sequence: "Tab"
             action: function() {
                 flyView.toolBar.dropMainStatusIndicatorTool()
             }
