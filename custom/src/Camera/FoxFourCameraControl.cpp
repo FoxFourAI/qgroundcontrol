@@ -175,6 +175,7 @@ void FoxFourCameraControl::_requestTrackingStatus() {
                              rate);  // Interval (us)
 }
 
+//-----------------------------------------------------------------------------
 void FoxFourCameraControl::_unsubscribeFromCameraFact() {
     _commandSwitch = true;
     disconnect(_cameraSwitchConnection);
@@ -182,7 +183,16 @@ void FoxFourCameraControl::_unsubscribeFromCameraFact() {
 }
 
 //-----------------------------------------------------------------------------
+void FoxFourCameraControl::_zoomResponse(void *resultHandlerData, int compId, const mavlink_command_ack_t &ack, Vehicle::MavCmdResultFailureCode_t failureCode)
+{
+    auto camControl = reinterpret_cast<FoxFourCameraControl*>(resultHandlerData);
+    qCDebug(CameraControlLog) << "new factor is " << ack.result_param2 / 100.;
+    float new_factor = qMin(camControl->maxZoomLevel(),qMax(camControl->minZoomLevel(),ack.result_param2 / 100.));
 
+    camControl->setZoomLevel(new_factor);
+}
+
+//-----------------------------------------------------------------------------
 // handler for camera switch responce
 void _cameraSwitchHandler(void* resultHandlerData, int compId, const mavlink_command_ack_t& ack,
                           Vehicle::MavCmdResultFailureCode_t failureCode) {
@@ -202,6 +212,7 @@ void _cameraSwitchHandler(void* resultHandlerData, int compId, const mavlink_com
     emit ctrl->cameraSwitched();
 }
 
+//-----------------------------------------------------------------------------
 void FoxFourCameraControl::setCameraIndex(int index) {
     if (!_commandSwitch) {
         if (_cameraSwitchFact == nullptr && _vehicle->parameterManager()->parameterExists(_vehicle->defaultComponentId(), "SCR_USER3")) {
@@ -260,8 +271,9 @@ bool FoxFourCameraControl::stopVideoRecording() {
     }
     return false;
 }
+
 //-----------------------------------------------------------------------------
-void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp, bool zoom) {
+void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp, bool isZooming) {
     uint64_t time = timestamp.toULongLong();
     if (_trackingMarquee != rec) {
         _trackingMarquee = rec;
@@ -270,8 +282,9 @@ void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp, bool zoo
                                   << static_cast<float>(rec.y()) << "] - [" << static_cast<float>(rec.x() + rec.width())
                                   << ", " << static_cast<float>(rec.y() + rec.height()) << "]"
                                   << ", Timestamp: " << timestamp;
-        // if we are zooming, calculating new zoom level and setting it.
-        if (zoom) {
+
+        // TODO: deprecated.
+        if (isZooming) {
             // for now zoom is just a bit in timestamp
             time = time | (1ULL << 63);
             double newZoomLevel = qMin(1.0 / rec.width(), 1.0 / rec.height());
@@ -285,6 +298,7 @@ void FoxFourCameraControl::startTracking(QRectF rec, QString timestamp, bool zoo
                 emit zoomLevelChanged();
             }
         }
+
         uint32_t timestampLow = static_cast<uint32_t>(time);
         uint32_t timestampHight = static_cast<uint32_t>(time >> 32);
 
@@ -336,3 +350,27 @@ void FoxFourCameraControl::setZoomLevel(qreal level) {
     }
     emit zoomLevelChanged();
 }
+
+//-----------------------------------------------------------------------------
+void FoxFourCameraControl::zoomToRegion(QRectF rec, QString timestamp)
+{
+    int vgmCompID = reinterpret_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager()->currentComputerComponent();
+    if(vgmCompID == 0){
+        return;
+    }
+    uint64_t time = timestamp.toULongLong();
+    uint32_t timestampLow = static_cast<uint32_t>(time);
+    uint32_t timestampHight = static_cast<uint32_t>(time >> 32);
+
+    auto handler = new Vehicle::MavCmdAckHandlerInfo_t();
+    handler->resultHandlerData = this;
+    handler->resultHandler = _zoomResponse;
+    _vehicle->sendMavCommandWithHandler(handler,vgmCompID, MAV_CMD_DO_REGION_ZOOM,
+                             rec.topLeft().x(),
+                             rec.topLeft().y(),
+                             rec.width(),
+                             rec.height(),
+                             *reinterpret_cast<float*>(&timestampLow),
+                             *reinterpret_cast<float*>(&timestampHight));
+}
+

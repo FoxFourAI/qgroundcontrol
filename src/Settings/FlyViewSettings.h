@@ -44,4 +44,5 @@ public:
     DEFINE_SETTINGFACT(trackingRate)
     DEFINE_SETTINGFACT(mapMatchingPointsCnt)
     DEFINE_SETTINGFACT(minimalMode)
+    DEFINE_SETTINGFACT(useOldZoom)
 };
