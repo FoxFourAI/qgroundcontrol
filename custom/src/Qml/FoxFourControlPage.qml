@@ -34,15 +34,35 @@ Item {
     Component{
         id: foxFourControlPanel
         ToolIndicatorPage{
-            showExpand: false
+            showExpand: true
             contentComponent:controlPanelComponent
+            expandedComponent:extendedComponent
         }
     }
+
+    Component{
+        id: extendedComponent
+        SettingsGroupLayout{
+            spacing: 0
+            id: shortcutGroup
+            heading: qsTr("Shortcuts")
+            Repeater{
+                model: globalShortcuts
+                delegate:LabelledLabel{
+                    label:description
+                    labelText: sequence
+                }
+            }
+        }
+    }
+
     Component{
         id: controlPanelComponent
+
         ColumnLayout{
             id:     mainLayout
             spacing: _spacing
+
             QGCLabel{
                 font.pointSize: ScreenTools.largeFontPointSize
                 text: qsTr("FoxFour Configuration")
@@ -52,12 +72,15 @@ Item {
 
             SettingsGroupLayout{
                 heading: qsTr("General")
-
                 FactCheckBoxSlider{
                     Layout.fillWidth: true
                     text:               qsTr("Minimal mode")
                     fact:               _minimalMode
                     property Fact       _minimalMode: _flyViewSettings.minimalMode
+                    ToolTip{
+                        visible:parent.hovered
+                        text: qsTr("Will pull ONLY mandatory parameters when connecting to the vehicle.")
+                    }
                 }
 
                 LabelledFactTextField {
@@ -68,6 +91,10 @@ Item {
                     textFieldShowUnits:          true
                     textFieldUnitsLabel:         qsTr("Hz")
                     visible:            true
+                    ToolTip{
+                        visible:parent.hovered
+                        text: qsTr("The interval of the TRACKING_STATUS message, when tracking an object.")
+                    }
                 }
 
                 FactCheckBoxSlider {
@@ -75,6 +102,10 @@ Item {
                     Layout.fillWidth: true
                     fact:       _appSettings.cacheParameters
                     visible:    fact.visible
+                    ToolTip{
+                        visible: parent.hovered
+                        text: qsTr("Cache vehicle parameters using UID of the FCU.")
+                    }
                 }
             }
 
@@ -87,19 +118,27 @@ Item {
                     text: "Auto configurate stream"
                     // visible: _videoAutoStreamConfig
                     fact: _videoSettings.autoConfigure
+                    ToolTip{
+                        visible:parent.hovered
+                        text: qsTr("QGC will detect the stream configurations and apply changes automatically (stream should support this feature)")
+                    }
                 }
             }
 
             SettingsGroupLayout{
-                heading: qsTr("FlyView")
+                heading: qsTr("Map")
 
                 FactCheckBoxSlider {
                     Layout.fillWidth:   true
-                    text:               qsTr("Show GPS_RAW_INT trajectory on map")
+                    text:               qsTr("Show GPS_RAW_INT trajectory")
                     fact:               _showGPSrawTrajectory
                     visible:            _showGPSrawTrajectory.visible
 
                     property Fact   _showGPSrawTrajectory: _flyViewSettings.showGPSrawTrajectory
+                    ToolTip{
+                        visible:parent.hovered
+                        text: qsTr("Draw GPS path on the map.")
+                    }
                 }
 
                 LabelledFactTextField{
@@ -107,7 +146,6 @@ Item {
                     label:              qsTr("Map-matching dots amount")
                     fact:               _flyViewSettings.mapMatchingPointsCnt
                     textField.numericValuesOnly: true
-                    visible: true
                 }
             }
 
@@ -121,17 +159,6 @@ Item {
                     visible:            _enableVGMDiaclect.visible
 
                     property Fact   _enableVGMDiaclect: _flyViewSettings.enableVGMDialect
-                }
-            }
-
-            SettingsGroupLayout{
-                heading: qsTr("Shortcuts")
-                Repeater{
-                    model: globalShortcuts
-                    delegate:LabelledLabel{
-                        label:description
-                        labelText: sequence
-                    }
                 }
             }
         }
