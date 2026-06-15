@@ -115,7 +115,7 @@ Item {
                 FactCheckBoxSlider{
                     Layout.fillWidth: true
                     id: autoConfigure
-                    text: "Auto configurate stream"
+                    text: "Auto-configure video stream"
                     // visible: _videoAutoStreamConfig
                     fact: _videoSettings.autoConfigure
                     ToolTip{
