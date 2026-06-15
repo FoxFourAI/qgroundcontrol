@@ -35,6 +35,7 @@
         <file alias="QGroundControl/Controls/InstrumentValueLabel.qml">override/qml/QGroundControl/QmlControls/InstrumentValueLabel.qml</file>
         <file alias="QGroundControl/Controls/SettingsGroupLayout.qml">override/qml/QGroundControl/QmlControls/SettingsGroupLayout.qml</file>
         <file alias="QGroundControl/Controls/ParameterDownloadProgress.qml">override/qml/QGroundControl/QmlControls/ParameterDownloadProgress.qml</file>
+        <file alias="QGroundControl/Controls/ParameterEditorDialog.qml">override/qml/QGroundControl/QmlControls/ParameterEditorDialog.qml</file>
         <file alias="QGroundControl/MainWindow.qml">override/qml/MainWindow.qml</file>
         <file alias="QGroundControl/FlightDisplay/FlyViewVideo.qml">override/qml/QGroundControl/FlightDisplay/FlyViewVideo.qml</file>
         <file alias="QGroundControl/FlightDisplay/FlyViewTopRightColumnLayout.qml">override/qml/QGroundControl/FlightDisplay/FlyViewTopRightColumnLayout.qml</file>
@@ -45,6 +46,7 @@
         <file alias="QGroundControl/FlightDisplay/FlyViewBottomRightRowLayout.qml">override/qml/QGroundControl/FlightDisplay/FlyViewBottomRightRowLayout.qml</file>
         <file alias="QGroundControl/FlightDisplay/FlyViewWidgetLayer.qml">override/qml/QGroundControl/FlightDisplay/FlyViewWidgetLayer.qml</file>
         <file alias="QGroundControl/FlightDisplay/FlyViewInstrumentPanel.qml">override/qml/QGroundControl/FlightDisplay/FlyViewInstrumentPanel.qml</file>
+        <file alias="QGroundControl/FlightDisplay/FlyView.qml">override/qml/QGroundControl/FlightDisplay/FlyView.qml</file>
         <file alias="QGroundControl/FlightMap/Widgets/PhotoVideoControl.qml">override/qml/QGroundControl/FlightMap/Widgets/PhotoVideoControl.qml</file>
         <file alias="QGroundControl/VehicleSetup/SetupView.qml">override/qml/QGroundControl/VehicleSetup/SetupView.qml</file>
         <file alias="OnboardComputers/OnboardComputersInfo.qml">res/Custom/OnboardComputers/OnboardComputersInfo.qml</file>

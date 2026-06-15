@@ -49,13 +49,6 @@ SettingsPage {
         Layout.fillWidth:   true
         heading:            qsTr("General")
 
-        FactCheckBoxSlider{
-            Layout.fillWidth: true
-            text:               qsTr("Minimal mode")
-            fact:               _minimalMode
-            property Fact       _minimalMode: _flyViewSettings.minimalMode
-        }
-
         FactCheckBoxSlider {
             id:                 useCheckList
             Layout.fillWidth:   true
@@ -104,42 +97,6 @@ SettingsPage {
             fact:               _showDumbCameraControl
 
             property Fact _showDumbCameraControl: _flyViewSettings.showSimpleCameraControl
-        }
-
-        FactCheckBoxSlider {
-            Layout.fillWidth:   true
-            text:               qsTr("Show GPS_RAW_INT trajectory on map")
-            fact:               _showGPSrawTrajectory
-            visible:            _showGPSrawTrajectory.visible
-
-            property Fact   _showGPSrawTrajectory: _flyViewSettings.showGPSrawTrajectory
-        }
-
-        FactCheckBoxSlider {
-            Layout.fillWidth:   true
-            text:               qsTr("Enable VGM dialect")
-            fact:               _enableVGMDiaclect
-            visible:            _enableVGMDiaclect.visible
-
-            property Fact   _enableVGMDiaclect: _flyViewSettings.enableVGMDialect
-        }
-
-        LabelledFactTextField {
-            Layout.fillWidth:   true
-            label:               qsTr("TRACKING_STATUS rate")
-            fact:               _flyViewSettings.trackingRate
-            textField.numericValuesOnly: true
-            textFieldShowUnits:          true
-            textFieldUnitsLabel:         qsTr("Hz")
-            visible:            true
-        }
-
-        LabelledFactTextField{
-            Layout.fillWidth:  true
-            label:              qsTr("Map-matching dots amount")
-            fact:               _flyViewSettings.mapMatchingPointsCnt
-            textField.numericValuesOnly: true
-            visible: true
         }
 
         FactCheckBoxSlider {

@@ -125,6 +125,13 @@ ApplicationWindow {
             }
         }
         ListElement{
+            description:"Open vehicle logs"
+            sequence: "Tab"
+            action: function() {
+                flyView.toolBar.dropMainStatusIndicatorTool()
+            }
+        }
+        ListElement{
             description:"Switch tracking selection"
             sequence:"Ctrl+T"
             action:function(){
@@ -717,6 +724,12 @@ ApplicationWindow {
         visible:        false
         color:          qgcPal.window
 
+        Keys.onEscapePressed: {
+            if (mainWindow.allowViewSwitch()) {
+                toolDrawer.visible = false
+            }
+        }
+
         property var backIcon
         property string toolTitle
         property alias toolSource:  toolDrawerLoader.source
@@ -725,6 +738,8 @@ ApplicationWindow {
         onVisibleChanged: {
             if (!toolDrawer.visible) {
                 toolDrawerLoader.source = ""
+            } else {
+                focus = true
             }
         }
 

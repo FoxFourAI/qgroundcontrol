@@ -63,14 +63,6 @@ SettingsPage {
             property Fact _audioMuted: _appSettings.audioMuted
         }
 
-
-        FactCheckBoxSlider {
-            text:       fact.shortDescription
-            Layout.fillWidth: true
-            fact:       _appSettings.cacheParameters
-            visible:    fact.visible
-        }
-
         FactCheckBoxSlider {
             Layout.fillWidth: true
             text:       fact.shortDescription
