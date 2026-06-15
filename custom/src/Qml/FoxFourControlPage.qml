@@ -143,7 +143,7 @@ Item {
 
                 LabelledFactTextField{
                     Layout.fillWidth:  true
-                    label:              qsTr("Map-matching dots amount")
+                    label:              qsTr("Map-matching visualization history")
                     fact:               _flyViewSettings.mapMatchingPointsCnt
                     textField.numericValuesOnly: true
                 }
@@ -154,7 +154,7 @@ Item {
 
                 FactCheckBoxSlider {
                     Layout.fillWidth:   true
-                    text:               qsTr("Enable dialect")
+                    text:               qsTr("Enable F4 Mavlink dialect")
                     fact:               _enableVGMDiaclect
                     visible:            _enableVGMDiaclect.visible
 
