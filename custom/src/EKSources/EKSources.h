@@ -34,6 +34,7 @@ private:
                                   Vehicle::MavCmdResultFailureCode_t failureCode);
 
 private:
+    bool _canSwitchSources = false;
     QMetaObject::Connection _paramConnection;
     QStringList _sources;
     Vehicle* _vehicle = nullptr;

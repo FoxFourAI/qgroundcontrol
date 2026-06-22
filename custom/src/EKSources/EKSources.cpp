@@ -22,7 +22,7 @@ bool EKSources::visible() { return _visible; }
 
 void EKSources::setSource(int index) {
     // sending command to set new index for ekf source
-    if (index == _currentSource) {
+    if (!_canSwitchSources || index == _currentSource) {
         return;
     }
     _vehicle->sendMavCommand(_vehicle->defaultComponentId(), MAV_CMD_SET_EKF_SOURCE_SET, false, index);
@@ -68,6 +68,7 @@ void EKSources::_fetchSources(bool ready) {
     auto fact = parameterManager->getParameter(_vehicle->defaultComponentId(), currentSourceParamName);
     connect(fact, &Fact::rawValueChanged, this, [=](const QVariant& value) { _setCurrentSource(value.toInt()); });
     _setCurrentSource(fact->rawValue().toInt());
+    _canSwitchSources = true;
 }
 
 void EKSources::_setVisible(bool visible) {
