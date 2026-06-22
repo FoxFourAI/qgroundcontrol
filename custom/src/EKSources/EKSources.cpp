@@ -68,7 +68,8 @@ void EKSources::_fetchSources(bool ready) {
     auto fact = parameterManager->getParameter(_vehicle->defaultComponentId(), currentSourceParamName);
     connect(fact, &Fact::rawValueChanged, this, [=](const QVariant& value) { _setCurrentSource(value.toInt()); });
     _setCurrentSource(fact->rawValue().toInt());
-    _canSwitchSources = true;
+    //wait for UI to update all stuff, then enable correct switch
+    QTimer::singleShot(500,[=](){_canSwitchSources = true;});
 }
 
 void EKSources::_setVisible(bool visible) {
