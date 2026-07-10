@@ -37,5 +37,5 @@ private:
 private:
     QMap<ComponentType,QStringList> _parameters;
     bool _parametersReady = false;
-    static constexpr std::string _groupKey = "mandatoryParams";
+    static constexpr std::string_view _groupKey = "mandatoryParams";
 };
