@@ -1,11 +1,97 @@
 name: pre-commit
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+      - 'Stable*'
+    paths-ignore:
+      - 'docs/**'
+      - 'translations/**'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'translations/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+permissions:
+  contents: read
 
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
-      - uses: pre-commit/action@v3.0.1
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Get build config
+        id: config
+        uses: ./.github/actions/build-config
+
+      - name: Setup Python
+        uses: ./.github/actions/setup-python
+        with:
+          groups: precommit
+          python-version: '3.12'
+
+      - name: Install Qt (for qmllint)
+        uses: ./.github/actions/qt-install
+        with:
+          version: ${{ steps.config.outputs.qt_version }}
+          host: linux
+          arch: linux_gcc_64
+          modules: ''
+          archives: qtbase qtdeclarative icu
+
+      - name: Run pre-commit
+        id: pre-commit
+        continue-on-error: true
+        env:
+          PRE_COMMIT_OUTPUT: pre-commit-output.txt
+        run: python3 ./tools/pre_commit.py --ci
+
+      - name: Prepare pre-commit results artifact
+        if: github.event_name == 'pull_request' && always()
+        env:
+          EXIT_CODE: ${{ steps.pre-commit.outputs.exit_code }}
+          PASSED: ${{ steps.pre-commit.outputs.passed }}
+          FAILED: ${{ steps.pre-commit.outputs.failed }}
+          SKIPPED: ${{ steps.pre-commit.outputs.skipped }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 "${GITHUB_WORKSPACE}/.github/scripts/precommit_results.py" \
+            --output-dir pre-commit-results \
+            --exit-code "${EXIT_CODE:-1}" \
+            --passed "${PASSED:-0}" \
+            --failed "${FAILED:-0}" \
+            --skipped "${SKIPPED:-0}" \
+            --run-url "${RUN_URL}" \
+            --output-file pre-commit-output.txt
+
+      - name: Upload pre-commit results artifact
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pre-commit-results
+          path: pre-commit-results
+          retention-days: 7
+
+      # Hook failures are surfaced via the PR comment; only fail the job when
+      # the runner script itself didn't complete (no exit_code output written).
+      - name: Fail job on pre-commit script crash
+        if: always() && steps.pre-commit.outcome == 'failure' && steps.pre-commit.outputs.exit_code == ''
+        run: |
+          echo "::error::pre-commit runner crashed before writing results"
+          exit 1
