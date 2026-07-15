@@ -1,31 +1,19 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
-#include <QtCore/QLoggingCategory>
 #include <QtCore/QTimer>
 
 #include "MAVLinkLib.h"
 
-class MavlinkCameraControl;
+class MavlinkCameraControlInterface;
 class Fact;
 class Vehicle;
 
-Q_DECLARE_LOGGING_CATEGORY(CameraIOLog)
-Q_DECLARE_LOGGING_CATEGORY(CameraIOLogVerbose)
-
-/// Camera parameter handler.
+/// \brief Camera parameter handler.
+///
 class QGCCameraParamIO : public QObject
 {
 public:
-    QGCCameraParamIO(MavlinkCameraControl *control, Fact *fact, Vehicle *vehicle);
+    QGCCameraParamIO(MavlinkCameraControlInterface *control, Fact *fact, Vehicle *vehicle);
     ~QGCCameraParamIO();
 
     void handleParamAck(const mavlink_param_ext_ack_t &ack);
@@ -45,7 +33,7 @@ private:
     void _sendParameter();
     QVariant _valueFromMessage(const char *value, uint8_t param_type);
 
-    MavlinkCameraControl *_control = nullptr;
+    MavlinkCameraControlInterface *_control = nullptr;
     Fact *_fact = nullptr;
     Vehicle *_vehicle = nullptr;
 

@@ -1,13 +1,5 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "BatteryFactGroupListModel.h"
+#include "MAVLinkLib.h"
 
 BatteryFactGroupListModel::BatteryFactGroupListModel(QObject* parent)
     : FactGroupListModel("battery", parent)
@@ -88,7 +80,7 @@ void BatteryFactGroup::handleMessage(Vehicle *vehicle, const mavlink_message_t &
     }
 }
 
-void BatteryFactGroup::_handleHighLatency(Vehicle *vehicle, const mavlink_message_t &message)
+void BatteryFactGroup::_handleHighLatency(Vehicle * /*vehicle*/, const mavlink_message_t &message)
 {
     mavlink_high_latency_t highLatency{};
     mavlink_msg_high_latency_decode(&message, &highLatency);
@@ -98,7 +90,7 @@ void BatteryFactGroup::_handleHighLatency(Vehicle *vehicle, const mavlink_messag
     _setTelemetryAvailable(true);
 }
 
-void BatteryFactGroup::_handleHighLatency2(Vehicle *vehicle, const mavlink_message_t &message)
+void BatteryFactGroup::_handleHighLatency2(Vehicle * /*vehicle*/, const mavlink_message_t &message)
 {
     mavlink_high_latency2_t highLatency2{};
     mavlink_msg_high_latency2_decode(&message, &highLatency2);
@@ -108,7 +100,7 @@ void BatteryFactGroup::_handleHighLatency2(Vehicle *vehicle, const mavlink_messa
     _setTelemetryAvailable(true);
 }
 
-void BatteryFactGroup::_handleBatteryStatus(Vehicle *vehicle, const mavlink_message_t &message)
+void BatteryFactGroup::_handleBatteryStatus(Vehicle * /*vehicle*/, const mavlink_message_t &message)
 {
     mavlink_battery_status_t batteryStatus{};
     mavlink_msg_battery_status_decode(&message, &batteryStatus);
@@ -156,7 +148,7 @@ void BatteryFactGroup::_handleBatteryStatus(Vehicle *vehicle, const mavlink_mess
 void BatteryFactGroup::_timeRemainingChanged(const QVariant &value)
 {
     if (qIsNaN(value.toDouble())) {
-        _timeRemainingStrFact.setRawValue("--:--:--");
+        _timeRemainingStrFact.setRawValue("––:––:––");
     } else {
         const int totalSeconds = value.toInt();
         const int hours = totalSeconds / 3600;

@@ -1,24 +1,12 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
 #include <QtGui/QColor>
-#include <QtCore/QLoggingCategory>
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtCore/QUrl>
 #include <QtQmlIntegration/QtQmlIntegration>
 
 class QGCOptions;
-
-Q_DECLARE_LOGGING_CATEGORY(QGCFlyViewOptionsLog)
 
 class QGCFlyViewOptions : public QObject
 {
@@ -54,8 +42,6 @@ protected:
 
 /*===========================================================================*/
 
-Q_DECLARE_LOGGING_CATEGORY(QGCOptionsLog)
-
 class QGCOptions : public QObject
 {
     Q_OBJECT
@@ -64,8 +50,6 @@ class QGCOptions : public QObject
     Q_PROPERTY(bool allowJoystickSelection          READ allowJoystickSelection         NOTIFY allowJoystickSelectionChanged)
     Q_PROPERTY(bool checkFirmwareVersion            READ checkFirmwareVersion           CONSTANT)
     Q_PROPERTY(bool combineSettingsAndSetup         READ combineSettingsAndSetup        CONSTANT)
-    Q_PROPERTY(bool disableVehicleConnection        READ disableVehicleConnection       CONSTANT)
-    Q_PROPERTY(bool enablePlanViewSelector          READ enablePlanViewSelector         CONSTANT)
     Q_PROPERTY(bool enableSaveMainWindowPosition    READ enableSaveMainWindowPosition   CONSTANT)
     Q_PROPERTY(bool guidedActionsRequireRCRSSI      READ guidedActionsRequireRCRSSI     CONSTANT)
     Q_PROPERTY(bool missionWaypointsOnly            READ missionWaypointsOnly           NOTIFY missionWaypointsOnlyChanged)
@@ -104,16 +88,12 @@ public:
     /// @return Factor to use when computing toolbar height
     virtual double toolbarHeightMultiplier() const { return 1.0; }
 
-    /// Enable Plan View Selector (Mission, Fence or Rally)
-    /// @return True or false
-    virtual bool enablePlanViewSelector() const { return true; }
-
     /// Should the mission status indicator (Plan View) be shown?
     /// @return Yes or no
     virtual bool showMissionStatus() const { return true; }
 
     /// Provides an optional, custom preflight checklist
-    virtual QUrl preFlightChecklistUrl() const { return QUrl::fromUserInput(QStringLiteral("qrc:/qml/QGroundControl/FlightDisplay/PreFlightCheckList.qml")); }
+    virtual QUrl preFlightChecklistUrl() const { return QUrl::fromUserInput(QStringLiteral("qrc:/qml/QGroundControl/FlyView/PreFlightCheckList.qml")); }
 
     /// Allows replacing the toolbar Light Theme color
     virtual QColor toolbarBackgroundLight() const { return QColorConstants::White; }
@@ -132,9 +112,6 @@ public:
     virtual bool allowJoystickSelection() const { return true; }
 
     virtual bool checkFirmwareVersion() const { return true; }
-
-    /// @return true: vehicle connection is disabled
-    virtual bool disableVehicleConnection() const { return false; }
 
     /// @return true: Guided actions will be disabled is there is no RC RSSI
     virtual bool guidedActionsRequireRCRSSI() const { return false; }

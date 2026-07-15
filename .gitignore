@@ -6,11 +6,17 @@
 # IDEs & Editors
 # ------------------------------------------------------------------------------
 .idea/
-.vscode/
+.qt/
 .qtcreator/
 .fleet/
 .vs/
 .settings/
+.codex/
+
+# VS Code - track .default files, ignore personal overrides
+.vscode/*
+!.vscode/extensions.json
+!.vscode/*.default.json
 
 # Editor temp/backup files
 *.swp
@@ -22,7 +28,8 @@ tags
 # ------------------------------------------------------------------------------
 # Build System & CMake
 # ------------------------------------------------------------------------------
-build/
+build*/
+!.github/actions/build*/
 cmake-build-*/
 out/
 CMakeFiles
@@ -31,6 +38,10 @@ CMakeUserPresets.json
 compile_commands.json
 cpm_modules
 .cache/
+.ccache/
+
+# CTest working files created in the source tree when tests run
+Testing/
 
 # ------------------------------------------------------------------------------
 # Qt Generated Files
@@ -72,7 +83,6 @@ bin/mac
 *.dll
 
 # Build tool artifacts
-Makefile
 *.ninja
 .ninja_log
 build.ninja
@@ -111,7 +121,14 @@ ios/iOSForAppStore-Info.plist
 
 # Android
 android/local.properties
+.gradle/
 *.class
+# GStreamer plugin Java + fonts/CA assets copied in by the copyjavasource_<abi> /
+# copyfontsres_<abi> / copycacertificatesres_<abi> CMake targets
+# (cmake/GStreamer/platform/Android.cmake) at build time — version-matched, regenerated.
+android/src/org/freedesktop/
+android/assets/fontconfig/
+android/assets/ssl/
 
 # Linux
 *.nfs
@@ -123,6 +140,7 @@ android/local.properties
 node_modules/
 docs/.vitepress/cache/
 docs/.vitepress/dist/
+docs/api/
 
 # Python
 *.pyc
@@ -149,9 +167,24 @@ Qt*-linux*.tar.*
 # Local Development Tools
 # ------------------------------------------------------------------------------
 
-# Claude Code
+# AI Assistants
 .claude/
+.gemini/
+.geminiignore
+.cursorignore
 
-# cc-sessions - personal AI development workflow
-sessions/
-CLAUDE.md
+# Python tooling caches
+.ruff_cache/
+.pytest_cache/
+.import_linter_cache/
+.venv/
+
+# Vale prose linter (downloaded via `vale sync`)
+.github/styles/
+
+# direnv / version managers
+.envrc
+.direnv/
+.tool-versions
+.python-version
+!tools/.python-version

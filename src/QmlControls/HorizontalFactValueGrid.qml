@@ -1,21 +1,9 @@
-/****************************************************************************
- *
- * (c) 2009-2020 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQml
 
 import QGroundControl.Controls
-
-
-
 import QGroundControl.FlightMap
 import QGroundControl
 
@@ -116,7 +104,7 @@ HorizontalFactValueGridTemplate {
                 QGCButton {
                     Layout.preferredWidth:  ScreenTools.minTouchPixels
                     Layout.fillHeight:      true
-                    topPadding:             0                
+                    topPadding:             0
                     bottomPadding:          0
                     leftPadding:            0
                     rightPadding:           0
@@ -128,7 +116,7 @@ HorizontalFactValueGridTemplate {
                 QGCButton {
                     Layout.preferredWidth:  ScreenTools.minTouchPixels
                     Layout.fillHeight:      true
-                    topPadding:             0                
+                    topPadding:             0
                     bottomPadding:          0
                     leftPadding:            0
                     rightPadding:           0
@@ -147,7 +135,7 @@ HorizontalFactValueGridTemplate {
             QGCButton {
                 Layout.fillWidth:       true
                 Layout.preferredHeight: ScreenTools.minTouchPixels
-                topPadding:             0                
+                topPadding:             0
                 bottomPadding:          0
                 leftPadding:            0
                 rightPadding:           0
@@ -159,7 +147,7 @@ HorizontalFactValueGridTemplate {
             QGCButton {
                 Layout.fillWidth:       true
                 Layout.preferredHeight: parent.height
-                topPadding:             0                
+                topPadding:             0
                 bottomPadding:          0
                 leftPadding:            0
                 rightPadding:           0
@@ -187,9 +175,15 @@ HorizontalFactValueGridTemplate {
             var labelOrDataItem = columnGridLayoutItem.childAt(mappedMouse.x, mappedMouse.y)
             //console.log(mappedMouse.x, mappedMouse.y, labelOrDataItem, labelOrDataItem ? labelOrDataItem.instrumentValueData : "null", labelOrDataItem && labelOrDataItem.parent ? labelOrDataItem.parent.instrumentValueData : "null")
             if (labelOrDataItem && labelOrDataItem.instrumentValueData !== undefined) {
-                valueEditDialog.createObject(mainWindow, { instrumentValueData: labelOrDataItem.instrumentValueData }).open()
+                valueEditDialogFactory.open({ instrumentValueData: labelOrDataItem.instrumentValueData })
             }
         }
+    }
+
+    QGCPopupDialogFactory {
+        id: valueEditDialogFactory
+
+        dialogComponent: valueEditDialog
     }
 
     Component {

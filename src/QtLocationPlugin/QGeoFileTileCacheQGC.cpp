@@ -1,12 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "QGeoFileTileCacheQGC.h"
 
 #include <QtCore/QDir>
@@ -15,7 +6,9 @@
 
 #include "AppSettings.h"
 #include "MapsSettings.h"
-#include "QGCApplication.h"
+#include "AppMessages.h"
+#include "QGCCacheTile.h"
+#include "QGCFileHelper.h"
 #include "QGCLoggingCategory.h"
 #include "QGCMapEngine.h"
 #include "QGCMapTasks.h"
@@ -26,7 +19,7 @@ QGC_LOGGING_CATEGORY(QGeoFileTileCacheQGCLog, "QtLocationPlugin.QGeoFileTileCach
 
 QString QGeoFileTileCacheQGC::_databaseFilePath;
 QString QGeoFileTileCacheQGC::_cachePath;
-bool QGeoFileTileCacheQGC::_cacheWasReset = false;
+std::atomic<bool> QGeoFileTileCacheQGC::_cacheWasReset = false;
 
 QGeoFileTileCacheQGC::QGeoFileTileCacheQGC(const QVariantMap &parameters, QObject *parent)
     : QGeoFileTileCache(baseCacheDirectory(), parent)
@@ -125,19 +118,15 @@ QString QGeoFileTileCacheQGC::_getCachePath(const QVariantMap &parameters)
         cacheDir = parameters.value(QStringLiteral("mapping.cache.directory")).toString();
     } else {
         cacheDir = _cachePath + QLatin1String("/providers");
-        if (!QFileInfo::exists(cacheDir)) {
-            if (!QDir::root().mkpath(cacheDir)) {
-                qCWarning(QGeoFileTileCacheQGCLog) << "Could not create mapping disk cache directory:" << cacheDir;
-                cacheDir = QDir::homePath() + QStringLiteral("/.qgcmapscache/");
-            }
+        if (!QGCFileHelper::ensureDirectoryExists(cacheDir)) {
+            qCWarning(QGeoFileTileCacheQGCLog) << "Could not create mapping disk cache directory:" << cacheDir;
+            cacheDir = QDir::homePath() + QStringLiteral("/.qgcmapscache/");
         }
     }
 
-    if (!QFileInfo::exists(cacheDir)) {
-        if (!QDir::root().mkpath(cacheDir)) {
-            qCWarning(QGeoFileTileCacheQGCLog) << "Could not create mapping disk cache directory:" << cacheDir;
-            cacheDir.clear();
-        }
+    if (!QGCFileHelper::ensureDirectoryExists(cacheDir)) {
+        qCWarning(QGeoFileTileCacheQGCLog) << "Could not create mapping disk cache directory:" << cacheDir;
+        cacheDir.clear();
     }
 
     return cacheDir;
@@ -171,7 +160,7 @@ bool QGeoFileTileCacheQGC::_wipeDirectory(const QString &dirPath)
 
 void QGeoFileTileCacheQGC::_wipeOldCaches()
 {
-    const QStringList oldCaches = {"/QGCMapCache55", "/QGCMapCache100"};
+    const QStringList oldCaches = {"/QGCMapCache55", "/QGCMapCache100", "/QGCMapCache300"};
     for (const QString &cache : oldCaches) {
         QString oldCacheDir;
         #if defined(Q_OS_ANDROID) || defined(Q_OS_IOS)
@@ -191,15 +180,16 @@ void QGeoFileTileCacheQGC::_initCache()
     // QString cacheDir = QAbstractGeoTileCache::baseCacheDirectory()
 #if defined(Q_OS_ANDROID) || defined(Q_OS_IOS)
     QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    cacheDir += QStringLiteral("/QGCMapCache");
 #else
-    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
+    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    cacheDir += QStringLiteral("/QGCMapCache");
 #endif
-    cacheDir += QStringLiteral("/QGCMapCache") + QString(kCachePathVersion);
-    if (!QDir::root().mkpath(cacheDir)) {
+    if (!QGCFileHelper::ensureDirectoryExists(cacheDir)) {
         qCWarning(QGeoFileTileCacheQGCLog) << "Could not create mapping disk cache directory:" << cacheDir;
 
         cacheDir = QDir::homePath() + QStringLiteral("/.qgcmapscache/");
-        if (!QDir::root().mkpath(cacheDir)) {
+        if (!QGCFileHelper::ensureDirectoryExists(cacheDir)) {
             qCWarning(QGeoFileTileCacheQGCLog) << "Could not create mapping disk cache directory:" << cacheDir;
             cacheDir.clear();
         }
@@ -215,7 +205,7 @@ void QGeoFileTileCacheQGC::_initCache()
     }
 
     if (_cacheWasReset) {
-        qgcApp()->showAppMessage(tr(
+        QGC::showAppMessage(tr(
             "The Offline Map Cache database has been upgraded. "
             "Your old map cache sets have been reset."));
     }

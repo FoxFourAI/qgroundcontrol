@@ -3,10 +3,7 @@ import QtQuick.Controls
 import QtQuick.Dialogs
 
 import QGroundControl
-
-
 import QGroundControl.Controls
-
 
 QGCTextField {
     id:                 control
@@ -15,13 +12,14 @@ QGCTextField {
     showUnits:          true
     showHelp:           false
     numericValuesOnly:  fact && !fact.typeIsString
+    maximumLength:      fact && fact.maxStringLength > 0 ? fact.maxStringLength : 32767 // 32767 is the TextInput default (no limit)
 
     signal updated()
 
     property Fact fact: null
 
     onEditingFinished: _onEditingFinished()
-    
+
     function _onEditingFinished() {
         var errorString = fact.validate(text, false /* convertOnly */)
         if (errorString === "") {
@@ -33,7 +31,13 @@ QGCTextField {
         }
     }
 
-    onHelpClicked: helpDialogComponent.createObject(mainWindow).open()
+    onHelpClicked: helpDialogFactory.open()
+
+    QGCPopupDialogFactory {
+        id: helpDialogFactory
+
+        dialogComponent: helpDialogComponent
+    }
 
     Component {
         id: helpDialogComponent

@@ -1,12 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
 #include <QtCore/QTranslator>
@@ -14,6 +5,9 @@
 
 #include "QGCCorePlugin.h"
 #include "QGCOptions.h"
+
+class ComplexMissionItem;
+class PlanCreator;
 
 class CustomOptions;
 class CustomPlugin;
@@ -73,15 +67,22 @@ public:
 
     void cleanup() final;
     QGCOptions *options() final { return _options; }
-    QString brandImageIndoor() const final { return QStringLiteral("/custom/img/dronecode-white.svg"); }
-    QString brandImageOutdoor() const final { return QStringLiteral("/custom/img/dronecode-black.svg"); }
-    bool overrideSettingsGroupVisibility(const QString &name) final;
     /// This allows you to override/hide QGC Application settings
-    void adjustSettingMetaData(const QString &settingsGroup, FactMetaData &metaData, bool &visible) final;
+    void adjustSettingMetaData(const QString &settingsGroup, FactMetaData &metaData, bool &userVisible) final;
     /// This modifies QGC colors palette to match possible custom corporate branding
     void paletteOverride(const QString &colorName, QGCPalette::PaletteColorInfo_t &colorInfo) final;
     /// We override this so we can get access to QQmlApplicationEngine and use it to register our qml module
     QQmlApplicationEngine *createQmlApplicationEngine(QObject *parent) final;
+
+    /// Adds the Perimeter Scan item to the complex-item menu.
+    QVariantList complexMissionItemNames(Vehicle *vehicle) final;
+    /// Factory: creates PerimeterScanComplexItem for our custom type, falls back to base for built-ins.
+    ComplexMissionItem *createComplexMissionItem(const QString &complexItemType,
+                                                 PlanMasterController *masterController,
+                                                 bool flyView,
+                                                 const QString &kmlOrShpFile = QString()) final;
+    /// Adds the Perimeter Scan plan creator to the New Plan dialog.
+    QList<PlanCreator *> planCreators(PlanMasterController *planMasterController) final;
 
 private slots:
     void _advancedChanged(bool advanced);

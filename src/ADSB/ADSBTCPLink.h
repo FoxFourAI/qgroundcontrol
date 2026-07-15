@@ -1,27 +1,16 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
-#include <QtCore/QLoggingCategory>
 #include <QtCore/QObject>
 #include <QtNetwork/QHostAddress>
 
 #include "ADSB.h"
 
-Q_DECLARE_LOGGING_CATEGORY(ADSBTCPLinkLog)
-
 class QTcpSocket;
 class QTimer;
 
-/// The ADSBTCPLink class handles the TCP connection to an ADS-B server
+/// \brief The ADSBTCPLink class handles the TCP connection to an ADS-B server
 /// and processes incoming ADS-B data.
+
 class ADSBTCPLink : public QObject
 {
     Q_OBJECT

@@ -21,11 +21,9 @@ if(ANDROID)
             set(DEFAULT_ANDROID_DIR "${CMAKE_SOURCE_DIR}/android")
             set(FINAL_ANDROID_DIR "${CMAKE_BINARY_DIR}/custom/android")
 
-            # Copy default Android template
             file(COPY "${DEFAULT_ANDROID_DIR}/." DESTINATION "${FINAL_ANDROID_DIR}")
 
-            # Overlay custom Android files
-            file(COPY "${CUSTOM_ANDROID_DIR}/." DESTINATION "${FINAL_ANDROID_DIR}")
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory "${CUSTOM_ANDROID_DIR}" "${FINAL_ANDROID_DIR}")
 
             # Track changes to Android directories
             set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
@@ -117,6 +115,12 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MapMatching/MapMatching.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MandatoryParameters/MandatoryParameters.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MandatoryParameters/MandatoryParameters.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Settings/FoxFourSettings.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Settings/FoxFourSettings.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Dialect/VGMDialect.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Dialect/VGMDialect.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/VioTrajectory/VioTrajectoryPoints.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/VioTrajectory/VioTrajectoryPoints.cpp
     CACHE INTERNAL "adding custom sources" FORCE
 )
 
@@ -147,6 +151,7 @@ set(CUSTOM_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OnboardComputers
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ParameterSetter
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Settings
     CACHE INTERNAL "" FORCE
 )
 

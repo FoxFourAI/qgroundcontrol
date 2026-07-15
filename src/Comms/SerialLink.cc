@@ -1,12 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "SerialLink.h"
 #include "QGCLoggingCategory.h"
 #include "QGCSerialPortInfo.h"
@@ -19,7 +10,6 @@ QGC_LOGGING_CATEGORY(SerialLinkLog, "Comms.SerialLink")
 namespace {
     constexpr int CONNECT_TIMEOUT_MS = 1000;
     constexpr int DISCONNECT_TIMEOUT_MS = 3000;
-    constexpr int READ_TIMEOUT_MS = 100;
 }
 
 /*===========================================================================*/
@@ -358,16 +348,15 @@ void SerialWorker::_onPortBytesWritten(qint64 bytes) const
 
 void SerialWorker::_onPortErrorOccurred(QSerialPort::SerialPortError portError)
 {
-    const QString errorString = _port->errorString();
-    qCWarning(SerialLinkLog) << "Port error:" << portError << errorString;
-
     switch (portError) {
     case QSerialPort::NoError:
         qCDebug(SerialLinkLog) << "About to open port" << _port->portName();
         return;
     case QSerialPort::ResourceError:
-        // We get this when a usb cable is unplugged
-        // Fallthrough
+        // We get this when a usb cable is unplugged - close port to allow reconnection
+        qCDebug(SerialLinkLog) << "Resource error (likely USB disconnect):" << _port->errorString();
+        _port->close();
+        return;
     case QSerialPort::PermissionError:
         if (_serialConfig->isAutoConnect()) {
             return;
@@ -376,6 +365,9 @@ void SerialWorker::_onPortErrorOccurred(QSerialPort::SerialPortError portError)
     default:
         break;
     }
+
+    const QString errorString = _port->errorString();
+    qCWarning(SerialLinkLog) << "Port error:" << portError << errorString;
 
     if (!_errorEmitted) {
         emit errorOccurred(errorString);

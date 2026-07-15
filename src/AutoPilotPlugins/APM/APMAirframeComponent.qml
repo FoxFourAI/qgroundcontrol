@@ -1,25 +1,11 @@
-/****************************************************************************
- *
- * (c) 2009-2020 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
-
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
 
 import QGroundControl
-
 import QGroundControl.FactControls
-
 import QGroundControl.Controls
-
-
 
 SetupPage {
     id:             airframePage
@@ -46,9 +32,9 @@ SetupPage {
             Component.onCompleted:  computeDimensions()
 
             function computeDimensions() {
-                var sw  = 0
-                var rw  = 0
-                var idx = Math.floor(mainColumn.width / (_minW + ScreenTools.defaultFontPixelWidth))
+                let sw  = 0
+                let rw  = 0
+                let idx = Math.floor(mainColumn.width / (_minW + ScreenTools.defaultFontPixelWidth))
                 if(idx < 1) {
                     _boxWidth = mainColumn.width
                     _boxSpace = 0
@@ -184,7 +170,7 @@ SetupPage {
                                     }
 
                                     function selectFrameType() {
-                                        var index = object.frameTypeEnumValues.findIndex(checkFrameType)
+                                        let index = object.frameTypeEnumValues.findIndex(checkFrameType)
                                         if (index == -1 && combo.visible) {
                                             // Frame Class/Type is set to an invalid combination
                                             combo.valid = false

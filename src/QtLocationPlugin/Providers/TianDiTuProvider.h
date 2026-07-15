@@ -1,13 +1,6 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
+
+#include <QtCore/QObject>
 
 #include "MapProvider.h"
 
@@ -18,7 +11,7 @@ class TianDiTuProvider : public MapProvider
 {
 protected:
     TianDiTuProvider(const QString &mapName, const QString &mapTypeCode, const QString &imageFormat, quint32 averageSize,
-                    QGeoMapType::MapStyle mapType)
+                    MapProvider::MapStyle mapType)
         : MapProvider(mapName, QStringLiteral("https://map.tianditu.gov.cn/"), imageFormat, averageSize, mapType)
         , _mapType(mapTypeCode) {}
 
@@ -38,7 +31,7 @@ public:
             QStringLiteral("cia_w"),
             QStringLiteral("png"),
             AVERAGE_TIANDITU_STREET_MAP,
-            QGeoMapType::StreetMap) {}
+            MapProvider::StreetMap) {}
 };
 
 class TianDiTuSatelliteProvider : public TianDiTuProvider
@@ -50,6 +43,5 @@ public:
             QStringLiteral("img_w"),
             QStringLiteral("jpg"),
             AVERAGE_TIANDITU_SAT_MAP,
-            QGeoMapType::SatelliteMapDay) {}
+            MapProvider::SatelliteMapDay) {}
 };
-

@@ -1,15 +1,9 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "QGCMapUrlEngine.h"
 
+#include "QGCTileSet.h"
+
 #include <QtCore/QtMinMax>
+#include <QtCore/QUrl>
 
 #include "BingMapProvider.h"
 #include "ElevationMapProvider.h"
@@ -173,9 +167,8 @@ QGCTileSet UrlFactory::getTileCount(int zoom, double topleftLon, double topleftL
 
 QString UrlFactory::getProviderTypeFromQtMapId(int qtMapId)
 {
-    // Default Set
     if (qtMapId == -1) {
-        return nullptr;
+        return QString();
     }
 
     for (const SharedMapProvider &provider : _providers) {
@@ -185,12 +178,11 @@ QString UrlFactory::getProviderTypeFromQtMapId(int qtMapId)
     }
 
     qCWarning(QGCMapUrlEngineLog) << "map id not found:" << qtMapId;
-    return QString("");
+    return QString();
 }
 
 SharedMapProvider UrlFactory::getMapProviderFromQtMapId(int qtMapId)
 {
-    // Default Set
     if (qtMapId == -1) {
         return nullptr;
     }
@@ -207,6 +199,10 @@ SharedMapProvider UrlFactory::getMapProviderFromQtMapId(int qtMapId)
 
 SharedMapProvider UrlFactory::getMapProviderFromProviderType(QStringView type)
 {
+    if (type.isEmpty()) {
+        return nullptr;
+    }
+
     for (const SharedMapProvider &provider : _providers) {
         if (provider->getMapName() == type) {
             return provider;
@@ -219,6 +215,10 @@ SharedMapProvider UrlFactory::getMapProviderFromProviderType(QStringView type)
 
 int UrlFactory::getQtMapIdFromProviderType(QStringView type)
 {
+    if (type.isEmpty()) {
+        return -1;
+    }
+
     for (const SharedMapProvider &provider : _providers) {
         if (provider->getMapName() == type) {
             return provider->getMapId();
@@ -264,11 +264,16 @@ QString UrlFactory::providerTypeFromHash(int hash)
     return QString("");
 }
 
-// This seems to limit provider name length to less than ~25 chars due to downcasting to int
 int UrlFactory::hashFromProviderType(QStringView type)
 {
-    const auto hash = qHash(type) >> 1;
-    return static_cast<int>(hash);
+    for (const SharedMapProvider &provider : _providers) {
+        if (provider->getMapName() == type) {
+            return provider->getMapId();
+        }
+    }
+
+    qCWarning(QGCMapUrlEngineLog) << "provider not found for type:" << type;
+    return -1;
 }
 
 QString UrlFactory::tileHashToType(QStringView tileHash)

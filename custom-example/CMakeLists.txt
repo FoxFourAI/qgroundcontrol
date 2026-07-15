@@ -18,11 +18,9 @@ if(ANDROID)
             set(DEFAULT_ANDROID_DIR "${CMAKE_SOURCE_DIR}/android")
             set(FINAL_ANDROID_DIR "${CMAKE_BINARY_DIR}/custom/android")
 
-            # Copy default Android template
             file(COPY "${DEFAULT_ANDROID_DIR}/." DESTINATION "${FINAL_ANDROID_DIR}")
 
-            # Overlay custom Android files
-            file(COPY "${CUSTOM_ANDROID_DIR}/." DESTINATION "${FINAL_ANDROID_DIR}")
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory "${CUSTOM_ANDROID_DIR}" "${FINAL_ANDROID_DIR}")
 
             # Track changes to Android directories
             set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
@@ -44,13 +42,11 @@ endif()
 # Custom Resources and Import Paths
 # ============================================================================
 
-# Add custom Qt resources
 list(APPEND CUSTOM_RESOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/custom.qrc
 )
 set(QGC_RESOURCES ${QGC_RESOURCES} ${CUSTOM_RESOURCES} CACHE STRING "Paths to .qrc Resources" FORCE)
 
-# Add custom QML import path
 set(QML_IMPORT_PATH ${QML_IMPORT_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/res" CACHE STRING "Extra qml import paths" FORCE)
 
 # ============================================================================
@@ -59,7 +55,6 @@ set(QML_IMPORT_PATH ${QML_IMPORT_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/res" CACHE S
 
 qt_add_library(CustomModule STATIC)
 
-# Set resource aliases for custom widgets
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/Widgets/CustomArtificialHorizon.qml PROPERTIES QT_RESOURCE_ALIAS CustomArtificialHorizon.qml)
 qgc_set_qt_resource_alias(
     ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/Widgets/CustomAttitudeWidget.qml
@@ -88,6 +83,27 @@ qt_add_qml_module(CustomModule
 )
 
 # ============================================================================
+# Custom Plan Module (PerimeterScan map visual + editor)
+# ============================================================================
+
+qt_add_library(CustomPlanModule STATIC)
+
+qgc_set_qt_resource_alias(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PlanView/PerimeterScanMapVisual.qml
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PlanView/PerimeterScanEditor.qml
+)
+
+qt_add_qml_module(CustomPlanModule
+    URI Custom.Plan
+    VERSION 1.0
+    RESOURCE_PREFIX /qml
+    QML_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/PlanView/PerimeterScanMapVisual.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/PlanView/PerimeterScanEditor.qml
+    NO_PLUGIN
+)
+
+# ============================================================================
 # Custom Plugin Sources
 # ============================================================================
 
@@ -100,6 +116,10 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/CustomFirmwarePlugin.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/CustomFirmwarePluginFactory.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/CustomFirmwarePluginFactory.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MissionManager/PerimeterScanComplexItem.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MissionManager/PerimeterScanComplexItem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MissionManager/PerimeterScanPlanCreator.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MissionManager/PerimeterScanPlanCreator.h
     CACHE INTERNAL "" FORCE
 )
 
@@ -107,21 +127,20 @@ set(CUSTOM_SOURCES
 # Custom Build Configuration
 # ============================================================================
 
-# Custom libraries to link
 set(CUSTOM_LIBRARIES
     CustomModule
+    CustomPlanModule
     CACHE INTERNAL "" FORCE
 )
 
-# Custom include directories
 set(CUSTOM_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoPilotPlugin
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MissionManager
     CACHE INTERNAL "" FORCE
 )
 
-# Custom compiler definitions
 set(CUSTOM_DEFINITIONS
     QGC_CUSTOM_BUILD
     CUSTOMHEADER="CustomPlugin.h"
@@ -129,7 +148,6 @@ set(CUSTOM_DEFINITIONS
     CACHE INTERNAL "" FORCE
 )
 
-# Custom Qt components required
 set(CUSTOM_QT_COMPONENTS
     Core
     CACHE INTERNAL "" FORCE

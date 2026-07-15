@@ -1,12 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "GPSRTKFactGroup.h"
 #include "QGCLoggingCategory.h"
 
@@ -26,6 +17,8 @@ GPSRTKFactGroup::GPSRTKFactGroup(QObject *parent)
     _addFact(&_validFact);
     _addFact(&_activeFact);
     _addFact(&_numSatellitesFact);
+    _addFact(&_numSatellitesUsedFact);
+    _addFact(&_lastErrorFact);
 }
 
 GPSRTKFactGroup::~GPSRTKFactGroup()

@@ -11,12 +11,16 @@
 #include "FoxFourAutoPilotPlugin.h"
 #include "Vehicle.h"
 #include "Camera/FoxFourCameraControl.h"
+#include "FoxFourSettings.h"
+#include "SettingsManager.h"
 AutoPilotPlugin* FoxFourFirmwarePlugin::autopilotPlugin(Vehicle *vehicle) const
 {
+    qDebug()<<"mapmatching points "<< SettingsManager::instance()->foxFourSettings()->mapMatchingPointsCnt()->rawValue().toInt();
+    SettingsManager::instance()->foxFourSettings()->mapMatchingPointsCnt()->setRawValue(2500);
     return new FoxFourAutoPilotPlugin(vehicle, vehicle);
 }
 
-MavlinkCameraControl *FoxFourFirmwarePlugin::createCameraControl(const mavlink_camera_information_t *info, Vehicle *vehicle, int compID, QObject *parent) const
+MavlinkCameraControlInterface *FoxFourFirmwarePlugin::createCameraControl(const mavlink_camera_information_t *info, Vehicle *vehicle, int compID, QObject *parent) const
 {
     return new FoxFourCameraControl(info,vehicle,compID,parent);
 }

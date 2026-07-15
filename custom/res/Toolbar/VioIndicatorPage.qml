@@ -3,69 +3,74 @@ import QtQuick.Layouts
 
 import QGroundControl
 import QGroundControl.Controls
-import QGroundControl.FactControls
-
 
 //this page is not visible unless vioStatus is 0 or 1
-ToolIndicatorPage{
-
-    id:root
+ToolIndicatorPage {
+    id: root
     showExpand: false
-    property var activeVehicle : globals.activeVehicle
-    property var comparer : activeVehicle.autopilotPlugin.vioGpsComparer
+    property var activeVehicle: globals.activeVehicle
+    property var comparer: activeVehicle.autopilotPlugin.vioGpsComparer
     property var parameterSetter: QGroundControl.corePlugin.parameterSetter
-    contentComponent: Component{
-        ColumnLayout{
+    contentComponent: Component {
+        ColumnLayout {
             spacing: ScreenTools.defaultFontPixelHeight / 2
 
-            SettingsGroupLayout{
+            SettingsGroupLayout {
                 heading: qsTr("VIO helper")
 
-                QGCSwitch{
+                QGCCheckBoxSlider {
+                    Layout.fillWidth: true
                     text: qsTr("Enable")
                     onToggled: {
-                        let fact = parameterSetter.getFact(activeVehicle.id, "SCR_USER2", false)
-                        if(fact === undefined){
-                            return;
+                        let fact = parameterSetter.getFact(activeVehicle.id,
+                                                           "SCR_USER2", false)
+                        if (fact === undefined) {
+                            return
                         }
                         fact.value = checked
                     }
                     Component.onCompleted: {
-                        let fact = parameterSetter.getFact(activeVehicle.id, "SCR_USER2", false)
-                        if(fact === undefined){
+                        let fact = parameterSetter.getFact(activeVehicle.id,
+                                                           "SCR_USER2", false)
+                        if (fact === undefined) {
                             checked = false
                         }
                         checked = fact.value
                     }
                 }
 
-                LabelledLabel{
+                LabelledLabel {
+                    Layout.fillWidth: true
                     label: qsTr("Current Error:")
                     labelText: root.comparer.currentError.toFixed(2) + " m"
-                    MouseArea{
+                    MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
-                        onEntered: ToolTip.show(qsTr("Current distance between gps and vio positions"))
+                        onEntered: ToolTip.show(
+                                       qsTr("Current distance between gps and vio positions"))
                         onExited: ToolTip.hide()
                     }
                 }
-                LabelledLabel{
+                LabelledLabel {
+                    Layout.fillWidth: true
                     label: qsTr("RMSE:")
                     labelText: root.comparer.RMSEError.toFixed(2) + " m"
-                    MouseArea{
+                    MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
                         onEntered: ToolTip.show(qsTr("Root Mean Squared Error"))
                         onExited: ToolTip.hide()
                     }
                 }
-                LabelledLabel{
+                LabelledLabel {
+                    Layout.fillWidth: true
                     label: qsTr("ATE:")
                     labelText: root.comparer.ATEError.toFixed(2) + " m"
-                    MouseArea{
-                        anchors.fill:parent
+                    MouseArea {
+                        anchors.fill: parent
                         hoverEnabled: true
-                        onEntered: ToolTip.show(qsTr("Absolute Trajectory Error"))
+                        onEntered: ToolTip.show(
+                                       qsTr("Absolute Trajectory Error"))
                         onExited: ToolTip.hide()
                     }
                 }

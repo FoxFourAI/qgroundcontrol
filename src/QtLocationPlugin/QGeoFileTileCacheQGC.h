@@ -1,18 +1,8 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
-#include <QtCore/QLoggingCategory>
-#include <QtLocation/private/qgeofiletilecache_p.h>
+#include <atomic>
 
-Q_DECLARE_LOGGING_CATEGORY(QGeoFileTileCacheQGCLog)
+#include <QtLocation/private/qgeofiletilecache_p.h>
 
 class QGCFetchTileTask;
 
@@ -49,9 +39,8 @@ private:
 
     static quint32 _getMaxMemCacheSetting();
 
+    // Initialized once via std::call_once in constructor before worker thread starts
     static QString _databaseFilePath;
     static QString _cachePath;
-    static bool _cacheWasReset;
-
-    static constexpr const char *kCachePathVersion = "300";
+    static std::atomic<bool> _cacheWasReset;
 };
