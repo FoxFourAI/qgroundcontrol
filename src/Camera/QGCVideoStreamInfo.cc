@@ -22,11 +22,6 @@ QGCVideoStreamInfo::~QGCVideoStreamInfo()
 
 }
 
-QGCVideoStreamInfo::~QGCVideoStreamInfo()
-{
-
-}
-
 qreal QGCVideoStreamInfo::aspectRatio() const
 {
     qreal ar = 1.0;
