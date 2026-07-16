@@ -96,3 +96,4 @@ jobs:
           # iOS uses Ninja Multi-Config; the .app lands in build/<config>/, not build/.
           artifact-source-path: ${{ runner.temp }}/build/${{ matrix.build_type }}/${{ env.PACKAGE }}.app
           package-name: ${{ env.PACKAGE }}
+          upload-aws: 'false'
