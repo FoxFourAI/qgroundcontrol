@@ -69,7 +69,7 @@ jobs:
         with:
           build-dir: ${{ runner.temp }}/build
           build-type: Release
-          extra-args: -DQGC_CUSTOM_DIR=custom-example
+          extra-args: -DQGC_CUSTOM_DIR=custom
 
       - name: Build
         uses: ./.github/actions/cmake-build
