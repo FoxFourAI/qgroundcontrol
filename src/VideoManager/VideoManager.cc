@@ -35,7 +35,6 @@
 #include <QtQuick/QQuickItem>
 #include <QtQuick/QQuickWindow>
 
-
 QGC_LOGGING_CATEGORY(VideoManagerLog, "Video.VideoManager")
 
 static constexpr const char *kFileExtension[VideoReceiver::FILE_FORMAT_MAX + 1] = {
@@ -634,6 +633,7 @@ bool VideoManager::_updateAutoStream(VideoReceiver *receiver)
         url = pInfo->uri();
         break;
     }
+
     const bool settingsChanged = _updateVideoUri(receiver, url);
     if (settingsChanged) {
         if (!receiver->isThermal()) {

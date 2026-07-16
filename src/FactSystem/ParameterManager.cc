@@ -98,7 +98,7 @@ void ParameterManager::_updateProgressBar()
 
 void ParameterManager::mavlinkMessageReceived(const mavlink_message_t &message)
 {
-        // FIXME: we are not using FTP as this way updating parameters from other components other than autopilot is not happening
+        // FoxFourFIXME: we are not using FTP as this way updating parameters from other components other than autopilot is not happening
         // if (_tryftp && (message.compid == MAV_COMP_ID_AUTOPILOT1) && !_initialLoadComplete)
         // return;
 
