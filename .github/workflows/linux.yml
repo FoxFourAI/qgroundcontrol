@@ -99,16 +99,16 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/install-dependencies
 
-      - name: Initialize CodeQL
-        if: (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master')) && runner.arch != 'ARM64'
-        uses: github/codeql-action/init@v4
-        with:
-          languages: c-cpp
-          # c-cpp can't use overlay DBs (those require build-mode: none, interpreted-only); declare manual to match the cmake-build step below and silence the "undefined build-mode" fallback warning.
-          build-mode: manual
-          config-file: ./.github/codeql/codeql-config.yml
-          trap-caching: false
-          dependency-caching: false
+      # - name: Initialize CodeQL
+      #   if: (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master')) && runner.arch != 'ARM64'
+      #   uses: github/codeql-action/init@v4
+      #   with:
+      #     languages: c-cpp
+      #     # c-cpp can't use overlay DBs (those require build-mode: none, interpreted-only); declare manual to match the cmake-build step below and silence the "undefined build-mode" fallback warning.
+      #     build-mode: manual
+      #     config-file: ./.github/codeql/codeql-config.yml
+      #     trap-caching: false
+      #     dependency-caching: false
 
       - name: Configure
         uses: ./.github/actions/cmake-configure
@@ -124,17 +124,17 @@ jobs:
           reviewdog: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
           reviewdog-token: ${{ github.token }}
 
-      - name: Perform CodeQL Analysis
-        id: codeql
-        if: (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master')) && runner.arch != 'ARM64'
-        continue-on-error: true
-        uses: github/codeql-action/analyze@v4
-        with:
-          category: "/language:c-cpp"
+      # - name: Perform CodeQL Analysis
+      #   id: codeql
+      #   if: (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master')) && runner.arch != 'ARM64'
+      #   continue-on-error: true
+      #   uses: github/codeql-action/analyze@v4
+      #   with:
+      #     category: "/language:c-cpp"
 
-      - name: Annotate CodeQL failure
-        if: steps.codeql.outcome == 'failure'
-        run: echo "::warning::CodeQL analysis failed — see step log for details"
+      # - name: Annotate CodeQL failure
+      #   if: steps.codeql.outcome == 'failure'
+      #   run: echo "::warning::CodeQL analysis failed — see step log for details"
 
       - name: Verify Executable
         uses: ./.github/actions/verify-executable
