@@ -86,6 +86,6 @@ jobs:
       - name: Verify Custom AppImage
         uses: ./.github/actions/verify-executable
         with:
-          binary-path: Custom-QGroundControl-x86_64.AppImage
+          binary-path: QGroundControl-x86_64.AppImage
           type: appimage
           working-dir: ${{ runner.temp }}/build
