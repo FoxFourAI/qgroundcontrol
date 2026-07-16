@@ -204,14 +204,6 @@ jobs:
 
           python3 ./tools/setup/build-gstreamer.py "${args[@]}"
 
-      - name: Configure AWS Credentials
-        if: inputs.upload_s3
-        uses: ./.github/actions/aws-credentials
-        with:
-          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-          aws-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
       - name: Create archive
         id: archive
         shell: bash

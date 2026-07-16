@@ -62,14 +62,6 @@ jobs:
         id: buildconfig
         uses: ./.github/actions/build-config
 
-      - name: Configure AWS Credentials
-        if: ${{ !inputs.dry_run }}
-        uses: ./.github/actions/aws-credentials
-        with:
-          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-          aws-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
       - name: Mirror artifacts
         shell: bash
         env:
@@ -78,7 +70,6 @@ jobs:
           DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
           FORCE: ${{ inputs.force && 'true' || 'false' }}
           WORK_DIR: ${{ runner.temp }}
-          AWS_DEFAULT_REGION: us-west-2
         run: |
           set -euo pipefail
           args=(

@@ -16,26 +16,6 @@ inputs:
     description: 'SBOM subject name (defaults to package-name)'
     required: false
     default: ''
-  aws-role-arn:
-    description: 'AWS IAM role ARN for OIDC authentication (preferred)'
-    required: false
-    default: ''
-  aws-key-id:
-    description: 'AWS access key ID'
-    required: false
-    default: ''
-  aws-secret-access-key:
-    description: 'AWS secret access key'
-    required: false
-    default: ''
-  aws-distribution-id:
-    description: 'AWS CloudFront distribution ID'
-    required: false
-    default: ''
-  upload-aws:
-    description: 'Upload artifact to AWS'
-    required: false
-    default: 'true'
   retention-days:
     description: 'Days to retain GitHub artifact (default 7 for PRs, 30 for pushes)'
     required: false
