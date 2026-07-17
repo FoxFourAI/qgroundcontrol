@@ -69,16 +69,16 @@ Item {
 
             SettingsGroupLayout {
                 heading: qsTr("General")
-                FactCheckBoxSlider {
-                    Layout.fillWidth: true
-                    fact: control._settings.minimalMode
-                    text: fact.label
+                // FactCheckBoxSlider {
+                //     Layout.fillWidth: true
+                //     fact: control._settings.minimalMode
+                //     text: fact.label
 
-                    ToolTip {
-                        visible: parent.hovered
-                        text: parent.fact.shortDescription
-                    }
-                }
+                //     ToolTip {
+                //         visible: parent.hovered
+                //         text: parent.fact.shortDescription
+                //     }
+                // }
 
                 LabelledFactTextField {
                     Layout.fillWidth: true
@@ -89,16 +89,16 @@ Item {
                     textFieldUnitsLabel: qsTr("Hz")
                     visible: true
                 }
-                FactCheckBoxSlider {
-                    text: fact.label
-                    Layout.fillWidth: true
-                    fact: control._settings.cacheVehicleParameters
+                // FactCheckBoxSlider {
+                //     text: fact.label
+                //     Layout.fillWidth: true
+                //     fact: control._settings.cacheVehicleParameters
 
-                    ToolTip {
-                        visible: parent.hovered
-                        text: parent.fact.shortDescription
-                    }
-                }
+                //     ToolTip {
+                //         visible: parent.hovered
+                //         text: parent.fact.shortDescription
+                //     }
+                // }
             }
 
             SettingsGroupLayout {

@@ -15,8 +15,6 @@
 #include "SettingsManager.h"
 AutoPilotPlugin* FoxFourFirmwarePlugin::autopilotPlugin(Vehicle *vehicle) const
 {
-    qDebug()<<"mapmatching points "<< SettingsManager::instance()->foxFourSettings()->mapMatchingPointsCnt()->rawValue().toInt();
-    SettingsManager::instance()->foxFourSettings()->mapMatchingPointsCnt()->setRawValue(2500);
     return new FoxFourAutoPilotPlugin(vehicle, vehicle);
 }
 

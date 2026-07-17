@@ -171,26 +171,6 @@ SettingsPage {
         ColumnLayout {
             Layout.fillWidth: true
             spacing: ScreenTools.defaultFontPixelHeight / 4
-            visible: (!autoStreamConfig && isStreamSource && QGroundControl.settingsManager.videoSettings.lowLatencyMode.userVisible) && QGroundControl.settingsManager.videoSettings.lowLatencyMode.userVisible
-
-            FactCheckBoxSlider {
-                Layout.fillWidth: true
-                text: fact.label
-                fact: QGroundControl.settingsManager.videoSettings.lowLatencyMode
-            }
-
-            QGCLabel {
-                Layout.fillWidth: true
-                text: QGroundControl.settingsManager.videoSettings.lowLatencyMode.shortDescription
-                visible: text !== ""
-                font.pointSize: ScreenTools.smallFontPointSize
-                wrapMode: Text.WordWrap
-            }
-        }
-
-        ColumnLayout {
-            Layout.fillWidth: true
-            spacing: ScreenTools.defaultFontPixelHeight / 4
             visible: (!autoStreamConfig && isStreamSource && rtpLatencyVisible && QGroundControl.settingsManager.videoSettings.rtpJitterLatencyMs.userVisible) && QGroundControl.settingsManager.videoSettings.rtpJitterLatencyMs.userVisible
 
             LabelledFactTextField {
