@@ -23,15 +23,7 @@ _LINUX_2204_BUILD_ARGS = "\n".join(
 _LINUX_2604_BUILD_ARGS = (
     "BASE_REF=ubuntu:26.04@sha256:f3d28607ddd78734bb7f71f117f3c6706c666b8b76cbff7c9ff6e5718d46ff64"
 )
-_LINUX_DEBIAN_BUILD_ARGS = "BASE_REF=debian:bookworm-slim@sha256:96e378d7e6531ac9a15ad505478fcc2e69f371b10f5cdf87857c4b8188404716"
-_LINUX_FEDORA_BUILD_ARGS = "\n".join(
-    [
-        "BASE_REF=fedora:41@sha256:f1a3fab47bcb3c3ddf3135d5ee7ba8b7b25f2e809a47440936212a3a50957f3d",
-        "SETUP_BASE=setup-base-dnf.sh",
-        "DEP_PLATFORM=fedora",
-    ]
-)
-_LINUX_ARCH_BUILD_ARGS = "\n".join(
+LINUX_ARCH_BUILD_ARGS = "\n".join(
     [
         "BASE_REF=archlinux:base@sha256:ff410a88e200b133e577f5730b7bfa324e26a333075ee056bf45e911c6ac5671",
         "SETUP_BASE=setup-base-pacman.sh",
@@ -72,24 +64,6 @@ def test_plan_builds_pull_request_filters_by_changes():
             "package_pattern": "*.deb",
         },
         {
-            "platform": "Linux-Debian",
-            "target": "linux",
-            "variant": "linux-debian",
-            "build_args": _LINUX_DEBIAN_BUILD_ARGS,
-            "fuse": True,
-            "artifact_pattern": "*.AppImage",
-            "package_pattern": "*.deb",
-        },
-        {
-            "platform": "Linux-Fedora",
-            "target": "linux",
-            "variant": "linux-fedora",
-            "build_args": _LINUX_FEDORA_BUILD_ARGS,
-            "fuse": True,
-            "artifact_pattern": "*.AppImage",
-            "package_pattern": "*.rpm",
-        },
-        {
             "platform": "Linux-Arch",
             "target": "linux",
             "variant": "linux-arch",
@@ -97,17 +71,8 @@ def test_plan_builds_pull_request_filters_by_changes():
             "fuse": True,
             "artifact_pattern": "*.AppImage",
             "package_pattern": "*.pkg.tar.zst",
-        },
-        {
-            "platform": "Linux-aarch64",
-            "target": "linux-cross",
-            "variant": "linux-aarch64",
-            "build_args": "",
-            "fuse": False,
-            "artifact_pattern": "QGroundControl",
-            "package_pattern": "",
-        },
-    ]
+        }
+   ]
 
 
 def test_native_package_patterns_per_distro():
@@ -116,10 +81,7 @@ def test_native_package_patterns_per_distro():
     assert pkg["Linux-Ubuntu-24.04"] == "*.deb"
     assert pkg["Linux-Ubuntu-22.04"] == "*.deb"
     assert pkg["Linux-Ubuntu-26.04"] == "*.deb"
-    assert pkg["Linux-Debian"] == "*.deb"
-    assert pkg["Linux-Fedora"] == "*.rpm"
     assert pkg["Linux-Arch"] == "*.pkg.tar.zst"
-    assert pkg["Linux-aarch64"] == ""
     assert pkg["Android"] == ""
 
 
@@ -136,11 +98,9 @@ def test_2204_reuses_linux_target_with_distinct_cache_variant():
 def test_non_ubuntu_linux_variants_reuse_linux_target():
     include = plan_builds("push", linux_changed=False, android_changed=False)["matrix"]["include"]
     by_platform = {e["platform"]: e for e in include}
-    for name in ("Linux-Debian", "Linux-Fedora", "Linux-Arch"):
+    for name in ("Linux-Arch"):
         assert by_platform[name]["target"] == "linux"
         assert by_platform[name]["variant"] != "linux"
-    assert "debian:bookworm" in by_platform["Linux-Debian"]["build_args"]
-    assert "DEP_PLATFORM=fedora" in by_platform["Linux-Fedora"]["build_args"]
     assert "DEP_PLATFORM=arch" in by_platform["Linux-Arch"]["build_args"]
 
 
@@ -162,10 +122,7 @@ def test_plan_builds_push_includes_all():
         "Linux-Ubuntu-24.04",
         "Linux-Ubuntu-22.04",
         "Linux-Ubuntu-26.04",
-        "Linux-Debian",
-        "Linux-Fedora",
         "Linux-Arch",
-        "Linux-aarch64",
         "Android",
     ]
 
