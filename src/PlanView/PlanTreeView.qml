@@ -24,6 +24,9 @@ TreeView {
 
     signal editingLayerChangeRequested(int layer)
 
+    readonly property int _layerMission: 1
+    readonly property int _layerFence:   2
+    readonly property int _layerRally:   3
     readonly property bool _createNewPlanMode: planMasterController.showCreateFromTemplate
 
     on_CreateNewPlanModeChanged: {
@@ -69,8 +72,11 @@ TreeView {
                         root.collapse(defaultsRow)
                     }
                 }
-                // Expand mission group (making Mission the active layer) and scroll to the new item
-                root.selectLayer("missionGroup")
+                // Expand mission group and scroll to the new item
+                var missionRow = _rowFor(_missionController.missionGroupIndex)
+                if (!root.isExpanded(missionRow)) {
+                    root.expand(missionRow)
+                }
                 // Scroll happens when the editor signals editorExpandedAndLoaded
             }
             root._lastMissionItemCount = newCount
@@ -91,7 +97,7 @@ TreeView {
                 root.contentY = 0
             }
             root._lastMissionItemCount = _missionController.visualItems ? _missionController.visualItems.count : 0
-            root.editingLayerChangeRequested(PlanEditLayers.layerMission)
+            root.editingLayerChangeRequested(root._layerMission)
         }
         function onPlanViewStateChanged() {
             // Current item changed — bring it on-screen if completely off-screen.
@@ -108,52 +114,33 @@ TreeView {
         }
     }
 
-    // The three groups which correspond to map editing layers. These are exclusive:
-    // expanding one collapses the others and makes it the active editing layer.
-
-    function _layerGroupRow(nodeType) {
-        switch (nodeType) {
-        case "missionGroup":    return _rowFor(_missionController.missionGroupIndex)
-        case "fenceGroup":      return _rowFor(_missionController.fenceGroupIndex)
-        case "rallyGroup":      return _rowFor(_missionController.rallyGroupIndex)
-        }
-        return -1
-    }
-
-    function _collapseOtherLayerGroups(nodeType) {
-        for (var layerInfo of PlanEditLayers.layerInfos) {
-            if (layerInfo.nodeType !== nodeType) {
-                var row = _layerGroupRow(layerInfo.nodeType)
-                if (row >= 0 && root.isExpanded(row)) {
-                    root.collapse(row)
-                }
-            }
-        }
-    }
-
-    // Public API: make a layer group the active editing layer and expand it,
-    // collapsing the other layer groups. Called by the layer tool buttons and group headers.
+    // Public API: select a layer and expand its group. Called by the layer tool buttons.
     function selectLayer(nodeType) {
-        var layerInfo = PlanEditLayers.infoForNodeType(nodeType)
-        if (!layerInfo) {
-            return
+        let targetRow = -1
+        switch (nodeType) {
+        case "missionGroup":
+            targetRow = _rowFor(_missionController.missionGroupIndex)
+            editingLayerChangeRequested(_layerMission)
+            break
+        case "fenceGroup":
+            targetRow = _rowFor(_missionController.fenceGroupIndex)
+            editingLayerChangeRequested(_layerFence)
+            break
+        case "rallyGroup":
+            targetRow = _rowFor(_missionController.rallyGroupIndex)
+            editingLayerChangeRequested(_layerRally)
+            break
         }
-        if (!mainWindow.allowViewSwitch()) {
-            return
-        }
-        editingLayerChangeRequested(layerInfo.layer)
-        _collapseOtherLayerGroups(nodeType)
-        var targetRow = _layerGroupRow(nodeType)
+
         if (targetRow >= 0) {
-            if (!root.isExpanded(targetRow)) {
+            if (!root.isExpanded(targetRow))
                 root.expand(targetRow)
-            }
             root.forceLayout()
             root.positionViewAtRow(targetRow, TableView.AlignTop)
         }
     }
 
-    // Toggle expand/collapse for a non-layer group header (Plan Info, Defaults, Transform).
+    // Toggle expand/collapse for a group header. Does not affect the editing layer.
     // Caller is responsible for calling allowViewSwitch() before invoking this.
     function _toggleGroup(row) {
         if (root.isExpanded(row)) {
@@ -168,15 +155,10 @@ TreeView {
     function _groupSubtitle(nodeType) {
         switch (nodeType) {
         case "planFileGroup":   return planMasterController.currentPlanFileName === "" ? qsTr("<Untitled>") : planMasterController.currentPlanFileName
-        case "missionGroup":    return _missionController.visualItems ? qsTr("%1 items").arg(_missionController.visualItems.count - 1) : ""
-        case "rallyGroup":      return _rallyPointController.points ? qsTr("%1 points").arg(_rallyPointController.points.count) : ""
+        case "missionGroup":    return _missionController.visualItems ? (_missionController.visualItems.count - 1) + qsTr(" items") : ""
+        case "rallyGroup":      return _rallyPointController.points ? _rallyPointController.points.count + qsTr(" points") : ""
         default:                return ""
         }
-    }
-
-    // Icon shown on group headers, matches the layer switcher icons
-    function _groupIcon(nodeType) {
-        return PlanEditLayers.infoForNodeType(nodeType)?.icon ?? ""
     }
 
     // Coalesces multiple delegate height changes into a single forceLayout() call
@@ -202,8 +184,8 @@ TreeView {
         id: delegateRoot
         implicitWidth: root.width
         implicitHeight: (loader.item ? loader.item.height : 1) + (separatorLine.visible ? separatorLine.height + root.rowSpacing : 0)
-        enabled: !root._createNewPlanMode || _enabledInCreateMode
-        opacity: enabled ? 1 : root.editorMap._nonInteractiveOpacity
+        visible: !root._createNewPlanMode || _visibleInCreateMode
+        height: visible ? implicitHeight : 0
         width: root.width
 
         required property TreeView treeView
@@ -218,8 +200,8 @@ TreeView {
         readonly property string nodeType: model.nodeType
         readonly property bool separator: model.separator ?? false
 
-        // In create-new-plan mode, only the Plan Info and Defaults groups and their children are enabled
-        readonly property bool _enabledInCreateMode: nodeType === "planFileGroup" || nodeType === "planFileInfo"
+        // In create-new-plan mode, only show Plan Info and Defaults groups and their children
+        readonly property bool _visibleInCreateMode: nodeType === "planFileGroup" || nodeType === "planFileInfo"
                                                      || nodeType === "defaultsGroup" || nodeType === "defaultsInfo"
 
         onImplicitHeightChanged: layoutTimer.restart()
@@ -245,7 +227,6 @@ TreeView {
                     break
                 case "planFileInfo":
                     setSource(delegateRoot._qrcBase + "PlanInfoEditor.qml", {
-                        objectName:             "planTree_planFileInfo",
                         width:                  Qt.binding(() => delegateRoot.width),
                         planMasterController:   root.planMasterController,
                         missionController:      root._missionController,
@@ -262,7 +243,6 @@ TreeView {
                 case "missionItem":
                     if (delegateRoot.nodeObject) {
                         setSource(delegateRoot._qrcBase + "MissionItemEditor.qml", {
-                            objectName:     "planTree_missionItemEditor",
                             width:          Qt.binding(() => delegateRoot.width),
                             map:            root.editorMap,
                             missionItem:    delegateRoot.nodeObject
@@ -272,7 +252,6 @@ TreeView {
                 case "fenceEditor":
                     if (delegateRoot.nodeObject) {
                         setSource(delegateRoot._qrcBase + "GeoFenceEditor.qml", {
-                            objectName:             "planTree_fenceEditor",
                             width:                  Qt.binding(() => delegateRoot.width),
                             myGeoFenceController:   root._geoFenceController,
                             flightMap:              root.editorMap
@@ -282,7 +261,6 @@ TreeView {
                 case "rallyHeader":
                     if (delegateRoot.nodeObject) {
                         setSource(delegateRoot._qrcBase + "RallyPointEditorHeader.qml", {
-                            objectName: "planTree_rallyHeader",
                             width:      Qt.binding(() => delegateRoot.width),
                             controller: root._rallyPointController
                         })
@@ -378,15 +356,6 @@ TreeView {
                         font.bold: true
                     }
 
-                    QGCColoredImage {
-                        Layout.alignment: Qt.AlignVCenter
-                        Layout.preferredWidth: ScreenTools.defaultFontPixelHeight * 0.75
-                        Layout.preferredHeight: Layout.preferredWidth
-                        source: root._groupIcon(delegateRoot.nodeType)
-                        color: qgcPal.text
-                        visible: source.toString() !== ""
-                    }
-
                     QGCLabel {
                         Layout.alignment: Qt.AlignBaseline
                         Layout.fillWidth: true
@@ -400,17 +369,10 @@ TreeView {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        if (PlanEditLayers.infoForNodeType(delegateRoot.nodeType)) {
-                            // Layer groups cannot be collapsed by clicking their header. The active
-                            // editing layer always has its group expanded. selectLayer() handles
-                            // the allowViewSwitch() guard.
-                            root.selectLayer(delegateRoot.nodeType)
-                        } else {
-                            if (!mainWindow.allowViewSwitch()) {
-                                return
-                            }
-                            root._toggleGroup(delegateRoot.row)
+                        if (!mainWindow.allowViewSwitch()) {
+                            return
                         }
+                        root._toggleGroup(delegateRoot.row)
                     }
                 }
             }

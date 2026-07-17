@@ -92,7 +92,6 @@ Item {
 
         PlanTreeView {
             id:                     planTreeView
-            objectName:             "planView_planTree"
             anchors.fill:           parent
             editorMap:              root.editorMap
             planMasterController:   root.planMasterController

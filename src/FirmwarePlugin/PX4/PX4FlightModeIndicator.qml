@@ -30,7 +30,7 @@ ColumnLayout {
             Layout.preferredWidth:  sliderWidth
             label:                  qsTr("RTL Altitude")
             fact:                   controller.getParameterFact(-1, "RTL_RETURN_ALT")
-            to:                     fact.maxIsDefaultForType ? fact.rawToCooked(121.92) : fact.max
+            to:                     fact.maxIsDefaultForType ? QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(121.92) : fact.max
             majorTickStepSize:      10
         }
     }
@@ -95,8 +95,7 @@ ColumnLayout {
                 id:                 maxAltitudeSlider
                 Layout.fillWidth:   true
                 fact:               controller.getParameterFact(-1, "GF_MAX_VER_DIST")
-                // Setting is "vertical m" family, slider fact may cook differently - convert through the fact's own translator
-                to:                 fact.rawToCooked(flyViewSettings.guidedMaximumAltitude.rawValue)
+                to:                 flyViewSettings.guidedMaximumAltitude.value
                 majorTickStepSize:  10
                 enabled:            fact.value > 0
             }

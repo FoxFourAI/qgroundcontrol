@@ -27,8 +27,6 @@ private slots:
     void _builtInTranslatorRadians_test();
     void _builtInTranslatorCentiDegrees_test();
     void _builtInTranslatorNorm_test();
-    void _verticalMetersUnitsIntType_test();
-    void _verticalMetersUnitsFeetTranslation_test();
     void _setMinMax_test();
     void _maxStringLength_test();
     void _maxStringLengthNegativeRejected_test();

@@ -7,7 +7,7 @@
     "name":             "Altitude",
     "shortDesc": "Altitude for the bottom layer of the structure scan.",
     "type":             "double",
-    "units":            "vertical m",
+    "units":            "m",
     "decimalPlaces":    1,
     "default":     50
 },

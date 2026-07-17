@@ -16,7 +16,11 @@ UT_REGISTER_TEST(PlanViewUITest, TestLabel::Integration, TestLabel::MissionManag
 
 void PlanViewUITest::_clickMap(qreal fractionX, qreal fractionY)
 {
-    QVERIFY2(clickItemFraction(QStringLiteral("planView_map"), fractionX, fractionY), "Failed to click planView_map");
+    QQuickItem *map = findVisibleItem(_rootItem, QStringLiteral("planView_map"));
+    QVERIFY2(map, "planView_map not found");
+
+    const QPointF scenePos = map->mapToScene(QPointF(map->width() * fractionX, map->height() * fractionY));
+    QTest::mouseClick(_window, Qt::LeftButton, Qt::NoModifier, scenePos.toPoint());
 }
 
 int PlanViewUITest::_missionItemCount()

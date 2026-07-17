@@ -149,7 +149,7 @@ private:
 
     static constexpr const char* _jsonCameraCalcKey =          "CameraCalc";
 
-    static constexpr const char* _entranceAltName = "EntranceAltitude"; // This value cannot be overridden
+    static constexpr const char* _entranceAltName = "EntranceAltitude"; // This value cannot be overriden
 
 #ifdef QGC_UNITTEST_BUILD
     friend class StructureScanComplexItemTest;

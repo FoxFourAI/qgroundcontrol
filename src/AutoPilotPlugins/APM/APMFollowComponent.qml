@@ -414,7 +414,7 @@ SetupPage {
                         QGCLabel {
                             id:                 distanceLabel
                             anchors.centerIn:   distanceLine
-                            text:               QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnitsString(controller.distance.rawValue)
+                            text:               controller.distance.valueString + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString
 
                             transform: Rotation {
                                 origin.x:       distanceLabel.width  / 2
@@ -492,7 +492,7 @@ SetupPage {
                         QGCLabel {
                             id:                 heightValueLabel
                             anchors.centerIn:   parent
-                            text:               QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnitsString(controller.height.rawValue)
+                            text:               controller.height.valueString + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString
                         }
                     }
 
