@@ -60,18 +60,6 @@
         "SETUP_BASE": "setup-base-pacman.sh",
         "DEP_PLATFORM": "arch"
       }
-    },
-    {
-      "id": "android",
-      "ci_variant": "android",
-      "platform": "Android",
-      "selector": "android",
-      "target": "android",
-      "image": "qgc-android-docker",
-      "fuse": false,
-      "artifact_pattern": "*.apk",
-      "package_pattern": "",
-      "build_args": {}
     }
   ]
 }
