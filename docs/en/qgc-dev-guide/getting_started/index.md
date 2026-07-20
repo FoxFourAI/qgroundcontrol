@@ -1,5 +1,5 @@
 ---
-qt_version: 6.10.0
+qt_version: 6.10.1
 ---
 
 # Getting Started with Source and Builds
@@ -14,27 +14,14 @@ Versions are provided for all platforms.
 
 ## Source Code
 
-Source code for _QGroundControl_ is kept on GitHub here: https://github.com/mavlink/qgroundcontrol.
+Source code for _QGroundControl_ is kept on [GitHub](https://github.com/mavlink/qgroundcontrol).
 It is [dual-licensed under Apache 2.0 and GPLv3](https://github.com/mavlink/qgroundcontrol/blob/master/.github/COPYING.md).
 
-To get the source files:
+To get the source files, clone the repo (or your fork):
 
-1. Clone the repo (or your fork) including submodules:
-
-   ```sh
-   git clone --recursive -j8 https://github.com/mavlink/qgroundcontrol.git
-   ```
-
-2. Update submodules (required each time you pull new source code):
-
-   ```sh
-   git submodule update --recursive
-   ```
-
-:::tip
-Github source-code zip files cannot be used because these do not contain the appropriate submodule source code.
-You must use git!
-:::
+```sh
+git clone -j8 https://github.com/mavlink/qgroundcontrol.git
+```
 
 ## Build QGroundControl
 
@@ -47,9 +34,9 @@ We support Linux builds using a container found on the source tree of the reposi
 ### Native Builds
 
 _QGroundControl_ builds are supported for macOS, Linux, Windows, and Android. Creating a version of QGC for iOS is theoretically possible but is no longer supported as a standard build.
-_QGroundControl_ uses [Qt](http://www.qt.io) as its cross-platform support library. 
+_QGroundControl_ uses [Qt](http://www.qt.io) as its cross-platform support library.
 
-The required version of Qt is {{ $frontmatter.qt_version }} **(only)**. 
+The required version of Qt is {{ $frontmatter.qt_version }} **(only)**.
 
   ::: warning
   **Do not use any other version of Qt!**
@@ -68,31 +55,31 @@ To install Qt:
 1. Download and run the [Qt Online Installer](https://www.qt.io/download-qt-installer-oss)
    - **Ubuntu:**
      - Set the downloaded file to executable using: `chmod +x`.
-     - You may also need to install libxcb-cursor0
+     - It may also be necessary to install _libxcb-cursor0_.
 
-1. On the _Installation Folder_ page select "Custom Installation"    
+1. On the _Installation Folder_ page select "Custom Installation"
 
 1. On the _Select Components_ page:
 
-   - I you don't see _Qt {{ $frontmatter.qt_version }}_ listed check the _Archive_ checkbox and click _Filter_.
+- I you don't see _Qt {{ $frontmatter.qt_version }}_ listed check the _Archive_ checkbox and click _Filter_.
 - Under Qt -> _Qt {{ $frontmatter.qt_version }}_ select:
-   - **Windows**: MSVC 2022 _arch_ - where _arch_ is the architecture of your machine
-   - **Mac**: Desktop
-   - **Linux**: Desktop gcc 64-bit
-   - **Android**: Android
+  - **Windows**: MSVC 2022 \<_arch_\> - where \<_arch_\> is the architecture of your machine
+  - **Mac**: Desktop
+  - **Linux**: Desktop gcc 64-bit
+  - **Android**: Android
 - Select all _Additional Libraries_
 - Deselect QT Design Studio
 
 1. Install Additional Packages (Platform Specific)
 
-   - **Ubuntu:** `sudo bash ./qgroundcontrol/tools/setup/install-dependencies-debian.sh`
+   - **Ubuntu:** `python3 ./qgroundcontrol/tools/setup/install_dependencies --platform debian`
    - **Fedora:** `sudo dnf install speech-dispatcher SDL2-devel SDL2 systemd-devel patchelf`
    - **Arch Linux:** `pacman -Sy speech-dispatcher patchelf`
-   - **Mac** `sh qgroundcontrol/tools/setup/install-dependencies-osx.sh`
-   - **Windows** `qgroundcontrol/tools/setup/install-depedencies-windows.ps1`
-   - **Android** Installing dependencies for android is quite involved. You are better off using Qt documentation for android setup instructions. Search for "Qt 6.10 android" on the internet to find the correct "Gettting Started with Qt for Android" page. Read it full and carefully! An example of what you are looking for is [here](https://doc.qt.io/qt-6/android-getting-started.html).
+   - **Mac:** `python3 ./qgroundcontrol/tools/setup/install_dependencies --platform macos`
+   - **Windows:** `python3 ./qgroundcontrol/tools/setup/install_dependencies --platform windows`
+   - **Android:** Installing dependencies for android is quite involved. You are better off using Qt documentation for android setup instructions. Read [Qt 6 for Android](https://doc.qt.io/qt-6/android.html) carefully to the extend. Continue with [Gettting Started with Qt 6 for Android](https://doc.qt.io/qt-6/android-getting-started.html).
 
-1. Install Optional/OS-Specific Functionality
+1. Install OS-Specific Functionalities
 
    ::: info
    Optional features that are dependent on the operating system and user-installed libraries are linked/described below.
@@ -100,34 +87,34 @@ To install Qt:
    :::
 
    - **Video Streaming/Gstreamer:** - see [Video Streaming](https://github.com/mavlink/qgroundcontrol/blob/master/src/VideoManager/VideoReceiver/GStreamer/README.md)
-
+   - **Scripting Install:** - to build the installation file at Windows, install [NSIS](https://nsis.sourceforge.io/Download).
 
 #### Install Visual Studio (Windows Only) {#vs}
 
 Install [Visual Studio 2022 Community Edition](https://visualstudio.microsoft.com/downloads/).
 
-When installing, select _Desktop development with C++_ as shown:
+When installing, select _Desktop development with C++_.
 
-![Visual Studio 2019 - Select Desktop Environment with C++](../../../assets/dev_getting_started/visual_studio_select_features.png)
-
-::: info
-Visual Studio is ONLY used to get the compiler. Building _QGroundControl_ is done using [Qt Creator](#qt-creator) or [cmake](#cmake) directly as outlined below.
-:::
+   ::: info
+   Visual Studio is ONLY used to get the compiler. Building _QGroundControl_ is done using [Qt Creator](#qt-creator) or [cmake](#cmake) directly as outlined below.
+   :::
 
 #### Building using Qt Creator {#qt-creator}
 
 1. Launch _Qt Creator_, select Open Project and select the **CMakeLists.txt** file.
 1. On the _Configure Project_ page it should default to the version of Qt you just installed using the instruction above. If not select that kit from the list and click _Configure Project_.
 
-1. Build using the "hammer" (or "play") icons or the menus:
+   :::tip
+   Don't forget to check boxes in case you want to build a Release instead of Debug, or check the other types. To create the installation file go to the "Deploy Settings" Tab, click in the menu button "Add Deploy Step", select "CMake Install" and as argument you must set at least `--config Release`.
+   :::
 
-   ![QtCreator Build Button](../../../assets/dev_getting_started/qt_creator_build_qgc.png)
+1. Build using the "hammer" icon. After that, in order to deploy the build, use the "play" icon. Or use the menu Build on top for a detailed alternative.
 
 #### Build using CMake on CLI {#cmake}
 
 Example commands to build a default QGC and run it afterwards:
 
-1. Make sure you cloned the repository and updated the submodules before, see chapter _Source Code_ above and switch into the repository folder:
+1. Make sure you cloned the repository before, see chapter _Source Code_ above and switch into the repository folder:
 
    ```sh
    cd qgroundcontrol
@@ -136,13 +123,13 @@ Example commands to build a default QGC and run it afterwards:
 1. Configure:
 
    ```sh
-   ~/Qt/{{ $frontmatter.qt_version }}/gcc_64/bin/qt-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+   ~/Qt/{{ qt_version }}/gcc_64/bin/qt-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
    ```
 
-   Change the directory for qt-cmake to match your install location for Qt and the kit you want to use.
-   
+   Change the directory for `qt-cmake` to match your install location for Qt and the kit you want to use.
+
    **Mac**: To Sign/Notarize/Staple the QGC app bundle, add `-DQGC_MACOS_SIGN_WITH_IDENTITY=ON` to the configure command line. During the `install` phase the following environment variables will need to be available:
-   
+
    * `QGC_MACOS_SIGNING_IDENTITY` - Signing identity for your Developer ID certificate which must be in the keychain
    * `QGC_MACOS_NOTARIZATION_USERNAME` - Username for your Apple Developer Account
    * `QGC_MACOS_NOTARIZATION_PASSWORD` - App specific password for Notarization from your Apple Developer Account

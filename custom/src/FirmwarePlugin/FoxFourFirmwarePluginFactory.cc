@@ -32,7 +32,7 @@ QList<QGCMAVLink::VehicleClass_t> FoxFourFirmwarePluginFactory::supportedVehicle
     return vehicleClasses;
 }
 
-FirmwarePlugin *FoxFourFirmwarePluginFactory::firmwarePluginForAutopilot(MAV_AUTOPILOT autopilotType, MAV_TYPE vehicleType)
+FirmwarePlugin *FoxFourFirmwarePluginFactory::firmwarePluginForAutopilot(MAV_AUTOPILOT autopilotType, MAV_TYPE /*vehicleType*/)
 {
     // For now F4 only supported ArduPilot
 

@@ -1,14 +1,6 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "ADSBVehicleManager.h"
-#include "QGCApplication.h"
+#include "MAVLinkLib.h"
+#include "AppMessages.h"
 #include "SettingsManager.h"
 #include "ADSBVehicleManagerSettings.h"
 #include "ADSBTCPLink.h"
@@ -215,5 +207,5 @@ void ADSBVehicleManager::_linkError(const QString &errorMsg, bool stopped)
         _adsbSettings->adsbServerConnectEnabled()->setRawValue(false);
     }
 
-    qgcApp()->showAppMessage(msg);
+    QGC::showAppMessage(msg);
 }

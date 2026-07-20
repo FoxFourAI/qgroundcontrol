@@ -1,24 +1,17 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
-#include <QtCore/QLoggingCategory>
 #include <QtQmlIntegration/QtQmlIntegration>
 
+#include <memory>
+
 #include "LinkConfiguration.h"
+#include "MAVLinkMessageType.h"
 
 class LinkManager;
+class SigningController;
 
-Q_DECLARE_LOGGING_CATEGORY(LinkInterfaceLog)
-
-/// The link interface defines the interface for all links used to communicate with the ground station application.
+/// \brief The link interface defines the interface for all links used to communicate with the ground station application.
+///
 class LinkInterface : public QObject
 {
     Q_OBJECT
@@ -42,10 +35,16 @@ public:
     bool decodedFirstMavlinkPacket() const { return _decodedFirstMavlinkPacket; }
     void setDecodedFirstMavlinkPacket(bool decodedFirstMavlinkPacket) { _decodedFirstMavlinkPacket = decodedFirstMavlinkPacket; }
     void writeBytesThreadSafe(const char *bytes, int length);
+    /// Single message-level send chokepoint: re-signs (if signing is active), serializes, then writes. All
+    /// outbound mavlink_message_t sends must route through here so signing can't be bypassed.
+    void sendMessageThreadSafe(mavlink_message_t &message);
     void addVehicleReference() { ++_vehicleReferenceCount; }
     void removeVehicleReference();
-    bool initMavlinkSigning();
-    void setSigningSignatureFailure(bool failure);
+    void reportMavlinkV1Traffic();
+
+    /// Per-link signing state and confirmation state machine. Non-null after channel allocation.
+    SigningController* signing() { return _signingController.get(); }
+    const SigningController* signing() const { return _signingController.get(); }
 
 signals:
     void bytesReceived(LinkInterface *link, const QByteArray &data);
@@ -79,7 +78,10 @@ private:
     uint8_t _mavlinkChannel = std::numeric_limits<uint8_t>::max();
     bool _decodedFirstMavlinkPacket = false;
     int _vehicleReferenceCount = 0;
-    bool _signingSignatureFailure = false;
+    bool _mavlinkV1TrafficReported = false;
+    /// Must `reset()` in `_freeMavlinkChannel` before LinkManager frees the channel so the
+    /// controller can flush the final timestamp.
+    std::unique_ptr<SigningController> _signingController;
 };
 
 typedef std::shared_ptr<LinkInterface> SharedLinkInterfacePtr;

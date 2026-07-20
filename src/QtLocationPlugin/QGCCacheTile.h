@@ -1,12 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
 #include <QtCore/QByteArray>
@@ -27,11 +18,11 @@ struct QGCCacheTile
         , hash(hash_)
     {}
 
-    const quint64 tileSet = 0;
-    const QString hash;
-    const QByteArray img;
-    const QString format;
-    const QString type;
+    quint64 tileSet;
+    QString hash;
+    QByteArray img;
+    QString format;
+    QString type;
 };
 Q_DECLARE_METATYPE(QGCCacheTile)
 Q_DECLARE_METATYPE(QGCCacheTile*)

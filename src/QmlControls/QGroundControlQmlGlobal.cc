@@ -1,15 +1,5 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "QGroundControlQmlGlobal.h"
 
-#include "QGCApplication.h"
 #include "QGCCorePlugin.h"
 #include "LinkManager.h"
 #include "MAVLinkProtocol.h"
@@ -20,10 +10,13 @@
 #include "PositionManager.h"
 #include "QGCMapEngineManager.h"
 #include "ADSBVehicleManager.h"
+#include "AudioOutput.h"
+#include "NTRIPManager.h"
+#include "MAVLinkSigningKeys.h"
 #include "MissionCommandTree.h"
 #include "VideoManager.h"
 #include "MultiVehicleManager.h"
-#include "QGCLoggingCategory.h"
+#include "LoggingCategoryModel.h"
 #ifndef QGC_NO_SERIAL_LINK
 #include "GPSManager.h"
 #include "GPSRtk.h"
@@ -31,15 +24,13 @@
 #ifdef QT_DEBUG
 #include "MockLink.h"
 #endif
-#ifndef QGC_AIRLINK_DISABLED
-#include "AirLinkManager.h"
-#endif
-#ifdef QGC_UTM_ADAPTER
-#include "UTMSPManager.h"
-#endif
 
-#include <QtCore/QSettings>
 #include <QtCore/QLineF>
+#include <QtCore/QSettings>
+#include <QtGui/QClipboard>
+#include <QtGui/QGuiApplication>
+
+#include "QGCLoggingCategory.h"
 
 QGC_LOGGING_CATEGORY(GuidedActionsControllerLog, "QMLControls.GuidedActionsController")
 
@@ -50,8 +41,10 @@ QGroundControlQmlGlobal::QGroundControlQmlGlobal(QObject *parent)
     : QObject(parent)
     , _mapEngineManager(QGCMapEngineManager::instance())
     , _adsbVehicleManager(ADSBVehicleManager::instance())
+    , _ntripManager(NTRIPManager::instance())
     , _qgcPositionManager(QGCPositionManager::instance())
     , _missionCommandTree(MissionCommandTree::instance())
+    , _mavlinkSigningKeys(MAVLinkSigningKeys::instance())
     , _videoManager(VideoManager::instance())
     , _linkManager(LinkManager::instance())
     , _multiVehicleManager(MultiVehicleManager::instance())
@@ -60,12 +53,6 @@ QGroundControlQmlGlobal::QGroundControlQmlGlobal(QObject *parent)
     , _globalPalette(new QGCPalette(this))
 #ifndef QGC_NO_SERIAL_LINK
     , _gpsRtkFactGroup(GPSManager::instance()->gpsRtk()->gpsRtkFactGroup())
-#endif
-#ifndef QGC_AIRLINK_DISABLED
-    , _airlinkManager(AirLinkManager::instance())
-#endif
-#ifdef QGC_UTM_ADAPTER
-    , _utmspManager(UTMSPManager::instance())
 #endif
 {
     // We clear the parent on this object since we run into shutdown problems caused by hybrid qml app. Instead we let it leak on shutdown.
@@ -81,11 +68,11 @@ QGroundControlQmlGlobal::QGroundControlQmlGlobal(QObject *parent)
     _flightMapPositionSettledTimer.setInterval(1000);
     (void) connect(&_flightMapPositionSettledTimer, &QTimer::timeout, this, []() {
         // When they settle, save flightMapPosition and Zoom to the config file
-        QSettings settings;
-        settings.beginGroup(_flightMapPositionSettingsGroup);
-        settings.setValue(_flightMapPositionLatitudeSettingsKey, _coord.latitude());
-        settings.setValue(_flightMapPositionLongitudeSettingsKey, _coord.longitude());
-        settings.setValue(_flightMapZoomSettingsKey, _zoom);
+        QSettings settingsInner;
+        settingsInner.beginGroup(_flightMapPositionSettingsGroup);
+        settingsInner.setValue(_flightMapPositionLatitudeSettingsKey, _coord.latitude());
+        settingsInner.setValue(_flightMapPositionLongitudeSettingsKey, _coord.longitude());
+        settingsInner.setValue(_flightMapZoomSettingsKey, _zoom);
     });
     connect(this, &QGroundControlQmlGlobal::flightMapPositionChanged, this, [this](QGeoCoordinate){
         if (!_flightMapPositionSettledTimer.isActive()) {
@@ -131,57 +118,69 @@ bool QGroundControlQmlGlobal::loadBoolGlobalSetting (const QString& key, bool de
     return settings.value(key, defaultValue).toBool();
 }
 
-void QGroundControlQmlGlobal::startPX4MockLink(bool sendStatusText)
+void QGroundControlQmlGlobal::startPX4MockLink(bool sendStatusText, bool enableCamera, bool enableGimbal)
 {
 #ifdef QT_DEBUG
-    MockLink::startPX4MockLink(sendStatusText);
+    MockLink::startPX4MockLink(sendStatusText, enableCamera, enableGimbal);
 #else
     Q_UNUSED(sendStatusText);
+    Q_UNUSED(enableCamera);
+    Q_UNUSED(enableGimbal);
 #endif
 }
 
-void QGroundControlQmlGlobal::startGenericMockLink(bool sendStatusText)
+void QGroundControlQmlGlobal::startGenericMockLink(bool sendStatusText, bool enableCamera, bool enableGimbal)
 {
 #ifdef QT_DEBUG
-    MockLink::startGenericMockLink(sendStatusText);
+    MockLink::startGenericMockLink(sendStatusText, enableCamera, enableGimbal);
 #else
     Q_UNUSED(sendStatusText);
+    Q_UNUSED(enableCamera);
+    Q_UNUSED(enableGimbal);
 #endif
 }
 
-void QGroundControlQmlGlobal::startAPMArduCopterMockLink(bool sendStatusText)
+void QGroundControlQmlGlobal::startAPMArduCopterMockLink(bool sendStatusText, bool enableCamera, bool enableGimbal)
 {
 #ifdef QT_DEBUG
-    MockLink::startAPMArduCopterMockLink(sendStatusText);
+    MockLink::startAPMArduCopterMockLink(sendStatusText, enableCamera, enableGimbal);
 #else
     Q_UNUSED(sendStatusText);
+    Q_UNUSED(enableCamera);
+    Q_UNUSED(enableGimbal);
 #endif
 }
 
-void QGroundControlQmlGlobal::startAPMArduPlaneMockLink(bool sendStatusText)
+void QGroundControlQmlGlobal::startAPMArduPlaneMockLink(bool sendStatusText, bool enableCamera, bool enableGimbal)
 {
 #ifdef QT_DEBUG
-    MockLink::startAPMArduPlaneMockLink(sendStatusText);
+    MockLink::startAPMArduPlaneMockLink(sendStatusText, enableCamera, enableGimbal);
 #else
     Q_UNUSED(sendStatusText);
+    Q_UNUSED(enableCamera);
+    Q_UNUSED(enableGimbal);
 #endif
 }
 
-void QGroundControlQmlGlobal::startAPMArduSubMockLink(bool sendStatusText)
+void QGroundControlQmlGlobal::startAPMArduSubMockLink(bool sendStatusText, bool enableCamera, bool enableGimbal)
 {
 #ifdef QT_DEBUG
-    MockLink::startAPMArduSubMockLink(sendStatusText);
+    MockLink::startAPMArduSubMockLink(sendStatusText, enableCamera, enableGimbal);
 #else
     Q_UNUSED(sendStatusText);
+    Q_UNUSED(enableCamera);
+    Q_UNUSED(enableGimbal);
 #endif
 }
 
-void QGroundControlQmlGlobal::startAPMArduRoverMockLink(bool sendStatusText)
+void QGroundControlQmlGlobal::startAPMArduRoverMockLink(bool sendStatusText, bool enableCamera, bool enableGimbal)
 {
 #ifdef QT_DEBUG
-    MockLink::startAPMArduRoverMockLink(sendStatusText);
+    MockLink::startAPMArduRoverMockLink(sendStatusText, enableCamera, enableGimbal);
 #else
     Q_UNUSED(sendStatusText);
+    Q_UNUSED(enableCamera);
+    Q_UNUSED(enableGimbal);
 #endif
 }
 
@@ -266,48 +265,67 @@ QString QGroundControlQmlGlobal::qgcVersion(void)
     return versionStr;
 }
 
-QString QGroundControlQmlGlobal::altitudeModeExtraUnits(AltMode altMode)
+QString QGroundControlQmlGlobal::altitudeFrameExtraUnits(AltitudeFrame altFrame)
 {
-    switch (altMode) {
-    case AltitudeModeNone:
+    switch (altFrame) {
+    case AltitudeFrameNone:
         return QString();
-    case AltitudeModeRelative:
-        // Showing (Rel) all the time ends up being too noisy
-        return QString();
-    case AltitudeModeAbsolute:
-        return tr("(AMSL)");
-    case AltitudeModeCalcAboveTerrain:
-        return tr("(CalcT)");
-    case AltitudeModeTerrainFrame:
-        return tr("(TerrF)");
-    case AltitudeModeMixed:
-        qWarning() << "Internal Error: QGroundControlQmlGlobal::altitudeModeExtraUnits called with altMode == AltitudeModeMixed";
-        return QString();
+    case AltitudeFrameRelative:
+        return tr("Rel");
+    case AltitudeFrameAbsolute:
+        return tr("AMSL");
+    case AltitudeFrameCalcAboveTerrain:
+        return tr("AGLC");
+    case AltitudeFrameTerrain:
+        return tr("AGL");
+    case AltitudeFrameMixed:
+        return tr("Mixed");
     }
 
     // Should never get here but makes some compilers happy
     return QString();
 }
 
-QString QGroundControlQmlGlobal::altitudeModeShortDescription(AltMode altMode)
+QString QGroundControlQmlGlobal::altitudeFrameShortDescription(AltitudeFrame altFrame)
 {
-    switch (altMode) {
-    case AltitudeModeNone:
+    switch (altFrame) {
+    case AltitudeFrameNone:
         return QString();
-    case AltitudeModeRelative:
-        return tr("Relative To Launch");
-    case AltitudeModeAbsolute:
-        return tr("AMSL");
-    case AltitudeModeCalcAboveTerrain:
-        return tr("Calc Above Terrain");
-    case AltitudeModeTerrainFrame:
-        return tr("Terrain Frame");
-    case AltitudeModeMixed:
-        return tr("Mixed Modes");
+    case AltitudeFrameRelative:
+        return tr("Relative (%1)").arg(altitudeFrameExtraUnits(altFrame));
+    case AltitudeFrameAbsolute:
+        return tr("Absolute (%1)").arg(altitudeFrameExtraUnits(altFrame));
+    case AltitudeFrameCalcAboveTerrain:
+        return tr("Above Terrain Calced (%1)").arg(altitudeFrameExtraUnits(altFrame));
+    case AltitudeFrameTerrain:
+        return tr("Above Terrain (%1)").arg(altitudeFrameExtraUnits(altFrame));
+    case AltitudeFrameMixed:
+        return tr("Mixed");
     }
 
     // Should never get here but makes some compilers happy
     return QString();
+}
+
+void QGroundControlQmlGlobal::showMessageDialog(
+    QObject* owner,
+    const QString& title,
+    const QString& text,
+    int buttons,
+    QJSValue acceptFunction,
+    QJSValue closeFunction)
+{
+    emit showMessageDialogRequested(owner, title, text, buttons, acceptFunction, closeFunction);
+}
+
+void QGroundControlQmlGlobal::testAudioOutput()
+{
+    AudioOutput::instance()->testAudioOutput();
+}
+
+void QGroundControlQmlGlobal::copyToClipboard(const QString& text)
+{
+    QGuiApplication::clipboard()->setText(text);
 }
 
 QString QGroundControlQmlGlobal::elevationProviderName()
@@ -325,11 +343,6 @@ QString QGroundControlQmlGlobal::parameterFileExtension() const
     return AppSettings::parameterFileExtension;
 }
 
-QString QGroundControlQmlGlobal::missionFileExtension() const
-{
-    return AppSettings::missionFileExtension;
-}
-
 QString QGroundControlQmlGlobal::telemetryFileExtension() const
 {
     return AppSettings::telemetryFileExtension;
@@ -340,37 +353,4 @@ QString QGroundControlQmlGlobal::appName()
     return QCoreApplication::applicationName();
 }
 
-void QGroundControlQmlGlobal::deleteAllSettingsNextBoot()
-{
-    QGCApplication::deleteAllSettingsNextBoot();
-}
 
-void QGroundControlQmlGlobal::clearDeleteAllSettingsNextBoot()
-{
-    QGCApplication::clearDeleteAllSettingsNextBoot();
-}
-
-QmlObjectListModel *QGroundControlQmlGlobal::treeLoggingCategoriesModel()
-{
-    return QGCLoggingCategoryManager::instance()->treeCategoryModel();
-}
-
-QmlObjectListModel *QGroundControlQmlGlobal::flatLoggingCategoriesModel()
-{
-    return QGCLoggingCategoryManager::instance()->flatCategoryModel();
-}
-
-void QGroundControlQmlGlobal::setCategoryLoggingOn(const QString &category, bool enable)
-{
-    QGCLoggingCategoryManager::instance()->setCategoryLoggingOn(category, enable);
-}
-
-bool QGroundControlQmlGlobal::categoryLoggingOn(const QString &category)
-{
-    return QGCLoggingCategoryManager::categoryLoggingOn(category);
-}
-
-void QGroundControlQmlGlobal::disableAllLoggingCategories()
-{
-    QGCLoggingCategoryManager::instance()->disableAllCategories();
-}

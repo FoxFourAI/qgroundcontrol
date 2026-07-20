@@ -1,63 +1,15 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QQueue>
 #include <QtCore/QString>
 
-#include "QGCCacheTile.h"
-#include "QGCCachedTileSet.h"
+#include "QGCMapTaskBase.h"
+#include "QGCTileCacheTypes.h"
 #include "QGCTile.h"
 
-class QGCMapTask : public QObject
-{
-    Q_OBJECT
-
-public:
-    enum class TaskType {
-        taskInit,
-        taskCacheTile,
-        taskFetchTile,
-        taskFetchTileSets,
-        taskCreateTileSet,
-        taskGetTileDownloadList,
-        taskUpdateTileDownloadState,
-        taskDeleteTileSet,
-        taskRenameTileSet,
-        taskPruneCache,
-        taskReset,
-        taskExport,
-        taskImport
-    };
-    Q_ENUM(TaskType);
-
-    explicit QGCMapTask(TaskType type, QObject *parent = nullptr)
-        : QObject(parent)
-        , m_type(type)
-    {}
-    virtual ~QGCMapTask() = default;
-
-    TaskType type() const { return m_type; }
-
-    void setError(const QString &errorString = QString())
-    {
-        emit error(m_type, errorString);
-    }
-
-signals:
-    void error(QGCMapTask::TaskType type, const QString &errorString);
-
-private:
-    const TaskType m_type = TaskType::taskInit;
-};
+struct QGCCacheTile;
+class QGCCachedTileSet;
 
 //-----------------------------------------------------------------------------
 
@@ -92,12 +44,7 @@ public:
         , m_tileSet(tileSet)
         , m_saved(false)
     {}
-    ~QGCCreateTileSetTask()
-    {
-        if (!m_saved) {
-            delete m_tileSet;
-        }
-    }
+    ~QGCCreateTileSetTask();
 
     QGCCachedTileSet *tileSet() { return m_tileSet; }
 
@@ -153,10 +100,7 @@ public:
         : QGCMapTask(TaskType::taskCacheTile, parent)
         , m_tile(tile)
     {}
-    ~QGCSaveTileTask()
-    {
-        delete m_tile;
-    }
+    ~QGCSaveTileTask();
 
     const QGCCacheTile *tile() const { return m_tile; }
     QGCCacheTile *tile() { return m_tile; }
@@ -324,14 +268,14 @@ class QGCExportTileTask : public QGCMapTask
     Q_OBJECT
 
 public:
-    explicit QGCExportTileTask(const QList<QGCCachedTileSet*> &sets, const QString &path, QObject *parent = nullptr)
+    explicit QGCExportTileTask(const QList<TileSetRecord> &sets, const QString &path, QObject *parent = nullptr)
         : QGCMapTask(TaskType::taskExport, parent)
         , m_sets(sets)
         , m_path(path)
     {}
     ~QGCExportTileTask() = default;
 
-    QList<QGCCachedTileSet*> sets() const { return m_sets; }
+    const QList<TileSetRecord> &sets() const { return m_sets; }
     QString path() const { return m_path; }
 
     void setExportCompleted()
@@ -349,7 +293,7 @@ signals:
     void actionProgress(int percentage);
 
 private:
-    const QList<QGCCachedTileSet*> m_sets;
+    const QList<TileSetRecord> m_sets;
     const QString m_path;
 };
 

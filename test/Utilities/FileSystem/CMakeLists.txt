@@ -5,8 +5,22 @@
 
 target_sources(${CMAKE_PROJECT_NAME}
     PRIVATE
+        QGCArchiveWatcherTest.cc
+        QGCArchiveWatcherTest.h
+        QGCCachedFileDownloadTest.cc
+        QGCCachedFileDownloadTest.h
         QGCFileDownloadTest.cc
         QGCFileDownloadTest.h
+        QGCFileHelperTest.cc
+        QGCFileHelperTest.h
+        QGCFileWatcherTest.cc
+        QGCFileWatcherTest.h
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_qgc_test(QGCArchiveWatcherTest LABELS Unit Utilities RESOURCE_LOCK TempFiles)
+add_qgc_test(QGCCachedFileDownloadTest LABELS Integration Network Utilities)
+add_qgc_test(QGCFileDownloadTest LABELS Integration Network Utilities)
+add_qgc_test(QGCFileHelperTest LABELS Unit Utilities RESOURCE_LOCK TempFiles)
+add_qgc_test(QGCFileWatcherTest LABELS Unit Utilities)

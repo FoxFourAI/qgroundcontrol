@@ -1,14 +1,6 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "LogReplayLink.h"
 #include "LinkManager.h"
+#include "MAVLinkLib.h"
 #include "MAVLinkProtocol.h"
 #include "MultiVehicleManager.h"
 #include "QGCLoggingCategory.h"
@@ -387,7 +379,7 @@ quint64 LogReplayWorker::_findLastTimestamp()
 
     quint64 lastTimestamp = 0;
 
-    while (_logFile.bytesAvailable() > kTimestamp) {
+    while (_logFile.bytesAvailable() > static_cast<qint64>(kTimestamp)) {
         lastTimestamp = _parseTimestamp(_logFile.read(kTimestamp));
 
         bool endOfMessage = false;

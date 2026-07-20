@@ -1,12 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "GeoFenceManager.h"
 #include "Vehicle.h"
 #include "QmlObjectListModel.h"
@@ -193,5 +184,5 @@ void GeoFenceManager::_planManagerLoadComplete(bool removeAllRequested)
 
 bool GeoFenceManager::supported(void) const
 {
-    return (_vehicle->capabilityBits() & MAV_PROTOCOL_CAPABILITY_MISSION_FENCE) && (_vehicle->maxProtoVersion() >= 200);
+    return _vehicle->capabilityBits() & MAV_PROTOCOL_CAPABILITY_MISSION_FENCE;
 }

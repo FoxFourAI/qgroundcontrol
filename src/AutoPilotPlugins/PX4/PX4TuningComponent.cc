@@ -1,13 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
-
 #include "PX4TuningComponent.h"
 #include "QGCMAVLink.h"
 #include "Vehicle.h"
@@ -25,7 +15,7 @@ QString PX4TuningComponent::name(void) const
 
 QString PX4TuningComponent::description(void) const
 {
-    return tr("Tuning Setup is used to tune the flight controllers.");
+    return tr("Configure rate, attitude, and velocity controller gains.");
 }
 
 QString PX4TuningComponent::iconResource(void) const

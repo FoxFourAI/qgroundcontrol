@@ -1,12 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
 #include <QtCore/QObject>
@@ -119,7 +110,6 @@ public:
     DEFINE_QGC_COLOR(windowShade,                   setWindowShade)
     DEFINE_QGC_COLOR(windowShadeDark,               setWindowShadeDark)
     DEFINE_QGC_COLOR(text,                          setText)
-    DEFINE_QGC_COLOR(windowTransparentText,         setWindowTransparentText)
     DEFINE_QGC_COLOR(warningText,                   setWarningText)
     DEFINE_QGC_COLOR(button,                        setButton)
     DEFINE_QGC_COLOR(buttonBorder,                  setButtonBorder)
@@ -156,16 +146,12 @@ public:
     DEFINE_QGC_COLOR(surveyPolygonInterior,         setSurveyPolygonInterior)
     DEFINE_QGC_COLOR(surveyPolygonTerrainCollision, setSurveyPolygonTerrainCollision)
     DEFINE_QGC_COLOR(toolbarBackground,             setToolbarBackground)
-    DEFINE_QGC_COLOR(toolbarDivider,                setToolbarDivider)
     DEFINE_QGC_COLOR(toolStripFGColor,              setToolStripFGColor)
     DEFINE_QGC_COLOR(toolStripHoverColor,           setToolStripHoverColor)
     DEFINE_QGC_COLOR(groupBorder,                   setGroupBorder)
-
-#ifdef QGC_UTM_ADAPTER
-    DEFINE_QGC_COLOR(switchUTMSP,                    setSwitchUTMSP)
-    DEFINE_QGC_COLOR(sliderUTMSP,                    setSliderUTMSP)
-    DEFINE_QGC_COLOR(successNotifyUTMSP,             setSuccessNotifyUTMSP)
-#endif
+    DEFINE_QGC_COLOR(modifiedParamValue,            setModifiedParamValue)
+    DEFINE_QGC_COLOR(photoCaptureButtonColor,       setPhotoCaptureButtonColor)
+    DEFINE_QGC_COLOR(videoCaptureButtonColor,       setVideoCaptureButtonColor)
 
      QGCPalette(QObject* parent = nullptr);
     ~QGCPalette();

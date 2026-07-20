@@ -15,7 +15,10 @@
 #include "QGCCameraManager.h"
 #include "QGCCorePlugin.h"
 #include "Vehicle.h"
+#include "QGCFormat.h"
 #include "f4_autonomy/f4_autonomy.h"
+
+QGC_LOGGING_CATEGORY(FoxFourArduPilotLog,"FoxFour.Ardupilot")
 
 FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent)
     : APMAutoPilotPlugin(vehicle, parent) {
@@ -24,6 +27,7 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent
     _onboardComputersMngr = new OnboardComputersManager(vehicle, this);
     _vioGpsComparer = new VioGpsComparer(vehicle, this);
     _mapMatching = new MapMatching(vehicle,this);
+    _vioTrajectory = new VioTrajectoryPoints(vehicle,this);
     emit mapMatchingCreated();
     auto cameraMgr = vehicle->cameraManager();
     connect(cameraMgr, &QGCCameraManager::currentCameraChanged, this, [this, cameraMgr]() {
@@ -33,7 +37,7 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent
         auto camera = reinterpret_cast<FoxFourCameraControl*>(cameraMgr->currentCameraInstance());
         _cameraConnection = connect(camera, &FoxFourCameraControl::storageCapacityChanged, this,
                                     &FoxFourAutoPilotPlugin::handleStorageCapacityChanged);
-        connect(_vehicle->parameterManager(), &ParameterManager::parametersReadyChanged, this, [=](bool ready) {
+        connect(_vehicle->parameterManager(), &ParameterManager::parametersReadyChanged, this, [this](bool ready) {
             if (!ready) {
                 return;
             }
@@ -43,7 +47,7 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent
                 return;
             }
             auto fact = pm->getParameter(compId, "GUID_FRAME_TYPE");
-            connect(fact, &Fact::rawValueChanged, this, [=](QVariant value) { setIsDropper(value.toInt()); });
+            connect(fact, &Fact::rawValueChanged, this, [this](QVariant value) { setIsDropper(value.toInt()); });
             setIsDropper(fact->rawValue().toInt());
         });
     });
@@ -54,13 +58,14 @@ FoxFourAutoPilotPlugin::~FoxFourAutoPilotPlugin() { delete _onboardComputersMngr
 const QVariantList& FoxFourAutoPilotPlugin::vehicleComponents() {
     if (_components.isEmpty()) {
         _components = APMAutoPilotPlugin::vehicleComponents();
+
     }
     return _components;
 }
 
 void FoxFourAutoPilotPlugin::rebootOnboardComputers() {
     if (!_onboardComputersMngr) {
-        qCWarning(VehicleLog) << "Cannot reboot onboard computers: no manager is present";
+        qCWarning(FoxFourArduPilotLog) << "Cannot reboot onboard computers: no manager is present";
         return;
     }
     qWarning() << "Rebooting onboard computers";
@@ -90,7 +95,8 @@ void FoxFourAutoPilotPlugin::setIsDropper(int type) {
 QString FoxFourAutoPilotPlugin::storageCapacity() { return _storageCapacityStr; }
 
 void FoxFourAutoPilotPlugin::handleStorageCapacityChanged(uint32_t total, uint32_t free) {
+    qDebug() << "storage capacity changed to : "<< free;
     _storageCapacityStr =
-            qgcApp()->bigSizeMBToString(free).split(' ').first() + " / " + qgcApp()->bigSizeMBToString(total);
+            QGC::bigSizeMBToString(free).split(' ').first() + " / " + QGC::bigSizeMBToString(total);
     emit storageCapacityChanged();
 }

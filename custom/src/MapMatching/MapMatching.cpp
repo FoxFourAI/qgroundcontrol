@@ -1,6 +1,6 @@
 #include "MapMatching.h"
 
-#include "FlyViewSettings.h"
+#include "FoxFourSettings.h"
 #include "FoxFourAutoPilotPlugin.h"
 #include "SettingsManager.h"
 #include "Vehicle.h"
@@ -12,7 +12,8 @@ MapMatching::MapMatching(Vehicle* vehicle, QObject* parent) : QObject(parent), _
             _clear();
         }
     });
-    auto settings = SettingsManager::instance()->flyViewSettings();
+    // FOXFOUR_TODO: add parameter
+    auto settings = SettingsManager::instance()->foxFourSettings();
     connect(settings->mapMatchingPointsCnt(), &Fact::rawValueChanged, this,
             [this](const QVariant& value) { _maxWaypoints = value.toInt(); });
     _maxWaypoints = settings->mapMatchingPointsCnt()->rawValue().toInt();

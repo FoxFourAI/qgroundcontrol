@@ -7,8 +7,6 @@ import Qt.labs.platform as Labs
 import QGroundControl
 import QGroundControl.Controls
 
-
-
 /// This control is meant to be a direct replacement for the standard Qml FileDialog control.
 /// It differs for mobile builds which uses a completely custom file picker.
 Item {
@@ -24,11 +22,20 @@ Item {
     signal acceptedForLoad(string file)
     signal acceptedForSave(string file)
     signal rejected
+    signal fileImportedNotify           // Emitted on a successful import so the open dialog can refresh its list.
 
     function openForLoad() {
         _openForLoad = true
-        if (_mobileDlg && folder.length !== 0) {
-            mobileFileOpenDialogComponent.createObject(mainWindow).open()
+        if (QGCFileDialogController.testHookArmed()) {
+            // Unit test shim: bypass the native dialog and produce the armed result
+            var testFile = QGCFileDialogController.takeTestNextFile()
+            if (testFile.length === 0) {
+                _root.rejected()
+            } else {
+                _root.acceptedForLoad(testFile)
+            }
+        } else if (_mobileDlg && folder.length !== 0) {
+            mobileFileOpenDialogFactory.open()
         } else if (selectFolder) {
             fullFolderDialog.open()
         } else {
@@ -39,8 +46,16 @@ Item {
 
     function openForSave() {
         _openForLoad = false
-        if (_mobileDlg && folder.length !== 0) {
-            mobileFileSaveDialogComponent.createObject(mainWindow).open()
+        if (QGCFileDialogController.testHookArmed()) {
+            // Unit test shim: bypass the native dialog and produce the armed result
+            var testFile = QGCFileDialogController.takeTestNextFile()
+            if (testFile.length === 0) {
+                _root.rejected()
+            } else {
+                _root.acceptedForSave(testFile)
+            }
+        } else if (_mobileDlg && folder.length !== 0) {
+            mobileFileSaveDialogFactory.open()
         } else {
             fullFileDialog.fileMode = FileDialog.SaveFile
             fullFileDialog.open()
@@ -56,6 +71,7 @@ Item {
     property bool   _mobileDlg:     QGroundControl.corePlugin.options.useMobileFileDialog
     property var    _rgExtensions
     property string _mobileShortPath
+    property bool   _importPending: false
 
     Component.onCompleted: {
         _setupFileExtensions()
@@ -91,6 +107,21 @@ Item {
 
     QGCPalette { id: qgcPal; colorGroupEnabled: true }
 
+    Connections {
+        target: QGCFileDialogController
+        enabled: Qt.platform.os === "android" && _root._importPending
+
+        function onFileImported() {
+            _root._importPending = false
+            _root.fileImportedNotify()
+        }
+
+        function onImportFailed(errorMessage) {
+            _root._importPending = false
+            QGroundControl.showMessageDialog(_root, qsTr("Import"), errorMessage)
+        }
+    }
+
     FileDialog {
         id:             fullFileDialog
         currentFolder:  "file:///" + _root.folder
@@ -118,6 +149,12 @@ Item {
         onRejected: _root.rejected()
     }
 
+    QGCPopupDialogFactory {
+        id: mobileFileOpenDialogFactory
+
+        dialogComponent: mobileFileOpenDialogComponent
+    }
+
     Component {
         id: mobileFileOpenDialogComponent
 
@@ -125,6 +162,13 @@ Item {
             id:         mobileFileOpenDialog
             title:      _root.title
             buttons:    Dialog.Cancel
+
+            Connections {
+                target: _root
+                function onFileImportedNotify() {
+                    fileRepeater.model = QGCFileDialogController.getFiles(folder, _rgExtensions)
+                }
+            }
 
             Column {
                 id:         fileOpenColumn
@@ -176,8 +220,26 @@ Item {
                     text:       qsTr("No files")
                     visible:    fileRepeater.model.length === 0
                 }
+
+                QGCButton {
+                    anchors.left:   parent.left
+                    anchors.right:  parent.right
+                    text:           qsTr("Import")
+                    visible:        Qt.platform.os === "android"
+
+                    onClicked: {
+                        _root._importPending = true
+                        QGCFileDialogController.importFromNativePicker()
+                    }
+                }
             }
         }
+    }
+
+    QGCPopupDialogFactory {
+        id: mobileFileSaveDialogFactory
+
+        dialogComponent: mobileFileSaveDialogComponent
     }
 
     Component {

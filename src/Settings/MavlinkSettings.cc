@@ -1,15 +1,4 @@
-
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "MavlinkSettings.h"
-#include "LinkManager.h"
 
 DECLARE_SETTINGGROUP(Mavlink, "")
 {
@@ -47,18 +36,4 @@ DECLARE_SETTINGSFACT(MavlinkSettings, forwardMavlinkHostName)
 DECLARE_SETTINGSFACT(MavlinkSettings, forwardMavlinkAPMSupportHostName)
 DECLARE_SETTINGSFACT(MavlinkSettings, sendGCSHeartbeat)
 DECLARE_SETTINGSFACT(MavlinkSettings, gcsMavlinkSystemID)
-DECLARE_SETTINGSFACT(MavlinkSettings, requireMatchingMavlinkVersions)
-
-DECLARE_SETTINGSFACT_NO_FUNC(MavlinkSettings, mavlink2SigningKey)
-{
-    if (!_mavlink2SigningKeyFact) {
-        _mavlink2SigningKeyFact = _createSettingsFact(mavlink2SigningKeyName);
-        connect(_mavlink2SigningKeyFact, &Fact::rawValueChanged, this, &MavlinkSettings::_mavlink2SigningKeyChanged);
-    }
-    return _mavlink2SigningKeyFact;
-}
-
-void MavlinkSettings::_mavlink2SigningKeyChanged(void)
-{
-    LinkManager::instance()->resetMavlinkSigning();
-}
+DECLARE_SETTINGSFACT(MavlinkSettings, noInitialDownloadWhenFlying)

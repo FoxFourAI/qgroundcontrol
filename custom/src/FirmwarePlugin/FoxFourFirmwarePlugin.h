@@ -19,7 +19,7 @@ class FoxFourFirmwarePlugin : public ArduCopterFirmwarePlugin
 public:
 
     AutoPilotPlugin *autopilotPlugin(Vehicle *vehicle) const final;
-    MavlinkCameraControl *createCameraControl(const mavlink_camera_information_t *info, Vehicle *vehicle, int compID, QObject *parent) const;
+    MavlinkCameraControlInterface *createCameraControl(const mavlink_camera_information_t *info, Vehicle *vehicle, int compID, QObject *parent) const;
     const QVariantList &toolIndicators(const Vehicle *vehicle);
 private:
     QVariantList _toolIndicatorList;

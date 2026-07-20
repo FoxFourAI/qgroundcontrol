@@ -6,162 +6,147 @@ import QGroundControl.Controls
 import QGroundControl.FactControls
 
 Item {
-    id:         control
+    id: control
     width: 70
 
-    property real   _margins:           ScreenTools.defaultFontPixelWidth
-    property real   _spacing:           ScreenTools.defaultFontPixelWidth / 2
-    property var    _settingsManager:           QGroundControl.settingsManager
-    property var    _videoSettings:             _settingsManager.videoSettings
-    property var    _flyViewSettings:           _settingsManager.flyViewSettings
-    property var    _appSettings:               _settingsManager.appSettings
-
-
+    property real _margins: ScreenTools.defaultFontPixelWidth
+    property real _spacing: ScreenTools.defaultFontPixelWidth / 2
+    property var _settingsManager: QGroundControl.settingsManager
+    property var _settings: _settingsManager.foxFourSettings
 
     Image {
-        id:foxFourLogo
+        id: foxFourLogo
         anchors.fill: parent
-        source:                 _outdoorPalette ? "/custom/img/FoxFourTextLogo_dark.svg" : "/custom/img/FoxFourTextLogo_light.svg"
-        mipmap:                 true
-        fillMode:               Image.PreserveAspectFit
-        property bool   _outdoorPalette:        qgcPal.globalTheme === QGCPalette.Light
-        QGCMouseArea{
+        source: _outdoorPalette ? "/custom/img/FoxFourTextLogo_dark.svg" : "/custom/img/FoxFourTextLogo_light.svg"
+        mipmap: true
+        fillMode: Image.PreserveAspectFit
+        property bool _outdoorPalette: qgcPal.globalTheme === QGCPalette.Light
+        QGCMouseArea {
             anchors.fill: parent
-            onClicked: mainWindow.showIndicatorDrawer(foxFourControlPanel,foxFourLogo)
+            onClicked: mainWindow.showIndicatorDrawer(foxFourControlPanel,
+                                                      foxFourLogo)
         }
     }
 
-    Component{
+    Component {
         id: foxFourControlPanel
-        ToolIndicatorPage{
+        ToolIndicatorPage {
             showExpand: true
-            contentComponent:controlPanelComponent
-            expandedComponent:extendedComponent
+            contentComponent: controlPanelComponent
+            expandedComponent: extendedComponent
         }
     }
 
-    Component{
+    Component {
         id: extendedComponent
-        SettingsGroupLayout{
+        SettingsGroupLayout {
             spacing: 0
             id: shortcutGroup
             heading: qsTr("Shortcuts")
-            Repeater{
+            Repeater {
                 model: globalShortcuts
-                delegate:LabelledLabel{
-                    label:description
+                delegate: LabelledLabel {
+                    label: description
                     labelText: sequence
                 }
             }
         }
     }
 
-    Component{
+    Component {
         id: controlPanelComponent
 
-        ColumnLayout{
-            id:     mainLayout
+        ColumnLayout {
+            id: mainLayout
             spacing: _spacing
 
-            QGCLabel{
+            QGCLabel {
                 font.pointSize: ScreenTools.largeFontPointSize
                 text: qsTr("FoxFour Configuration")
                 font.bold: true
                 Layout.alignment: Qt.AlignHCenter
             }
 
-            SettingsGroupLayout{
+            SettingsGroupLayout {
                 heading: qsTr("General")
-                FactCheckBoxSlider{
-                    Layout.fillWidth: true
-                    text:               qsTr("Minimal mode")
-                    fact:               _minimalMode
-                    property Fact       _minimalMode: _flyViewSettings.minimalMode
-                    ToolTip{
-                        visible:parent.hovered
-                        text: qsTr("Will pull ONLY mandatory parameters when connecting to the vehicle.")
-                    }
-                }
+                // FactCheckBoxSlider {
+                //     Layout.fillWidth: true
+                //     fact: control._settings.minimalMode
+                //     text: fact.label
+
+                //     ToolTip {
+                //         visible: parent.hovered
+                //         text: parent.fact.shortDescription
+                //     }
+                // }
 
                 LabelledFactTextField {
-                    Layout.fillWidth:   true
-                    label:               qsTr("TRACKING_STATUS rate")
-                    fact:               _flyViewSettings.trackingRate
-                    textField.numericValuesOnly: true
-                    textFieldShowUnits:          true
-                    textFieldUnitsLabel:         qsTr("Hz")
-                    visible:            true
-                    ToolTip{
-                        visible:parent.hovered
-                        text: qsTr("The interval of the TRACKING_STATUS message, when tracking an object.")
-                    }
-                }
-
-                FactCheckBoxSlider {
-                    text:       fact.shortDescription
                     Layout.fillWidth: true
-                    fact:       _appSettings.cacheParameters
-                    visible:    fact.visible
-                    ToolTip{
-                        visible: parent.hovered
-                        text: qsTr("Cache vehicle parameters using UID of the FCU.")
-                    }
+                    label: fact.label
+                    fact: control._settings.trackingRate
+                    textField.numericValuesOnly: true
+                    textFieldShowUnits: true
+                    textFieldUnitsLabel: qsTr("Hz")
+                    visible: true
                 }
+                // FactCheckBoxSlider {
+                //     text: fact.label
+                //     Layout.fillWidth: true
+                //     fact: control._settings.cacheVehicleParameters
+
+                //     ToolTip {
+                //         visible: parent.hovered
+                //         text: parent.fact.shortDescription
+                //     }
+                // }
             }
 
-            SettingsGroupLayout{
+            SettingsGroupLayout {
                 heading: qsTr("Video")
 
-                FactCheckBoxSlider{
+                FactCheckBoxSlider {
                     Layout.fillWidth: true
-                    id: autoConfigure
-                    text: "Auto-configure video stream"
-                    // visible: _videoAutoStreamConfig
-                    fact: _videoSettings.autoConfigure
-                    ToolTip{
-                        visible:parent.hovered
-                        text: qsTr("QGC will detect the stream configurations and apply changes automatically (stream should support this feature)")
+                    text: fact.label
+                    fact: control._settings.autoConfigureStream
+
+                    ToolTip {
+                        visible: parent.hovered
+                        text: parent.fact.shortDescription
                     }
                 }
             }
 
-            SettingsGroupLayout{
+            SettingsGroupLayout {
                 heading: qsTr("Map")
 
                 FactCheckBoxSlider {
-                    Layout.fillWidth:   true
-                    text:               qsTr("Show GPS_RAW_INT trajectory")
-                    fact:               _showGPSrawTrajectory
-                    visible:            _showGPSrawTrajectory.visible
-
-                    property Fact   _showGPSrawTrajectory: _flyViewSettings.showGPSrawTrajectory
-                    ToolTip{
-                        visible:parent.hovered
-                        text: qsTr("Draw GPS path on the map.")
-                    }
+                    Layout.fillWidth: true
+                    text: fact.label
+                    fact: control._settings.showGPSTrajectory
                 }
 
-                LabelledFactTextField{
-                    Layout.fillWidth:  true
-                    label:              qsTr("Map-matching visualization history")
-                    fact:               _flyViewSettings.mapMatchingPointsCnt
+                LabelledFactTextField {
+                    Layout.fillWidth: true
+                    label: fact.label
+                    fact: control._settings.mapMatchingPointsCnt
                     textField.numericValuesOnly: true
                 }
             }
 
-            SettingsGroupLayout{
+            SettingsGroupLayout {
                 heading: qsTr("VGM")
 
                 FactCheckBoxSlider {
-                    Layout.fillWidth:   true
-                    text:               qsTr("Enable F4 Mavlink dialect")
-                    fact:               _enableVGMDiaclect
-                    visible:            _enableVGMDiaclect.visible
+                    Layout.fillWidth: true
+                    text: fact.label
+                    fact: control._settings.enableVGMDialect
 
-                    property Fact   _enableVGMDiaclect: _flyViewSettings.enableVGMDialect
+                    ToolTip {
+                        visible: parent.hovered
+                        text: parent.fact.shortDescription
+                    }
                 }
             }
         }
     }
 }
-

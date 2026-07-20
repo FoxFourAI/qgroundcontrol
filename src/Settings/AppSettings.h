@@ -1,22 +1,11 @@
-/***************_qgcTranslatorSourceCode***********************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
-/// @file
-/// @brief Application Settings
-
 #pragma once
 
 #include <QtQmlIntegration/QtQmlIntegration>
 
 #include "SettingsGroup.h"
 
-/// Application Settings
+/// \brief Application Settings
+///
 class AppSettings : public SettingsGroup
 {
     Q_OBJECT
@@ -27,6 +16,8 @@ public:
 
     DEFINE_SETTING_NAME_GROUP()
 
+    DEFINE_SETTINGFACT(preferredFirmwareClass)
+    DEFINE_SETTINGFACT(preferredVehicleClass)
     DEFINE_SETTINGFACT(offlineEditingFirmwareClass)
     DEFINE_SETTINGFACT(offlineEditingVehicleClass)
     DEFINE_SETTINGFACT(offlineEditingCruiseSpeed)
@@ -36,10 +27,11 @@ public:
     DEFINE_SETTINGFACT(batteryPercentRemainingAnnounce) // Important: This is only used to calculate battery swaps
     DEFINE_SETTINGFACT(defaultMissionItemAltitude)
     DEFINE_SETTINGFACT(audioMuted)
+    DEFINE_SETTINGFACT(audioVolume)
     DEFINE_SETTINGFACT(virtualJoystick)
     DEFINE_SETTINGFACT(virtualJoystickAutoCenterThrottle)
     DEFINE_SETTINGFACT(virtualJoystickLeftHandedMode)
-    DEFINE_SETTINGFACT(appFontPointSize)
+    DEFINE_SETTINGFACT(uiScalePercent)
     DEFINE_SETTINGFACT(indoorPalette)
     DEFINE_SETTINGFACT(savePath)
     DEFINE_SETTINGFACT(androidDontSaveToSDCard)
@@ -57,11 +49,15 @@ public:
     DEFINE_SETTINGFACT(gstDebugLevel)
     DEFINE_SETTINGFACT(followTarget)
     DEFINE_SETTINGFACT(qLocaleLanguage)
+    DEFINE_SETTINGFACT(clearSettingsNextBoot)
     DEFINE_SETTINGFACT(disableAllPersistence)
     DEFINE_SETTINGFACT(firstRunPromptIdsShown)
-    DEFINE_SETTINGFACT(loginAirLink)
-    DEFINE_SETTINGFACT(passAirLink)
-    DEFINE_SETTINGFACT(cacheParameters)
+    DEFINE_SETTINGFACT(favoriteParameters)
+    DEFINE_SETTINGFACT(showAppLogTimestampAsElapsedTime)
+
+    // QSettings key for clearSettingsNextBoot. Accessed directly by QGCApplication
+    // at startup before SettingsManager is initialized.
+    static constexpr const char *clearSettingsNextBootKey = "clearSettingsNextBoot";
 
     Q_PROPERTY(QString missionSavePath          READ missionSavePath            NOTIFY savePathsChanged)
     Q_PROPERTY(QString parameterSavePath        READ parameterSavePath          NOTIFY savePathsChanged)
@@ -74,7 +70,6 @@ public:
     Q_PROPERTY(QString settingsSavePath         READ settingsSavePath           NOTIFY savePathsChanged)
 
     Q_PROPERTY(QString planFileExtension        MEMBER planFileExtension        CONSTANT)
-    Q_PROPERTY(QString missionFileExtension     MEMBER missionFileExtension     CONSTANT)
     Q_PROPERTY(QString waypointsFileExtension   MEMBER waypointsFileExtension   CONSTANT)
     Q_PROPERTY(QString parameterFileExtension   MEMBER parameterFileExtension   CONSTANT)
     Q_PROPERTY(QString telemetryFileExtension   MEMBER telemetryFileExtension   CONSTANT)
@@ -103,10 +98,7 @@ public:
     // Application wide file extensions
     static constexpr const char* parameterFileExtension =   "params";
     static constexpr const char* planFileExtension =        "plan";
-    static constexpr const char* missionFileExtension =     "mission";
     static constexpr const char* waypointsFileExtension =   "waypoints";
-    static constexpr const char* fenceFileExtension =       "fence";
-    static constexpr const char* rallyPointFileExtension =  "rally";
     static constexpr const char* telemetryFileExtension =   "tlog";
     static constexpr const char* kmlFileExtension =         "kml";
     static constexpr const char* shpFileExtension =         "shp";
@@ -146,6 +138,6 @@ private:
         const char*         languageName;
     } LanguageInfo_t;
     static LanguageInfo_t _rgLanguageInfo[];
-    
+
     friend class QGCApplication;
 };

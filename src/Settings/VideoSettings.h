@@ -1,12 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
 #include <QtQmlIntegration/QtQmlIntegration>
@@ -28,7 +19,6 @@ public:
     DEFINE_SETTINGFACT(rtspUrl)
     DEFINE_SETTINGFACT(aspectRatio)
     DEFINE_SETTINGFACT(videoFit)
-    DEFINE_SETTINGFACT(videoToolBarOverlap)
     DEFINE_SETTINGFACT(gridLines)
     DEFINE_SETTINGFACT(showRecControl)
     DEFINE_SETTINGFACT(recordingFormat)
@@ -38,8 +28,12 @@ public:
     DEFINE_SETTINGFACT(streamEnabled)
     DEFINE_SETTINGFACT(disableWhenDisarmed)
     DEFINE_SETTINGFACT(lowLatencyMode)
+    DEFINE_SETTINGFACT(rtpJitterLatencyMs)
+    DEFINE_SETTINGFACT(rtspAutoReconnect)
     DEFINE_SETTINGFACT(forceVideoDecoder)
-    DEFINE_SETTINGFACT(autoConfigure)
+    DEFINE_SETTINGFACT(forceCpuVideoPath)
+    DEFINE_SETTINGFACT(videoConversionElement)
+    DEFINE_SETTINGFACT(disablePixelAspectRatio)
 
     Q_PROPERTY(bool     streamConfigured        READ streamConfigured       NOTIFY streamConfiguredChanged)
     Q_PROPERTY(QString  rtspVideoSource         READ rtspVideoSource        CONSTANT)
@@ -56,6 +50,11 @@ public:
     QString  tcpVideoSource         () { return videoSourceTCP; }
     QString  mpegtsVideoSource      () { return videoSourceMPEGTS; }
     QString  disabledVideoSource    () { return videoDisabled; }
+
+    /// Remove hardware forced-decoder options absent from the running GStreamer registry, and
+    /// reset the active choice to Default if it was pruned. Call after the video backend has
+    /// initialized (the registry is empty until then).
+    void pruneUnavailableDecoders();
 
     static constexpr const char* videoSourceNoVideo           = QT_TRANSLATE_NOOP("VideoSettings", "No Video Available");
     static constexpr const char* videoDisabled                = QT_TRANSLATE_NOOP("VideoSettings", "Video Stream Disabled");

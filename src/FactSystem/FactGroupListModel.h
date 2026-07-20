@@ -1,21 +1,13 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
 #include "QmlObjectListModel.h"
-#include "QGCMAVLink.h"
+#include "MAVLinkMessageType.h"
 #include "FactGroupWithId.h"
 
 #include <QList>
 
-/// Dynamically manages FactGroupWithIds based on incoming messages.
+/// \brief Dynamically manages FactGroupWithIds based on incoming messages.
+///
 class FactGroupListModel : public QmlObjectListModel
 {
     Q_OBJECT
