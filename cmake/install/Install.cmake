@@ -174,17 +174,16 @@ elseif(LINUX)
             message(WARNING "QGC: desktop-file-validate reported issues for ${QGC_PACKAGE_NAME}.desktop")
         endif()
     endif()
-    # Do not check for upstream cli, cause it is not deployed by the devs yet
-    # find_program(QGC_APPSTREAMCLI appstreamcli)
-    # if(QGC_APPSTREAMCLI)
-    #     execute_process(
-    #         COMMAND "${QGC_APPSTREAMCLI}" validate --no-net "${CMAKE_BINARY_DIR}/${QGC_PACKAGE_NAME}.appdata.xml"
-    #         RESULT_VARIABLE _qgc_appstream_lint
-    #     )
-    #     if(NOT _qgc_appstream_lint EQUAL 0)
-    #         message(WARNING "QGC: appstreamcli validate reported issues for ${QGC_PACKAGE_NAME}.appdata.xml")
-    #     endif()
-    # endif()
+    find_program(QGC_APPSTREAMCLI appstreamcli)
+    if(QGC_APPSTREAMCLI)
+        execute_process(
+            COMMAND "${QGC_APPSTREAMCLI}" validate --no-net "${CMAKE_BINARY_DIR}/${QGC_PACKAGE_NAME}.appdata.xml"
+            RESULT_VARIABLE _qgc_appstream_lint
+        )
+        if(NOT _qgc_appstream_lint EQUAL 0)
+            message(WARNING "QGC: appstreamcli validate reported issues for ${QGC_PACKAGE_NAME}.appdata.xml")
+        endif()
+    endif()
 
     # Dedicated "appimage" component so `cmake --install` builds the AppImage but
     # CPack can exclude it (CPACK_COMPONENTS_ALL) and skip it during .deb/.rpm staging.
