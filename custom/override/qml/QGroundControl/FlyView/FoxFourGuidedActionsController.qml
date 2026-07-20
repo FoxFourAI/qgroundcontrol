@@ -47,6 +47,7 @@ Item {
     readonly property string roiTitle:                      qsTr("ROI")
     readonly property string setHomeTitle:                  qsTr("Set Home")
     readonly property string setEstimatorOriginTitle:       qsTr("Set Estimator Origin")
+    readonly property string setEstimatedUAVPositionTitle:  qsTr("Set VIO")
     readonly property string setFlightMode:                 qsTr("Set Flight Mode")
     readonly property string changeHeadingTitle:            qsTr("Change Heading")
 
@@ -531,6 +532,10 @@ Item {
             confirmDialog.title = setEstimatorOriginTitle
             confirmDialog.message = setEstimatorOriginMessage
             break
+        case actionSetEstimatedUAVPosition:
+                    confirmDialog.title = setEstimatedUAVPositionTitle
+                    confirmDialog.message = setEstimatedUAVPositionMessage
+        break
         case actionSetFlightMode:
             confirmDialog.title = setFlightMode
             confirmDialog.message = setFlightModeMessage
