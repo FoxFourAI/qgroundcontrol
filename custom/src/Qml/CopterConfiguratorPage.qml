@@ -35,6 +35,180 @@ ToolIndicatorPage{
         }
     }
 
+    ListModel{
+        id: tunableParams
+
+        ListElement{
+            name: "Disable"
+            enable: true
+            status: 1
+        }
+        ListElement{
+            name: "Hover"
+            enable: false
+            status: 1
+        }
+        ListElement{
+            name: "Terminal Attack"
+            enable: true
+            status: 1
+        }
+        ListElement{
+            name: "Tuning"
+            enable: true
+            status: 1
+        }
+        ListElement{
+            name: "Cruise"
+            enable: true
+            status: 1
+        }
+    }
+
+    ListModel{
+        id: tunableParameters
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+        ListElement{
+            name: "Element"
+            status: 1
+            Description: "blah blah blah"
+            min: -1
+            max: 100
+        }
+    }
+
     contentComponent: Component {
         SettingsGroupLayout{
             heading: qsTr("Mission configuration")
@@ -59,16 +233,40 @@ ToolIndicatorPage{
                     }
                 }
             }
-            RowLayout{
-                spacing: ScreenTools.defaultFontPixelWidth
+            GridLayout{
+                Layout.fillWidth:true
+                Layout.fillHeight:true
+                id: grid
+                columns: 3
+                columnSpacing: ScreenTools.defaultFontPixelWidth
+                rowSpacing: ScreenTools.defaultFontPixelWidth
                 Repeater{
-                    model: reqParams
+                    model: tunableParams
                     delegate: StatusButton{
-                        textField.font.pointSize: ScreenTools.mediumFontPixelWidth
-                        implicitHeight: ScreenTools.mediumFontPixelHeight + 2
+                        required property var model
                         text: model.name
+                        Layout.fillWidth: true
                         statusIndex: model.status
-                        backgroundRect.border.width:0
+                        implicitHeight: 40
+                        implicitWidth: 0 //disabling implicit width, so buttons spread evenly
+                        checkable: true
+                    }
+                }
+            }
+            SettingsGroupLayout{
+                Layout.fillWidth: true
+                heading: qsTr("Tuning")
+                ColumnLayout{
+                    Layout.fillWidth: true
+                    Repeater{
+                        model:tunableParameters
+                        delegate: StatusRect{
+                            required property var model
+                            statusIndex: model.status
+                            implicitHeight: 20
+                            Layout.fillWidth:true
+                            border.width: 0
+                        }
                     }
                 }
             }

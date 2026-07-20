@@ -78,6 +78,7 @@ Item {
     readonly property string setEstimatorOriginMessage:         qsTr("Make the specified location the estimator origin")
     readonly property string setFlightModeMessage:              qsTr("Set the vehicle flight mode to %1").arg(_actionData)
     readonly property string changeHeadingMessage:              qsTr("Set the vehicle heading towards the specified location")
+    readonly property string setEstimatedUAVPositionMessage:    qsTr("Send position to VIO")
 
     readonly property int actionRTL:                        1
     readonly property int actionLand:                       2
@@ -108,6 +109,7 @@ Item {
     readonly property int actionMVArm:                      28
     readonly property int actionMVDisarm:                   29
     readonly property int actionChangeLoiterRadius:         30
+    readonly property int actionSetEstimatedUAVPosition:    31
 
     readonly property int customActionStart:                10000 // Custom actions ids should start here so that they don't collide with the built in actions
 

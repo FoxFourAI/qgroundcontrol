@@ -3,7 +3,6 @@
 #include <QtCore/QObject>
 
 
-
 class CopterType {
     CopterType();
 private:
@@ -12,8 +11,6 @@ private:
 
 class CopterConfigurator : public QObject {
     Q_OBJECT
-    QML_ELEMENT
-    QML_UNCREATABLE("")
 public:
     CopterConfigurator();
 };
