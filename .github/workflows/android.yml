@@ -61,29 +61,6 @@ jobs:
             shell: bash
             primary: true
             emulator: false
-          - host: mac
-            runner: macos-15
-            arch: clang_64
-            qt_host_path: macos
-            shell: bash
-            primary: false
-            emulator: false
-          - host: windows
-            runner: ${{ github.repository_owner == 'mavlink' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('runs-on={0}/runner=windows-x64-builder', github.run_id) || 'windows-2022' }}
-            arch: win64_msvc2022_64
-            qt_host_path: msvc2022_64
-            shell: pwsh
-            primary: false
-            emulator: false
-            aqt_source: 'git+https://github.com/miurahr/aqtinstall.git@8d961e61720b3c06583517fbc68d57ec0a4e9f95'
-          - host: linux-emulator
-            qt_host: linux
-            runner: ${{ github.repository_owner == 'mavlink' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('runs-on={0}/runner=linux-x64-emulator', github.run_id) || 'ubuntu-latest' }}
-            arch: linux_gcc_64
-            qt_host_path: gcc_64
-            shell: bash
-            primary: false
-            emulator: true
 
     defaults:
       run:

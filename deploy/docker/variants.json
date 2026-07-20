@@ -46,36 +46,6 @@
       }
     },
     {
-      "id": "debian",
-      "ci_variant": "linux-debian",
-      "platform": "Linux-Debian",
-      "selector": "linux",
-      "target": "linux",
-      "image": "qgc-debian-docker",
-      "fuse": true,
-      "artifact_pattern": "*.AppImage",
-      "package_pattern": "*.deb",
-      "build_args": {
-        "BASE_REF": "debian:bookworm-slim@sha256:96e378d7e6531ac9a15ad505478fcc2e69f371b10f5cdf87857c4b8188404716"
-      }
-    },
-    {
-      "id": "fedora",
-      "ci_variant": "linux-fedora",
-      "platform": "Linux-Fedora",
-      "selector": "linux",
-      "target": "linux",
-      "image": "qgc-fedora-docker",
-      "fuse": true,
-      "artifact_pattern": "*.AppImage",
-      "package_pattern": "*.rpm",
-      "build_args": {
-        "BASE_REF": "fedora:41@sha256:f1a3fab47bcb3c3ddf3135d5ee7ba8b7b25f2e809a47440936212a3a50957f3d",
-        "SETUP_BASE": "setup-base-dnf.sh",
-        "DEP_PLATFORM": "fedora"
-      }
-    },
-    {
       "id": "arch",
       "ci_variant": "linux-arch",
       "platform": "Linux-Arch",
@@ -90,30 +60,6 @@
         "SETUP_BASE": "setup-base-pacman.sh",
         "DEP_PLATFORM": "arch"
       }
-    },
-    {
-      "id": "aarch64",
-      "ci_variant": "linux-aarch64",
-      "platform": "Linux-aarch64",
-      "selector": "linux",
-      "target": "linux-cross",
-      "image": "qgc-ubuntu-aarch64-docker",
-      "fuse": false,
-      "artifact_pattern": "QGroundControl",
-      "package_pattern": "",
-      "build_args": {}
-    },
-    {
-      "id": "android",
-      "ci_variant": "android",
-      "platform": "Android",
-      "selector": "android",
-      "target": "android",
-      "image": "qgc-android-docker",
-      "fuse": false,
-      "artifact_pattern": "*.apk",
-      "package_pattern": "",
-      "build_args": {}
     }
   ]
 }
