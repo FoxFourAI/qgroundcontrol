@@ -35,13 +35,6 @@
     </release>
   </releases>
 
-  <screenshots>
-    <screenshot type="default">
-      <caption>Connected Vehicle</caption>
-      <image>https://docs.qgroundcontrol.com/master/assets/connected_vehicle.BmASIvhv.jpg</image>
-    </screenshot>
-  </screenshots>
-
   <url type="homepage">https://@QGC_ORG_DOMAIN@</url>
   <url type="help">https://docs.qgroundcontrol.com/master/en/index.html</url>
   <url type="bugtracker">https://github.com/mavlink/qgroundcontrol/issues</url>
