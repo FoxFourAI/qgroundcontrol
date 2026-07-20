@@ -129,6 +129,7 @@ Item {
                 FlyViewToolBarIndicators {
                     id: flyViewIndicators
                     height: parent.height
+
                 }
             }
 
@@ -154,57 +155,68 @@ Item {
                 }
             }
 
-            //     // GuidedActionConfirm {
-            //     //     id: guidedActionConfirm
-            //     //     height: parent.height
-            //     //     anchors.horizontalCenter: parent.horizontalCenter
-            //     //     guidedController: control._guidedController
-            //     //     guidedValueSlider: control.guidedValueSlider
-            //     //     messageDisplay: guidedActionMessageDisplay
-            //     // }
+
             // }
         }
     }
 
+    Rectangle{
+    width: guidedActionConfirm.width + _margins * 3
+    height: guidedActionConfirm.height + _margins * 2
+    radius: ScreenTools.defaultBorderRadius
+    anchors.centerIn:guidedActionConfirm
+    color: qgcPal.windowTransparent
+    visible: guidedActionConfirm.visible
+    }
+    GuidedActionConfirm {
+        id: guidedActionConfirm
+        height: parent.height
+        anchors.top: parent.bottom
+        anchors.topMargin: _margins * 2
+        anchors.horizontalCenter: parent.horizontalCenter
+        guidedController: control._guidedController
+        guidedValueSlider: control.guidedValueSlider
+        messageDisplay: guidedActionMessageDisplay
+    }
+
     // The guided action message display is outside of the GuidedActionConfirm control so that it doesn't end up as
     // part of the Flickable
-    // Rectangle {
-    //     id: guidedActionMessageDisplay
-    //     anchors.top: control.bottom
-    //     anchors.topMargin: _margins
-    //     x: control.mapFromItem(
-    //            guidedActionConfirm.parent, guidedActionConfirm.x,
-    //            0).x + (guidedActionConfirm.width - guidedActionMessageDisplay.width) / 2
-    //     width: messageLabel.contentWidth + (_margins * 2)
-    //     height: messageLabel.contentHeight + (_margins * 2)
-    //     color: qgcPal.windowTransparent
-    //     radius: ScreenTools.defaultBorderRadius
-    //     visible: guidedActionConfirm.visible
+    Rectangle {
+        id: guidedActionMessageDisplay
+        anchors.top: guidedActionConfirm.bottom
+        anchors.topMargin: _margins
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: messageLabel.contentWidth + (_margins * 2)
+        height: messageLabel.contentHeight + (_margins * 2)
+        color: qgcPal.windowTransparent
+        radius: ScreenTools.defaultBorderRadius
+        visible: guidedActionConfirm.visible
 
-    //     QGCLabel {
-    //         id: messageLabel
-    //         x: _margins
-    //         y: _margins
-    //         width: ScreenTools.defaultFontPixelWidth * 30
-    //         wrapMode: Text.WordWrap
-    //         text: guidedActionConfirm.message
-    //     }
+        QGCLabel {
+            id: messageLabel
+            x: _margins
+            y: _margins
+            width: ScreenTools.defaultFontPixelWidth * 30
+            wrapMode: Text.WordWrap
+            text: guidedActionConfirm.message
+        }
 
-    //     PropertyAnimation {
-    //         id: messageOpacityAnimation
-    //         target: guidedActionMessageDisplay
-    //         property: "opacity"
-    //         from: 1
-    //         to: 0
-    //         duration: 500
-    //     }
+        PropertyAnimation {
+            id: messageOpacityAnimation
+            target: guidedActionMessageDisplay
+            property: "opacity"
+            from: 1
+            to: 0
+            duration: 500
+        }
 
-    //     Timer {
-    //         id: messageFadeTimer
-    //         interval: 4000
-    //         onTriggered: messageOpacityAnimation.start()
-    //     }
-    // }
+        Timer {
+            id: messageFadeTimer
+            interval: 4000
+            onTriggered: messageOpacityAnimation.start()
+        }
+    }
+
     ParameterDownloadProgress {
         anchors.fill: parent
     }
