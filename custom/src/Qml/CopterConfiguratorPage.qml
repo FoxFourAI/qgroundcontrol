@@ -14,6 +14,11 @@ ToolIndicatorPage{
     property var currType: configurator?.currentType
     property var currMissn: currType?.currentMission
 
+    QGCPalette {
+        id: qgcPal
+        colorGroupEnabled: true
+    }
+
     contentComponent: Component {
         SettingsGroupLayout{
             showDividers: false
@@ -66,6 +71,14 @@ ToolIndicatorPage{
                 height: ScreenTools.defaultFontPixelHeight
                 id: tuningColumn
                 heading: qsTr("Tuning")
+                QGCLabel{
+                    // Layout.fillWidth:true
+                    Layout.alignment:Qt.AlignHCenter
+                    text: qsTr("WARNING! Parameter list is not full!")
+                    color: qgcPal.colorOrange
+                    visible: !currMissn.parametersReady
+                }
+
                 QGCFlickable{
                     id: flick
                     Layout.fillWidth:       true

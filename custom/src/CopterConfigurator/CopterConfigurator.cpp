@@ -71,7 +71,7 @@ void CopterMission::setActive()
 void CopterMission::checkParameters()
 {
    //if we do not have all parameters that we need, try to pull them
-    if (_requiredParameters.isEmpty()) {
+    if (_parametersReady) {
         return;
     }
     ParameterManager* pm = _vehicle->parameterManager();
@@ -89,6 +89,10 @@ void CopterMission::checkParameters()
         } else {
             pm->refreshParameter(compId, _requiredParameters[i]);
         }
+    }
+    _parametersReady = _requiredParameters.isEmpty();
+    if(_parametersReady) {
+        emit parametersReadyChanged();
     }
 }
 
@@ -115,6 +119,11 @@ void CopterMission::_handleFacts(int componentId, Fact* fact)
         _requiredParameters.removeAt(_requiredParameters.indexOf(fact->name()));
         _tunableParameters.append(fact);
         emit tunableParametersChanged();
+    }
+
+    if(_requiredParameters.empty()){
+        _parametersReady = true;
+        emit parametersReadyChanged();
     }
 }
 
@@ -285,4 +294,9 @@ void CopterConfigurator::handleVGMReboot()
     for (auto* type : _types) {
         type->resetVgmBootType();
     }
+}
+
+bool CopterMission::parametersReady() const
+{
+    return _parametersReady;
 }
