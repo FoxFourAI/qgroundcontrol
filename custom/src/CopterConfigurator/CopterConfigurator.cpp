@@ -233,12 +233,13 @@ CopterType::CopterType(Type type, Vehicle* vehicle, QObject* parent) : CopterSta
                 _vehicle, this));
             break;
         case Photolit:
-            // No missions for now.
+            _missions.append(new CopterMission(CopterMission::Disable, {}, _vehicle, this));
             break;
 
         default:
             break;
     }
+    _currentMission = _missions.first();
     for (auto* mission : _missions) {
         connect(mission, &CopterMission::statusChanged, this, &CopterType::_currentMissionChangedCallback);
     }
@@ -257,7 +258,7 @@ void CopterConfigurator::_init()
     _types.push_back(new CopterType(CopterType::Plane, _vehicle, this));
     _types.push_back(new CopterType(CopterType::Bomber, _vehicle, this));
     _types.push_back(new CopterType(CopterType::Photolit, _vehicle, this));
-
+    _currentType = _types.first();
     for (CopterType* type : _types) {
         connect(type, &CopterType::statusChanged, this, &CopterConfigurator::_currentTypeChangedCallback);
     }
