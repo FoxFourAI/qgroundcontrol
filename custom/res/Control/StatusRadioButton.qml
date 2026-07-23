@@ -5,13 +5,12 @@ import QGroundControl.Controls
 
 import Custom.Widgets 1.0
 
-Button {
+RadioButton {
     id: statusButton
 
     property int statusIndex: 0
     property alias textField: field
     property alias backgroundRect: bg
-    enabled: statusIndex != 4
     MouseArea{
         anchors.fill:parent
         acceptedButtons: Qt.NoButton
@@ -25,7 +24,7 @@ Button {
         verticalAlignment: Text.AlignVCenter
     }
 
-    background: StatusRect{
+    indicator: StatusRect{
         id: bg
         statusIndex: parent.checkable ? parent.checked ? parent.statusIndex : 0 : parent.statusIndex
     }
