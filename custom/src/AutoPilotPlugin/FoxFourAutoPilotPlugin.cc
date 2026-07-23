@@ -28,6 +28,7 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent
     _vioGpsComparer = new VioGpsComparer(vehicle, this);
     _mapMatching = new MapMatching(vehicle,this);
     _vioTrajectory = new VioTrajectoryPoints(vehicle,this);
+    _configurator = new CopterConfigurator(vehicle,this);
     emit mapMatchingCreated();
     auto cameraMgr = vehicle->cameraManager();
     connect(cameraMgr, &QGCCameraManager::currentCameraChanged, this, [this, cameraMgr]() {
@@ -69,6 +70,7 @@ void FoxFourAutoPilotPlugin::rebootOnboardComputers() {
         return;
     }
     qWarning() << "Rebooting onboard computers";
+    _configurator->handleVGMReboot();
     _onboardComputersMngr->rebootAllOnboardComputers();
 }
 

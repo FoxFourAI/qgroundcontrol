@@ -69,6 +69,12 @@ qgc_set_qt_resource_alias(
         ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CustomPopupDialog.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Toolbar/VioIndicatorPage.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourControlPage.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CopterConfiguratorPage.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusButton.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusRadioButton.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusRect.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusLabel.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusColors.qml
 )
 
 qt_add_qml_module(CustomModule
@@ -80,6 +86,12 @@ qt_add_qml_module(CustomModule
         ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CustomPopupDialog.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Toolbar/VioIndicatorPage.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourControlPage.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CopterConfiguratorPage.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusButton.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusRadioButton.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusRect.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusLabel.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusColors.qml
     NO_PLUGIN
     SOURCES
 )
@@ -121,6 +133,8 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Dialect/VGMDialect.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VioTrajectory/VioTrajectoryPoints.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VioTrajectory/VioTrajectoryPoints.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterConfigurator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterConfigurator.cpp
     CACHE INTERNAL "adding custom sources" FORCE
 )
 
