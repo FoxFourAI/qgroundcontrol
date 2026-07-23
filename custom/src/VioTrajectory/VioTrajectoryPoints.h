@@ -7,8 +7,6 @@ class Vehicle;
 
 class VioTrajectoryPoints: public QObject {
     Q_OBJECT
-    QML_ELEMENT
-    QML_UNCREATABLE("")
 public:
     VioTrajectoryPoints(Vehicle *vehicle, QObject *parent = nullptr);
 
