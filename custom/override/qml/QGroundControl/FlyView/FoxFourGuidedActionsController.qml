@@ -533,8 +533,8 @@ Item {
             confirmDialog.message = setEstimatorOriginMessage
             break
         case actionSetEstimatedUAVPosition:
-                    confirmDialog.title = setEstimatedUAVPositionTitle
-                    confirmDialog.message = setEstimatedUAVPositionMessage
+            confirmDialog.title = setEstimatedUAVPositionTitle
+            confirmDialog.message = setEstimatedUAVPositionMessage
         break
         case actionSetFlightMode:
             confirmDialog.title = setFlightMode
@@ -678,6 +678,12 @@ Item {
             break
         case actionSetEstimatorOrigin:
             _activeVehicle.setEstimatorOrigin(actionData)
+            break
+        case actionSetEstimatedUAVPosition:
+            let currentCompManager = _activeVehicle.autopilotPlugin.onboardComputersManager;
+            let currentComp = currentCompManager.currentComputer;
+            console.warn("Current COMP", currentComp);
+            currentCompManager.sendExternalPositionEstimate(actionData)
             break
         case actionSetFlightMode:
             _activeVehicle.flightMode = actionData
