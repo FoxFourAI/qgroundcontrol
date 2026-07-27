@@ -79,6 +79,15 @@ Item {
                 //         text: parent.fact.shortDescription
                 //     }
                 // }
+                FactCheckBoxSlider {
+                    Layout.fillWidth: true
+                    fact: control._settings.directVGM
+                    text: fact.label
+                    ToolTip {
+                        visible: parent.hovered
+                        text: parent.fact.shortDescription
+                    }
+                }
 
                 LabelledFactTextField {
                     Layout.fillWidth: true

@@ -22,6 +22,9 @@
 #include <QtCore/QApplicationStatic>
 #include <QtCore/QTimer>
 
+//FoxFOur part
+#include "FoxFourSettings.h"
+
 QGC_LOGGING_CATEGORY(MultiVehicleManagerLog, "Vehicle.MultiVehicleManager")
 
 Q_APPLICATION_STATIC(MultiVehicleManager, _multiVehicleManagerInstance);
@@ -65,15 +68,25 @@ void MultiVehicleManager::init()
 
 void MultiVehicleManager::_vehicleHeartbeatInfo(LinkInterface* link, int vehicleId, int componentId, int vehicleFirmwareType, int vehicleType)
 {
+    //FoxFour part
+    bool directVGMEnable = SettingsManager::instance()->foxFourSettings()->directVGM()->rawValue().toBool();
+    bool isOnboardId = componentId >= MAV_COMP_ID_ONBOARD_COMPUTER && componentId <= MAV_COMP_ID_ONBOARD_COMPUTER4;
+
     if (componentId != MAV_COMP_ID_AUTOPILOT1) {
-        // Don't create vehicles for components other than the autopilot
-        qCDebug(MultiVehicleManagerLog) << "Ignoring heartbeat from unknown component port:vehicleId:componentId:fwType:vehicleType"
-                                        << link->linkConfiguration()->name()
-                                        << vehicleId
-                                        << componentId
-                                        << vehicleFirmwareType
-                                        << vehicleType;
-        return;
+        //FoxFour part
+        if (!directVGMEnable || !isOnboardId) {
+            // Don't create vehicles for components other than the autopilot
+            qCDebug(MultiVehicleManagerLog) << "Ignoring heartbeat from unknown component port:vehicleId:componentId:fwType:vehicleType"
+                                            << link->linkConfiguration()->name()
+                                            << vehicleId
+                                            << componentId
+                                            << vehicleFirmwareType
+                                            << vehicleType;
+            return;
+        } else {
+            vehicleFirmwareType = MAV_AUTOPILOT_ARDUPILOTMEGA;
+            vehicleType = MAV_TYPE_QUADROTOR;
+        }
     }
 
 #ifndef QGC_NO_ARDUPILOT_DIALECT
@@ -87,11 +100,15 @@ void MultiVehicleManager::_vehicleHeartbeatInfo(LinkInterface* link, int vehicle
 
     switch (vehicleType) {
     case MAV_TYPE_GCS:
-    case MAV_TYPE_ONBOARD_CONTROLLER:
     case MAV_TYPE_GIMBAL:
     case MAV_TYPE_ADSB:
         // These are not vehicles, so don't create a vehicle for them
         return;
+    case MAV_TYPE_ONBOARD_CONTROLLER:
+        if (!directVGMEnable) {
+            return;
+        }
+        break;
     default:
         break;
     }

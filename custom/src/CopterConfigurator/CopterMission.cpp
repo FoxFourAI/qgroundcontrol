@@ -20,7 +20,6 @@ CopterMission::CopterMission(CopterMission::Type type, QStringList tunableParame
     _requiredParameters.removeDuplicates();
     _type = type;
     setName(type2name[_type]);
-    // all missions is cast 1:1 except of bomber
     _missionIndx = type2index[type];
     connect(vehicle->parameterManager(), &ParameterManager::factAdded, this, &CopterMission::_handleFacts);
 }
@@ -64,6 +63,7 @@ void CopterMission::checkParameters()
     if(_parametersReady) {
         emit parametersReadyChanged();
     }
+    _update();
 }
 
 void CopterMission::_handleFacts(int componentId, Fact* fact)
@@ -95,6 +95,7 @@ void CopterMission::_handleFacts(int componentId, Fact* fact)
         _parametersReady = true;
         emit parametersReadyChanged();
     }
+    _update();
 }
 
 void CopterMission::_update()
@@ -102,5 +103,5 @@ void CopterMission::_update()
     if (_status == Unavailable || _missionChangeFact == nullptr) {
         return;
     }
-    setStatus(_missionIndx == _missionChangeFact->rawValue().toInt() ? CopterState::Status::Enable : CopterState::Status::Disable);
+    setStatus(_missionIndx == _missionChangeFact->rawValue().toInt() ? _parametersReady ? CopterState::Status::Enable : CopterState::Status::Warning : CopterState::Status::Disable);
 }

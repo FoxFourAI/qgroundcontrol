@@ -103,7 +103,7 @@ ToolIndicatorPage{
             QGCButton{
                 text:qsTr("Reboot Required")
                 Layout.fillWidth:true
-                visible: currType.status != 1
+                visible: currType.status != 1 || !currMissn.parametersReady
                 onClicked:{
 
                     QGroundControl.showMessageDialog(root,qsTr("Reboot VGM?"),

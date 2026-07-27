@@ -22,5 +22,6 @@ public:
     DEFINE_SETTINGFACT(mapMatchingPointsCnt)
     DEFINE_SETTINGFACT(enableVGMDialect)
     DEFINE_SETTINGFACT(videoToolBarOverlap)
+    DEFINE_SETTINGFACT(directVGM)
 };
 
