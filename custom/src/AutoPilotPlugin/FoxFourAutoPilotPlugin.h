@@ -7,6 +7,7 @@
 #include "ButtonList/ButtonList.h"
 #include "MapMatching/MapMatching.h"
 #include "VioTrajectory/VioTrajectoryPoints.h"
+#include "CopterConfigurator/CopterConfigurator.h"
 
 class Vehicle;
 class FoxFourCameraControl;
@@ -20,6 +21,7 @@ class FoxFourAutoPilotPlugin : public APMAutoPilotPlugin {
     Q_PROPERTY(MapMatching* mapMatching READ mapMatching NOTIFY mapMatchingCreated)
     Q_PROPERTY(QString storageCapacity READ storageCapacity NOTIFY storageCapacityChanged)
     Q_PROPERTY(bool isDropper READ isDropper NOTIFY isDropperChanged)
+    Q_PROPERTY(CopterConfigurator* configurator MEMBER _configurator)
 public:
     explicit FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent = nullptr);
     ~FoxFourAutoPilotPlugin();
@@ -52,5 +54,6 @@ private:
     OnboardComputersManager* _onboardComputersMngr = nullptr;
     VioGpsComparer* _vioGpsComparer = nullptr;
     QString _storageCapacityStr = "0 / 0 MB";
+    CopterConfigurator* _configurator = nullptr;
     QMetaObject::Connection _cameraConnection;
 };
