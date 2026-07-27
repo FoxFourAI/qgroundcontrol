@@ -135,6 +135,12 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VioTrajectory/VioTrajectoryPoints.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterConfigurator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterConfigurator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterState.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterState.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterType.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterType.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterMission.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterMission.cpp
     CACHE INTERNAL "adding custom sources" FORCE
 )
 

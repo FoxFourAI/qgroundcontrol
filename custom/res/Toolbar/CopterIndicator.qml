@@ -12,7 +12,7 @@ Item {
     property var currType: configurator?.currentType
     property var currMissn: currType?.currentMission
     StatusButton{
-        text: currType != undefined ? currType.name + ' - ' + currMissn.name : "Unknown"
+        text: statusIndex != 0 ? currType.name + ' - ' + currMissn.name : "Unknown"
         statusIndex: currType != undefined ? currType.status : 0
         id: statusButton
         onClicked:{
