@@ -22,7 +22,7 @@
 #include <QtCore/QApplicationStatic>
 #include <QtCore/QTimer>
 
-//FoxFOur part
+//FoxFour part
 #include "FoxFourSettings.h"
 
 QGC_LOGGING_CATEGORY(MultiVehicleManagerLog, "Vehicle.MultiVehicleManager")
