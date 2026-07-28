@@ -47,7 +47,7 @@ Item {
     readonly property string roiTitle:                      qsTr("ROI")
     readonly property string setHomeTitle:                  qsTr("Set Home")
     readonly property string setEstimatorOriginTitle:       qsTr("Set Estimator Origin")
-    readonly property string setEstimatedUAVPositionTitle:  qsTr("Set VIO")
+    readonly property string setEstimatedUAVPositionTitle:  qsTr("Set estimated UAV position to VIO")
     readonly property string setFlightMode:                 qsTr("Set Flight Mode")
     readonly property string changeHeadingTitle:            qsTr("Change Heading")
 
@@ -79,7 +79,7 @@ Item {
     readonly property string setEstimatorOriginMessage:         qsTr("Make the specified location the estimator origin")
     readonly property string setFlightModeMessage:              qsTr("Set the vehicle flight mode to %1").arg(_actionData)
     readonly property string changeHeadingMessage:              qsTr("Set the vehicle heading towards the specified location")
-    readonly property string setEstimatedUAVPositionMessage:    qsTr("Send position to VIO")
+    readonly property string setEstimatedUAVPositionMessage:    qsTr("Send position to VGM")
 
     readonly property int actionRTL:                        1
     readonly property int actionLand:                       2
@@ -533,8 +533,8 @@ Item {
             confirmDialog.message = setEstimatorOriginMessage
             break
         case actionSetEstimatedUAVPosition:
-                    confirmDialog.title = setEstimatedUAVPositionTitle
-                    confirmDialog.message = setEstimatedUAVPositionMessage
+            confirmDialog.title = setEstimatedUAVPositionTitle
+            confirmDialog.message = setEstimatedUAVPositionMessage
         break
         case actionSetFlightMode:
             confirmDialog.title = setFlightMode
@@ -678,6 +678,12 @@ Item {
             break
         case actionSetEstimatorOrigin:
             _activeVehicle.setEstimatorOrigin(actionData)
+            break
+        case actionSetEstimatedUAVPosition:
+            let currentCompManager = _activeVehicle.autopilotPlugin.onboardComputersManager;
+            let currentComp = currentCompManager.currentComputer;
+            console.warn("Current COMP", currentComp);
+            currentCompManager.sendExternalPositionEstimate(actionData)
             break
         case actionSetFlightMode:
             _activeVehicle.flightMode = actionData
