@@ -11,9 +11,6 @@
 #include "FoxFourAutoPilotPlugin.h"
 #include "Vehicle.h"
 #include "Camera/FoxFourCameraControl.h"
-#include "FoxFourSettings.h"
-#include "SettingsManager.h"
-#include "ParameterMetaData.h"
 #include "ParameterMetaData/FoxFourParameterMetaData.h"
 AutoPilotPlugin* FoxFourFirmwarePlugin::autopilotPlugin(Vehicle *vehicle) const
 {
@@ -39,4 +36,4 @@ const QVariantList &FoxFourFirmwarePlugin::toolIndicators(const Vehicle *vehicle
 ParameterMetaData* FoxFourFirmwarePlugin::_createParameterMetaData() {
     //returning custom parameters metadata
     return new FoxFourParameterMetaData(this);
-    }
+}
