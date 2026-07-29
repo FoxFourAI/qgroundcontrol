@@ -9,8 +9,8 @@ FoxFourParameterMetaData::FoxFourParameterMetaData(QObject* parent) : APMParamet
 void FoxFourParameterMetaData::parseParameterJson(const QJsonObject& json)
 {
     APMParameterMetaData::parseParameterJson(json);
-    // Adding VGM parameters to the default one
 
+    // Adding VGM parameters to the default one
     QJsonDocument doc;
     QString errorString;
     const QString vgmMetaDataFile = ":/json/parameters.metadata.json";
@@ -51,7 +51,7 @@ void FoxFourParameterMetaData::parseParameterJson(const QJsonObject& json)
 
 FactMetaData* FoxFourParameterMetaData::_lookupMetaData(const QString& name, FactMetaData::ValueType_t type)
 {
-    // if default search find metadata, return it
+    // if vgm has metadata, return it
     FactMetaData* metadata = _lookupVGMMetaData(name, type);
     if (metadata != nullptr) {
         return metadata;
