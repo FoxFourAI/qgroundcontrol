@@ -1,14 +1,4 @@
 {
-  "Name_": {
-    "Name": {
-      "DisplayName": "Description",
-      "User": "F4 Computer",
-      "Description": "Description",
-      "Units": "Units",
-      "PossibleValues": "Possible values",
-      "RebootRequired": "True"
-    }
-  },
   "LOG_": {
     "LOG_COMP_BITMASK": {
       "DisplayName": "Enables Debug mode for the VGM, which saves logs on the SD Card <br/> <br/> 0: do not save any logs; <br/> 1: textual logs of the algorithm onboard; <br/> 2: MavLink messages as well as control reference values; <br/> 4: record video from frontal camera; <br/> 8: record video from navigation camera. <br/> <br/> Parameter is configured as bitmask to allow multiple choices, [more information here](initial-setup/vgm-configuration#log_bitmask)",
