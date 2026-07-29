@@ -1,8 +1,11 @@
 #pragma once
 
 #include "APMParameterMetaData.h"
+#include <QGCLoggingCategory.h>
 
 class QJsonObject;
+
+Q_DECLARE_LOGGING_CATEGORY(FoxFourParameterMetaDataLog)
 
 class FoxFourParameterMetaData: public APMParameterMetaData {
     Q_OBJECT

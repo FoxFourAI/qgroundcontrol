@@ -2,6 +2,8 @@
 
 #include "JsonParsing.h"
 
+QGC_LOGGING_CATEGORY(FoxFourParameterMetaDataLog, "FoxFour.ParameterMetaData")
+
 FoxFourParameterMetaData::FoxFourParameterMetaData(QObject* parent) : APMParameterMetaData(parent) {}
 
 void FoxFourParameterMetaData::parseParameterJson(const QJsonObject& json)
@@ -13,11 +15,11 @@ void FoxFourParameterMetaData::parseParameterJson(const QJsonObject& json)
     QString errorString;
     const QString vgmMetaDataFile = ":/json/parameters.metadata.json";
     if (!JsonParsing::isJsonFile(vgmMetaDataFile, doc, errorString)) {
-        qWarning() << "Unable to open parameter meta data file:" << vgmMetaDataFile << errorString;
+        qCWarning(FoxFourParameterMetaDataLog) << "Unable to open parameter meta data file:" << vgmMetaDataFile << errorString;
         return;
     }
     if (!doc.isObject()) {
-        qWarning() << "JSON root is not an object:" << vgmMetaDataFile;
+        qCWarning(FoxFourParameterMetaDataLog) << "JSON root is not an object:" << vgmMetaDataFile;
         return;
     }
 
@@ -39,7 +41,7 @@ void FoxFourParameterMetaData::parseParameterJson(const QJsonObject& json)
             const QString group = _groupFromParameterName(name);
 
             if (_rawVGMParams.contains(name)) {
-                qWarning() << "Duplicate parameter found:" << name;
+                qCWarning(FoxFourParameterMetaDataLog) << "Duplicate parameter found:" << name;
             }
 
             _rawVGMParams[name] = RawParameterData{group, paramIt->toObject()};
@@ -82,7 +84,7 @@ QList<ParameterMetaData::ValueDescPair> FoxFourParameterMetaData::_sortedNumeric
         bool ok = false;
         const double sortKey = it.key().toDouble(&ok);
         if (!ok) {
-            qWarning() << "Non-numeric key:" << it.key() << "for" << paramName;
+            qCWarning(FoxFourParameterMetaDataLog) << "Non-numeric key:" << it.key() << "for" << paramName;
             continue;
         }
         entries.append({sortKey, it.key(), it->toString()});
