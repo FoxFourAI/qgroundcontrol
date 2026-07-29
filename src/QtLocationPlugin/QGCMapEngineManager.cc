@@ -1,26 +1,23 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "QGCMapEngineManager.h"
 
 #include <QtCore/QApplicationStatic>
+#include <QtCore/QDir>
+#include <QtCore/QDirIterator>
 #include <QtCore/QRegularExpression>
 #include <QtCore/QSettings>
 #include <QtCore/QStorageInfo>
+#include <QtCore/QTemporaryDir>
 #include <QtQml/QQmlEngine>
 
 #include "ElevationMapProvider.h"
 #include "FlightMapSettings.h"
-#include "QGCApplication.h"
 #include "QGCCachedTileSet.h"
+#include "QGCFormat.h"
+#include "QGCCompression.h"
+#include "QGCCompressionJob.h"
 #include "QGCLoggingCategory.h"
 #include "QGCMapEngine.h"
+#include "QGCMapTasks.h"
 #include "QGCMapUrlEngine.h"
 #include "QGeoFileTileCacheQGC.h"
 #include "QmlObjectListModel.h"
@@ -86,12 +83,12 @@ void QGCMapEngineManager::updateForCurrentView(double lon0, double lat0, double 
 
 QString QGCMapEngineManager::tileCountStr() const
 {
-    return qgcApp()->numberToString(_imageSet.tileCount + _elevationSet.tileCount);
+    return QGC::numberToString(_imageSet.tileCount + _elevationSet.tileCount);
 }
 
 QString QGCMapEngineManager::tileSizeStr() const
 {
-    return qgcApp()->bigSizeToString(_imageSet.tileSize + _elevationSet.tileSize);
+    return QGC::bigSizeToString(_imageSet.tileSize + _elevationSet.tileSize);
 }
 
 void QGCMapEngineManager::loadTileSets()
@@ -397,22 +394,36 @@ bool QGCMapEngineManager::exportSets(const QString &path)
         return false;
     }
 
-    QList<QGCCachedTileSet*> sets;
+    QList<TileSetRecord> records;
 
     for (qsizetype i = 0; i < _tileSets->count(); i++) {
         QGCCachedTileSet* const set = qobject_cast<QGCCachedTileSet*>(_tileSets->get(i));
-        if (set->selected()) {
-            sets.append(set);
+        if (set && set->selected()) {
+            TileSetRecord rec;
+            rec.setID = set->id();
+            rec.name = set->name();
+            rec.mapTypeStr = set->mapTypeStr();
+            rec.topleftLat = set->topleftLat();
+            rec.topleftLon = set->topleftLon();
+            rec.bottomRightLat = set->bottomRightLat();
+            rec.bottomRightLon = set->bottomRightLon();
+            rec.minZoom = set->minZoom();
+            rec.maxZoom = set->maxZoom();
+            rec.type = UrlFactory::getQtMapIdFromProviderType(set->type());
+            rec.numTiles = set->totalTileCount();
+            rec.defaultSet = set->defaultSet();
+            rec.date = set->creationDate().toSecsSinceEpoch();
+            records.append(rec);
         }
     }
 
-    if (sets.isEmpty()) {
+    if (records.isEmpty()) {
         return false;
     }
 
     setImportAction(ImportAction::ActionExporting);
 
-    QGCExportTileTask *task = new QGCExportTileTask(sets, path);
+    QGCExportTileTask *task = new QGCExportTileTask(records, path);
     (void) connect(task, &QGCExportTileTask::actionCompleted, this, &QGCMapEngineManager::_actionCompleted);
     (void) connect(task, &QGCExportTileTask::actionProgress, this, &QGCMapEngineManager::_actionProgressHandler);
     (void) connect(task, &QGCMapTask::error, this, &QGCMapEngineManager::taskError);
@@ -443,8 +454,6 @@ QString QGCMapEngineManager::getUniqueName() const
             return name;
         }
     }
-
-    return QString("");
 }
 
 QStringList QGCMapEngineManager::mapList()
@@ -470,4 +479,101 @@ QStringList QGCMapEngineManager::mapProviderList()
 QStringList QGCMapEngineManager::elevationProviderList()
 {
     return UrlFactory::getElevationProviderTypes();
+}
+
+bool QGCMapEngineManager::importArchive(const QString &archivePath)
+{
+    if (archivePath.isEmpty()) {
+        setErrorMessage(tr("No archive path specified"));
+        return false;
+    }
+
+    if (!QFile::exists(archivePath)) {
+        setErrorMessage(tr("Archive file not found: %1").arg(archivePath));
+        return false;
+    }
+
+    if (!QGCCompression::isArchiveFile(archivePath)) {
+        setErrorMessage(tr("Not a supported archive format: %1").arg(archivePath));
+        return false;
+    }
+
+    if (_importAction == ImportAction::ActionImporting) {
+        setErrorMessage(tr("Import already in progress"));
+        return false;
+    }
+
+    const QString tempPath = QDir::temp().filePath(QStringLiteral("qgc_tiles_") + QString::number(QDateTime::currentMSecsSinceEpoch()));
+    if (!QDir().mkpath(tempPath)) {
+        setErrorMessage(tr("Could not create temporary directory"));
+        return false;
+    }
+
+    _extractionOutputDir = tempPath;
+
+    if (_extractionJob == nullptr) {
+        _extractionJob = new QGCCompressionJob(this);
+        connect(_extractionJob, &QGCCompressionJob::progressChanged,
+                this, &QGCMapEngineManager::_handleExtractionProgress);
+        connect(_extractionJob, &QGCCompressionJob::finished,
+                this, &QGCMapEngineManager::_handleExtractionFinished);
+    }
+
+    setImportAction(ImportAction::ActionImporting);
+    setActionProgress(0);
+
+    _extractionJob->extractArchive(archivePath, tempPath);
+    return true;
+}
+
+void QGCMapEngineManager::_handleExtractionProgress(qreal progress)
+{
+    setActionProgress(static_cast<int>(progress * 50.0));
+}
+
+void QGCMapEngineManager::_handleExtractionFinished(bool success)
+{
+    if (!success) {
+        const QString error = _extractionJob != nullptr ? _extractionJob->errorString() : tr("Extraction failed");
+        setErrorMessage(error);
+        setImportAction(ImportAction::ActionDone);
+        QDir(_extractionOutputDir).removeRecursively();
+        _extractionOutputDir.clear();
+        return;
+    }
+
+    QString dbPath;
+    QDirIterator it(_extractionOutputDir, {QStringLiteral("*.db"), QStringLiteral("*.sqlite")},
+                    QDir::Files, QDirIterator::Subdirectories);
+    if (it.hasNext()) {
+        dbPath = it.next();
+    }
+
+    if (dbPath.isEmpty()) {
+        setErrorMessage(tr("No tile database found in archive"));
+        setImportAction(ImportAction::ActionDone);
+        QDir(_extractionOutputDir).removeRecursively();
+        _extractionOutputDir.clear();
+        return;
+    }
+
+    qCDebug(QGCMapEngineManagerLog) << "Found tile database:" << dbPath;
+
+    QGCImportTileTask *task = new QGCImportTileTask(dbPath, _importReplace);
+    (void) connect(task, &QGCImportTileTask::actionCompleted, this, [this]() {
+        _actionCompleted();
+        QDir(_extractionOutputDir).removeRecursively();
+        _extractionOutputDir.clear();
+    });
+    (void) connect(task, &QGCImportTileTask::actionProgress, this, [this](int percentage) {
+        setActionProgress(50 + (percentage / 2));
+    });
+    (void) connect(task, &QGCMapTask::error, this, &QGCMapEngineManager::taskError);
+    if (!getQGCMapEngine()->addTask(task)) {
+        task->deleteLater();
+        setErrorMessage(tr("Failed to start import task"));
+        setImportAction(ImportAction::ActionDone);
+        QDir(_extractionOutputDir).removeRecursively();
+        _extractionOutputDir.clear();
+    }
 }

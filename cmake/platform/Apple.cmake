@@ -6,7 +6,12 @@ if(NOT APPLE)
     message(FATAL_ERROR "QGC: Invalid Platform: Apple.cmake included but platform is not Apple")
 endif()
 
-if(CMAKE_GENERATOR STREQUAL "Xcode")
+# .mm sources (e.g. GstIOSurfaceVideoBuffer.mm) need OBJCXX rules at root scope so
+# CMAKE_OBJCXX_COMPILE_OBJECT is populated for the QGC target. Done here unconditionally
+# for macOS + iOS rather than relying on a deferred enable_language inside Find modules.
+enable_language(OBJC OBJCXX)
+
+if(CMAKE_GENERATOR STREQUAL "Xcode" AND MACOS)
     # set(CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM
     # set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE
     # set(CMAKE_XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER
@@ -26,7 +31,6 @@ cmake_path(GET QGC_MACOS_ICON_PATH FILENAME MACOSX_BUNDLE_ICON_FILE)
 
 set_target_properties(${CMAKE_PROJECT_NAME}
     PROPERTIES
-        MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_INFO_PLIST "${QGC_MACOS_PLIST_PATH}"
         MACOSX_BUNDLE_BUNDLE_NAME "${CMAKE_PROJECT_NAME}"
         MACOSX_BUNDLE_BUNDLE_VERSION "${CMAKE_PROJECT_VERSION}"
@@ -58,14 +62,11 @@ if(MACOS)
     message(STATUS "QGC: macOS platform configuration applied")
 elseif(IOS)
     # iOS-specific configuration
-    enable_language(OBJC)
-
-    set(QT_IOS_LAUNCH_SCREEN "${CMAKE_SOURCE_DIR}/deploy/ios/QGCLaunchScreen.xib")
 
     # set(CMAKE_XCODE_ATTRIBUTE_ARCHS
     # set(CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE
-    set(CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "14.0")
-    set(CMAKE_XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2") # iPhone,iPad
+    set(CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "${QGC_IOS_DEPLOYMENT_TARGET}")
+    set(CMAKE_XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "${QGC_IOS_TARGETED_DEVICE_FAMILY}")
     set(CMAKE_XCODE_ATTRIBUTE_INFOPLIST_FILE "${CMAKE_SOURCE_DIR}/deploy/ios/iOS-Info.plist")
 
     set_target_properties(${CMAKE_PROJECT_NAME}
@@ -76,16 +77,17 @@ elseif(IOS)
             XCODE_ATTRIBUTE_CURRENT_PROJECT_VERSION ${CMAKE_PROJECT_VERSION}
             XCODE_ATTRIBUTE_MARKETING_VERSION "${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}"
             XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon"
-            XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "14.0"
-            XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2" # iPhone,iPad
+            XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "${QGC_IOS_DEPLOYMENT_TARGET}"
+            XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "${QGC_IOS_TARGETED_DEVICE_FAMILY}"
             XCODE_ATTRIBUTE_INFOPLIST_KEY_CFBundleDisplayName ${CMAKE_PROJECT_NAME}
-            XCODE_ATTRIBUTE_INFOPLIST_KEY_LSApplicationCategoryType "public.app-category.mycategory"
+            XCODE_ATTRIBUTE_INFOPLIST_KEY_LSApplicationCategoryType "public.app-category.navigation"
             XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS "YES"
     )
 
-    # Add FFmpeg libraries for iOS if needed
     # set(QT_NO_FFMPEG_XCODE_EMBED_FRAMEWORKS_CODE_SIGN_ON_COPY ON)
-    qt_add_ios_ffmpeg_libraries(${CMAKE_PROJECT_NAME})
+    if(COMMAND qt_add_ios_ffmpeg_libraries)
+        qt_add_ios_ffmpeg_libraries(${CMAKE_PROJECT_NAME})
+    endif()
 
     message(STATUS "QGC: iOS platform configuration applied")
 endif()

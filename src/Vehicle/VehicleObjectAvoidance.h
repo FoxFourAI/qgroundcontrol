@@ -1,12 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
 #include <QtCore/QObject>
@@ -14,7 +5,8 @@
 #include <QtCore/QPointF>
 #include <QtQmlIntegration/QtQmlIntegration>
 
-#include "MAVLinkLib.h"
+#include "MAVLinkMessageType.h"
+#include "QGCMAVLinkTypes.h"
 
 class Vehicle;
 
@@ -69,4 +61,3 @@ private:
 
     static constexpr const char* kColPrevParam = "CP_DIST";
 };
-

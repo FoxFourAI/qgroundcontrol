@@ -7,7 +7,7 @@ qt_add_library(QGroundControlModule STATIC)
 # ----------------------------------------------------------------------------
 # QML Resources
 # ----------------------------------------------------------------------------
-set_source_files_properties(UI/MainWindow.qml
+set_source_files_properties(MainWindow/MainWindow.qml
     PROPERTIES
         QT_RESOURCE_ALIAS MainWindow.qml
 )
@@ -17,11 +17,16 @@ qt_add_qml_module(QGroundControlModule
     VERSION 1.0
     RESOURCE_PREFIX /qml
     QML_FILES
-        UI/MainWindow.qml
+        MainWindow/MainWindow.qml
+        MainWindow/MainWindowSavedState.qml
     IMPORTS
         QGC
     NO_PLUGIN
 )
+
+if(IOS)
+    set(QGC_NO_SERIAL_LINK ON CACHE BOOL "Disable serial port communication" FORCE)
+endif()
 
 # ============================================================================
 # Subdirectories
@@ -36,21 +41,25 @@ add_subdirectory(Camera)
 add_subdirectory(Comms)
 add_subdirectory(FactSystem)
 add_subdirectory(FirmwarePlugin)
-add_subdirectory(FlightDisplay)
+add_subdirectory(FlyView)
 add_subdirectory(FlightMap)
 add_subdirectory(FollowMe)
 add_subdirectory(Gimbal)
 add_subdirectory(GPS)
+add_subdirectory(Utilities)
+# Must be added after Utilities — links QGCLogging/QGCFileSystem/QGCNetwork/QGCCompression.
+add_subdirectory(LogManager)
 add_subdirectory(Joystick)
 add_subdirectory(MAVLink)
 add_subdirectory(MissionManager)
+add_subdirectory(PlanView)
 add_subdirectory(PositionManager)
 add_subdirectory(QmlControls)
 add_subdirectory(Settings)
 add_subdirectory(Terrain)
-add_subdirectory(UI)
-add_subdirectory(Utilities)
-add_subdirectory(UTMSP)
+add_subdirectory(AppSettings)
+add_subdirectory(FirstRunPromptDialogs)
+add_subdirectory(Toolbar)
 add_subdirectory(Vehicle)
 add_subdirectory(VideoManager)
 add_subdirectory(Viewer3D)
@@ -73,14 +82,6 @@ target_sources(${CMAKE_PROJECT_NAME}
         QGCApplication.h
 )
 
-# Platform-specific sources
-if(NOT ANDROID AND NOT IOS)
-    target_sources(${CMAKE_PROJECT_NAME}
-        PRIVATE
-            RunGuard.cc
-            RunGuard.h
-    )
-endif()
 
 # ----------------------------------------------------------------------------
 # Include Directories
@@ -88,6 +89,7 @@ endif()
 target_include_directories(${CMAKE_PROJECT_NAME}
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_BINARY_DIR}
 )
 
 # ============================================================================
@@ -97,25 +99,25 @@ target_include_directories(${CMAKE_PROJECT_NAME}
 target_link_libraries(${CMAKE_PROJECT_NAME}
     PRIVATE
         # Qt6 Core
-        Qt6::Charts
+        Qt6::Graphs
         Qt6::Concurrent
         Qt6::Core
-        Qt6::Core5Compat
         Qt6::CorePrivate
         Qt6::Gui
+        Qt6::GuiPrivate
+        Qt6::HttpServer
         Qt6::Network
-        Qt6::Sensors
-        Qt6::Svg
-        Qt6::TextToSpeech
-        Qt6::Widgets
-        Qt6::Xml
         Qt6::StateMachine
+        Qt6::Svg
+        Qt6::Xml
 
         # Qt6 QML/Quick
         Qt6::Qml
         Qt6::QmlIntegration
         Qt6::Quick
+        Qt6::Quick3D
         Qt6::QuickControls2
+        Qt6::QuickVectorImage
 
         # Qt6 Location
         Qt6::Location
@@ -134,12 +136,12 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         AutoPilotPluginsCommonModule
         FactControlsModule
         FirstRunPromptDialogsModule
-        FlightDisplayModule
+        FlyViewModule
         FlightMapModule
+        PlanViewModule
         QGroundControlControlsModule
         QGroundControlModule
         ToolbarModule
-        UTMSPModule
         VehicleSetupModule
 )
 
@@ -154,48 +156,30 @@ if(NOT QGC_DISABLE_PX4_PLUGIN)
     target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE AutoPilotPluginsPX4Module)
 endif()
 
-if(QGC_VIEWER3D)
-    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Viewer3DModule)
-endif()
-
-if(NOT QGC_AIRLINK_DISABLED)
-    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE AirLinkModule)
-endif()
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Viewer3DModule)
 
 # ============================================================================
 # Compile Definitions
 # ============================================================================
 
-# Application metadata
+# Application metadata (version macros provided via generated qgc_version.h)
 target_compile_definitions(${CMAKE_PROJECT_NAME}
     PRIVATE
-        QGC_APP_NAME="${QGC_APP_NAME}"
-        QGC_ORG_NAME="${QGC_ORG_NAME}"
-        QGC_ORG_DOMAIN="${QGC_ORG_DOMAIN}"
-        QGC_APP_VERSION_STR="${QGC_APP_VERSION_STR}"
-        QGC_APP_DATE="${QGC_APP_DATE}"
-        QGC_APP_DESCRIPTION="${QGC_APP_DESCRIPTION}"
-        QGC_SETTINGS_VERSION=${QGC_SETTINGS_VERSION}
         $<$<NOT:$<BOOL:${QGC_STABLE_BUILD}>>:QGC_DAILY_BUILD>
         $<$<BOOL:${QGC_DISABLE_APM_MAVLINK}>:QGC_NO_ARDUPILOT_DIALECT>
 )
 
-# Build configuration-specific definitions
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_compile_definitions(${CMAKE_PROJECT_NAME}
-        PRIVATE
-            NDEBUG
-            QT_NO_DEBUG
-            QT_MESSAGELOGCONTEXT
-    )
-else()
-    target_compile_definitions(${CMAKE_PROJECT_NAME}
-        PRIVATE
-            QT_DISABLE_DEPRECATED_UP_TO=0x060800
-            QT_ENABLE_STRICT_MODE_UP_TO=0x060800
-            $<$<BOOL:${QGC_DEBUG_QML}>:QT_QML_DEBUG>
-    )
-endif()
+target_compile_definitions(${CMAKE_PROJECT_NAME}
+    PRIVATE
+        QT_DISABLE_DEPRECATED_UP_TO=${QGC_QT_DISABLE_DEPRECATED_UP_TO}
+        QT_ENABLE_STRICT_MODE_UP_TO=${QGC_QT_ENABLE_STRICT_MODE_UP_TO}
+)
+
+target_compile_definitions(${CMAKE_PROJECT_NAME}
+    PRIVATE
+        $<$<CONFIG:Release>:QT_MESSAGELOGCONTEXT>
+        $<$<AND:$<NOT:$<CONFIG:Release>>,$<BOOL:${QGC_DEBUG_QML}>>:QT_QML_DEBUG>
+)
 
 # ============================================================================
 # Target Properties
@@ -207,10 +191,14 @@ set_target_properties(${CMAKE_PROJECT_NAME}
         OUTPUT_NAME ${CMAKE_PROJECT_NAME}
 )
 
-# ----------------------------------------------------------------------------
-# Precompiled Headers
-# ----------------------------------------------------------------------------
+# Helper STATIC libs declare their own tailored PCH; REUSE_FROM is impractical
+# because clang's PCH validator requires matching link-set-derived defines.
 target_precompile_headers(${CMAKE_PROJECT_NAME} PRIVATE pch.h)
+
+# Side-effect-free (no qt_add_qml_module / qt_add_resources / static-init registration) — link-interface pruning is safe.
+set_target_properties(QGCFileSystem QGCSensors QGCAudio
+    PROPERTIES OPTIMIZE_DEPENDENCIES ON
+)
 
 # ============================================================================
 # Custom Build Configuration

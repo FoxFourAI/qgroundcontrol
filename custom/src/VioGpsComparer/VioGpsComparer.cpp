@@ -4,12 +4,14 @@
 #include "OnboardComputersManager.h"
 #include "FoxFourAutoPilotPlugin.h"
 #include "FoxFourPlugin.h"
+#include "VehicleLinkManager.h"
 
 
 VioGpsComparer::VioGpsComparer(Vehicle *vehicle, QObject *parent): QObject(parent){
 
     _vehicle = vehicle;
-    connect(_vehicle,&Vehicle::updateTrajectory,this,&VioGpsComparer::_handleTrajectory);
+    //FOXFOUR_TODO: add updateTrajectory to the Vehicle
+    // connect(_vehicle,&Vehicle::updateTrajectory,this,&VioGpsComparer::_handleTrajectory);
 
     _refreshTimer.setInterval(_refreshInterval);
     connect(&_refreshTimer,&QTimer::timeout,this,&VioGpsComparer::_handleTimeout);

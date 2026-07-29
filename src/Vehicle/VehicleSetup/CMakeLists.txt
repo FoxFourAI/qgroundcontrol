@@ -7,13 +7,12 @@ target_sources(${CMAKE_PROJECT_NAME}
     PRIVATE
         JoystickConfigController.cc
         JoystickConfigController.h
+        RemoteControlCalibrationController.cc
+        RemoteControlCalibrationController.h
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-# ----------------------------------------------------------------------------
-# Firmware Upgrade (requires serial link)
-# ----------------------------------------------------------------------------
 if(NOT QGC_NO_SERIAL_LINK)
     target_sources(${CMAKE_PROJECT_NAME}
         PRIVATE
@@ -28,9 +27,6 @@ if(NOT QGC_NO_SERIAL_LINK)
     )
 endif()
 
-# ----------------------------------------------------------------------------
-# Vehicle Setup QML Module
-# ----------------------------------------------------------------------------
 qt_add_library(VehicleSetupModule STATIC)
 
 qt_add_qml_module(VehicleSetupModule
@@ -39,14 +35,24 @@ qt_add_qml_module(VehicleSetupModule
     RESOURCE_PREFIX /qml
     QML_FILES
         FirmwareUpgrade.qml
-        JoystickConfig.qml
-        JoystickConfigAdvanced.qml
-        JoystickConfigButtons.qml
-        JoystickConfigCalibration.qml
-        JoystickConfigGeneral.qml
+        JoystickComponent.qml
+        JoystickComponentButtons.qml
+        JoystickComponentButtonMonitor.qml
+        JoystickComponentSettings.qml
         OpticalFlowSensor.qml
+        RemoteControlCalibration.qml
+        RemoteControlChannelMonitor.qml
+        RemoteControlChannelValueDisplay.qml
         SetupParameterEditor.qml
-        SetupView.qml
+        VehicleConfigView.qml
         VehicleSummary.qml
     NO_PLUGIN
+)
+
+qt_add_resources(${CMAKE_PROJECT_NAME} vehiclesetup_qmlimages
+    PREFIX "/qmlimages"
+    BASE "${CMAKE_CURRENT_SOURCE_DIR}"
+    FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/FirmwareUpgradeIcon.png"
+        "${CMAKE_CURRENT_SOURCE_DIR}/VehicleSummaryIcon.png"
 )

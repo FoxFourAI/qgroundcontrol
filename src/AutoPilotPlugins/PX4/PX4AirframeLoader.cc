@@ -1,18 +1,5 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
-
-/// @file
-///     @author Don Gagne <don@thegagnes.com>
-
 #include "PX4AirframeLoader.h"
-#include "QGCApplication.h"
+#include "AppMessages.h"
 #include "QGCLoggingCategory.h"
 #include "AirframeComponentAirframes.h"
 #include "AutoPilotPlugin.h"
@@ -60,7 +47,7 @@ void PX4AirframeLoader::loadAirframeMetaData(void)
     QString airframeFilename;
 
     // We want unit test builds to always use the resource based meta data to provide repeatable results
-    if (!qgcApp()->runningUnitTests()) {
+    if (!QGC::runningUnitTests()) {
         // First look for meta data that comes from a firmware download. Fall back to resource if not there.
         airframeFilename = aiframeMetaDataFile();
     }

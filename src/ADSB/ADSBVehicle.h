@@ -1,24 +1,12 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
 #include <QtCore/QElapsedTimer>
-#include <QtCore/QLoggingCategory>
 #include <QtCore/QtNumeric>
 #include <QtCore/QObject>
 #include <QtPositioning/QGeoCoordinate>
 #include <QtQmlIntegration/QtQmlIntegration>
 
 #include "ADSB.h"
-
-Q_DECLARE_LOGGING_CATEGORY(ADSBVehicleLog)
 
 class ADSBVehicle : public QObject
 {

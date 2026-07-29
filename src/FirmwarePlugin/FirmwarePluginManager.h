@@ -1,15 +1,5 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
-#include <QtCore/QLoggingCategory>
 #include <QtCore/QObject>
 
 #include "QGCMAVLink.h"
@@ -17,9 +7,8 @@
 class FirmwarePlugin;
 class FirmwarePluginFactory;
 
-Q_DECLARE_LOGGING_CATEGORY(FirmwarePluginManagerLog)
-
-/// FirmwarePluginManager is a singleton which is used to return the correct FirmwarePlugin for a MAV_AUTOPILOT type.
+/// \brief FirmwarePluginManager is a singleton which is used to return the correct FirmwarePlugin for a MAV_AUTOPILOT type.
+///
 class FirmwarePluginManager : public QObject
 {
     Q_OBJECT

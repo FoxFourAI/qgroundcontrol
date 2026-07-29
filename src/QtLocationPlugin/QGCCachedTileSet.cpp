@@ -1,22 +1,11 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "QGCCachedTileSet.h"
 
-#include <QtNetwork/QNetworkProxy>
-
 #include "ElevationMapProvider.h"
-#include "QGCApplication.h"
-#include "QGCFileDownload.h"
+#include "QGCFormat.h"
 #include "QGCLoggingCategory.h"
 #include "QGCMapEngine.h"
 #include "QGCMapEngineManager.h"
+#include "QGCNetworkHelper.h"
 #include "QGCMapTasks.h"
 #include "QGCMapUrlEngine.h"
 #include "QGeoFileTileCacheQGC.h"
@@ -108,11 +97,7 @@ void QGCCachedTileSet::_tileListFetched(const QQueue<QGCTile*> &tiles)
 
     if (!_networkManager) {
         _networkManager = new QNetworkAccessManager(this);
-#if !defined(Q_OS_IOS) && !defined(Q_OS_ANDROID)
-        QNetworkProxy proxy = _networkManager->proxy();
-        proxy.setType(QNetworkProxy::DefaultProxy);
-        _networkManager->setProxy(proxy);
-#endif
+        QGCNetworkHelper::configureProxy(_networkManager);
     }
 
     _tilesToDownload.append(tiles);
@@ -126,10 +111,10 @@ void QGCCachedTileSet::_doneWithDownload()
         setTotalTileSize(_savedTileSize);
 
         quint32 avg = 0;
-        if (_savedTileSize != 0) {
+        if (_savedTileCount != 0) {
             avg = _savedTileSize / _savedTileCount;
         } else {
-            qCWarning(QGCCachedTileSetLog) << "_savedTileSize=0";
+            qCWarning(QGCCachedTileSetLog) << "_savedTileCount=0";
         }
 
         setUniqueTileSize(_uniqueTileCount * avg);
@@ -157,17 +142,25 @@ void QGCCachedTileSet::_prepareDownload()
         }
 
         QGCTile* const tile = _tilesToDownload.dequeue();
-        const int mapId = UrlFactory::getQtMapIdFromProviderType(tile->type);
-        QNetworkRequest request = QGeoTileFetcherQGC::getNetworkRequest(mapId, tile->x, tile->y, tile->z);
+        QNetworkRequest request = QGeoTileFetcherQGC::getNetworkRequest(tile->type, tile->x, tile->y, tile->z);
+        if (!request.url().isValid()) {
+            qCWarning(QGCCachedTileSetLog) << "Invalid URL for tile" << tile->hash << "- skipping";
+            setErrorCount(_errorCount + 1);
+            delete tile;
+            continue;
+        }
         request.setOriginatingObject(this);
         request.setAttribute(QNetworkRequest::User, tile->hash);
 
         QNetworkReply* const reply = _networkManager->get(request);
         reply->setParent(this);
-        QGCFileDownload::setIgnoreSSLErrorsIfNeeded(*reply);
+        QGCNetworkHelper::ignoreSslErrorsIfNeeded(reply);
         (void) connect(reply, &QNetworkReply::finished, this, &QGCCachedTileSet::_networkReplyFinished);
         (void) connect(reply, &QNetworkReply::errorOccurred, this, &QGCCachedTileSet::_networkReplyError);
-        (void) _replies.insert(tile->hash, reply);
+        {
+            QMutexLocker lock(&_repliesMutex);
+            (void) _replies.insert(tile->hash, reply);
+        }
 
         delete tile;
         if (!_batchRequested && !_noMoreTiles && (_tilesToDownload.count() < (QGeoTileFetcherQGC::concurrentDownloads(_type) * 10))) {
@@ -200,10 +193,13 @@ void QGCCachedTileSet::_networkReplyFinished()
         return;
     }
 
-    if (_replies.contains(hash)) {
-        (void) _replies.remove(hash);
-    } else {
-        qCWarning(QGCCachedTileSetLog) << "Reply not in list: " << hash;
+    {
+        QMutexLocker lock(&_repliesMutex);
+        if (_replies.contains(hash)) {
+            (void) _replies.remove(hash);
+        } else {
+            qCWarning(QGCCachedTileSetLog) << "Reply not in list: " << hash;
+        }
     }
     qCDebug(QGCCachedTileSetLog) << "Tile fetched:" << hash;
 
@@ -215,7 +211,10 @@ void QGCCachedTileSet::_networkReplyFinished()
 
     const QString type = UrlFactory::tileHashToType(hash);
     const SharedMapProvider mapProvider = UrlFactory::getMapProviderFromProviderType(type);
-    Q_CHECK_PTR(mapProvider);
+    if (!mapProvider) {
+        qCWarning(QGCCachedTileSetLog) << "Invalid map provider for type:" << type;
+        return;
+    }
 
     if (mapProvider->isElevationProvider()) {
         const SharedElevationProvider elevationProvider = std::dynamic_pointer_cast<const ElevationProvider>(mapProvider);
@@ -267,10 +266,13 @@ void QGCCachedTileSet::_networkReplyError(QNetworkReply::NetworkError error)
         return;
     }
 
-    if (_replies.contains(hash)) {
-        (void) _replies.remove(hash);
-    } else {
-        qCWarning(QGCCachedTileSetLog) << "Reply not in list:" << hash;
+    {
+        QMutexLocker lock(&_repliesMutex);
+        if (_replies.contains(hash)) {
+            (void) _replies.remove(hash);
+        } else {
+            qCWarning(QGCCachedTileSetLog) << "Reply not in list:" << hash;
+        }
     }
 
     if (error != QNetworkReply::OperationCanceledError) {
@@ -298,35 +300,35 @@ void QGCCachedTileSet::setSelected(bool sel)
 
 QString QGCCachedTileSet::errorCountStr() const
 {
-    return qgcApp()->numberToString(_errorCount);
+    return QGC::numberToString(_errorCount);
 }
 
 QString QGCCachedTileSet::totalTileCountStr() const
 {
-    return qgcApp()->numberToString(_totalTileCount);
+    return QGC::numberToString(_totalTileCount);
 }
 
 QString QGCCachedTileSet::totalTilesSizeStr() const
 {
-    return qgcApp()->bigSizeToString(_totalTileSize);
+    return QGC::bigSizeToString(_totalTileSize);
 }
 
 QString QGCCachedTileSet::uniqueTileSizeStr() const
 {
-    return qgcApp()->bigSizeToString(_uniqueTileSize);
+    return QGC::bigSizeToString(_uniqueTileSize);
 }
 
 QString QGCCachedTileSet::uniqueTileCountStr() const
 {
-    return qgcApp()->numberToString(_uniqueTileCount);
+    return QGC::numberToString(_uniqueTileCount);
 }
 
 QString QGCCachedTileSet::savedTileCountStr() const
 {
-    return qgcApp()->numberToString(_savedTileCount);
+    return QGC::numberToString(_savedTileCount);
 }
 
 QString QGCCachedTileSet::savedTileSizeStr() const
 {
-    return qgcApp()->bigSizeToString(_savedTileSize);
+    return QGC::bigSizeToString(_savedTileSize);
 }

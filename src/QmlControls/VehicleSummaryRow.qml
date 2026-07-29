@@ -2,20 +2,28 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import QGroundControl
+import QGroundControl.Controls
+
 RowLayout {
+    id: root
+    Layout.fillWidth: true
+    spacing: ScreenTools.defaultFontPixelHeight
+
     property string labelText: "Label"
     property string valueText: "value"
-
-    width: parent.width
+    property string valueColor: ""
 
     QGCLabel {
-        id:     label
-        text:   labelText
+        id: label
+        Layout.fillWidth: true
+        text: root.labelText
     }
+
     QGCLabel {
-        text:                   valueText
-        elide:                  Text.ElideRight
-        horizontalAlignment:    Text.AlignRight
-        Layout.fillWidth:       true
+        Layout.maximumWidth: ScreenTools.defaultFontPixelWidth * 20
+        text: root.valueText
+        color: root.valueColor !== "" ? root.valueColor : QGroundControl.globalPalette.text
+        elide: Text.ElideRight
     }
 }

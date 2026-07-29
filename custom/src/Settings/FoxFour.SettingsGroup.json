@@ -1,0 +1,75 @@
+{
+    "version": 1,
+    "fileType": "FactMetaData",
+    "QGC.MetaData.Facts": [
+        {
+            "name": "minimalMode",
+            "shortDesc": "Minimal mode will pull only selected parameters from the drone when connected.",
+            "type": "bool",
+            "default": true,
+            "label": "Minimal mode",
+            "keywords": "parameters minimal"
+        },
+        {
+            "name": "trackingRate",
+            "shortDesc": "Define the VGM rate for sending CAMERA_TRACKING_IMAGE_STATUS.",
+            "type": "uint32",
+            "units": "Hz",
+            "default": 2,
+            "min": 1,
+            "max": 1000,
+            "label": "Tracking rate",
+            "keywords": "tracking rate"
+        },
+        {
+            "name": "cacheVehicleParameters",
+            "shortDesc": "Cache vehicle parameters using UID of the FCU",
+            "type": "bool",
+            "default": false,
+            "label": "Cache vehicle parameters",
+            "keywords": "parameters cache save"
+        },
+        {
+            "name": "autoConfigureStream",
+            "shortDesc": "Configure stream automatically if the stream has corresponding info.",
+            "type": "bool",
+            "default": false,
+            "label": "Auto configure video stream",
+            "keywords": "stream"
+        },
+        {
+            "name": "showGPSTrajectory",
+            "shortDesc": "Show GPS_RAW_INT trajectory on map",
+            "type": "bool",
+            "default": true,
+            "label": "Show GPS_RAW_INT trajectory on map",
+            "keywords":"trajectory gps"
+        },
+        {
+            "name": "mapMatchingPointsCnt",
+            "shortDesc": "Map matching max points count",
+            "type": "uint32",
+            "default": 2000,
+            "min": 500,
+            "max": 10000,
+            "label": "Map matching points count",
+            "keywords": "map matching points"
+        },
+        {
+          "name": "enableVGMDialect",
+          "shortDesc": "Use custom MAVLink messages to communicate with VGM.",
+          "type": "bool",
+          "default": true,
+          "label": "Enable VGM Dialect",
+          "keywords":"dialect VGM"
+        },
+        {
+            "name": "videoToolBarOverlap",
+            "shortDesc": "Overlap video with toolbar.",
+            "type": "bool",
+            "default": false,
+            "label": "Toolbar Overlap",
+            "keywords":"dialect VGM"
+        }
+    ]
+}

@@ -1,15 +1,6 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "MultiVehicleManager.h"
 #include "MAVLinkProtocol.h"
-#include "QGCApplication.h"
+#include "AppMessages.h"
 #include "ParameterManager.h"
 #include "SettingsManager.h"
 #include "MavlinkSettings.h"
@@ -42,8 +33,6 @@ MultiVehicleManager::MultiVehicleManager(QObject *parent)
     , _selectedVehicles(new QmlObjectListModel(this))
 {
     qCDebug(MultiVehicleManagerLog) << this;
-
-    (void) qRegisterMetaType<Vehicle::MavCmdResultFailureCode_t>("MavCmdResultFailureCode_t");
 }
 
 MultiVehicleManager::~MultiVehicleManager()
@@ -123,11 +112,10 @@ void MultiVehicleManager::_vehicleHeartbeatInfo(LinkInterface* link, int vehicle
                                     << vehicleType;
 
     if (vehicleId == MAVLinkProtocol::instance()->getSystemId()) {
-        qgcApp()->showAppMessage(tr("Warning: A vehicle is using the same system id as %1: %2").arg(QCoreApplication::applicationName()).arg(vehicleId));
+        QGC::showAppMessage(tr("Warning: A vehicle is using the same system id as %1: %2").arg(QCoreApplication::applicationName()).arg(vehicleId));
     }
 
     Vehicle *const vehicle = new Vehicle(link, vehicleId, componentId, (MAV_AUTOPILOT)vehicleFirmwareType, (MAV_TYPE)vehicleType, this);
-    (void) connect(vehicle, &Vehicle::requestProtocolVersion, this, &MultiVehicleManager::_requestProtocolVersion);
     (void) connect(vehicle->vehicleLinkManager(), &VehicleLinkManager::allLinksRemoved, this, &MultiVehicleManager::_deleteVehiclePhase1);
     (void) connect(vehicle->parameterManager(), &ParameterManager::parametersReadyChanged, this, &MultiVehicleManager::_vehicleParametersReadyChanged);
 
@@ -141,7 +129,7 @@ void MultiVehicleManager::_vehicleHeartbeatInfo(LinkInterface* link, int vehicle
     emit vehicleAdded(vehicle);
 
     if (_vehicles->count() > 1) {
-        qgcApp()->showAppMessage(tr("Connected to Vehicle %1").arg(vehicleId));
+        QGC::showAppMessage(tr("Connected to Vehicle %1").arg(vehicleId));
     } else {
         setActiveVehicle(vehicle);
     }
@@ -156,26 +144,6 @@ void MultiVehicleManager::_vehicleHeartbeatInfo(LinkInterface* link, int vehicle
         #endif
     }
 #endif
-}
-
-void MultiVehicleManager::_requestProtocolVersion(unsigned version) const
-{
-    if (_vehicles->count() == 0) {
-        MAVLinkProtocol::instance()->setVersion(version);
-        return;
-    }
-
-    unsigned maxversion = 0;
-    for (int i = 0; i < _vehicles->count(); i++) {
-        const Vehicle *const vehicle = qobject_cast<const Vehicle*>(_vehicles->get(i));
-        if (vehicle && (vehicle->maxProtoVersion() > maxversion)) {
-            maxversion = vehicle->maxProtoVersion();
-        }
-    }
-
-    if (MAVLinkProtocol::instance()->getCurrentVersion() != maxversion) {
-        MAVLinkProtocol::instance()->setVersion(maxversion);
-    }
 }
 
 void MultiVehicleManager::_deleteVehiclePhase1(Vehicle *vehicle)
@@ -303,7 +271,7 @@ void MultiVehicleManager::_sendGCSHeartbeat()
     }
 
     const QList<SharedLinkInterfacePtr> sharedLinks = LinkManager::instance()->links();
-    for (const SharedLinkInterfacePtr link: sharedLinks) {
+    for (const SharedLinkInterfacePtr &link: sharedLinks) {
         if (!link->isConnected()) {
             continue;
         }
@@ -326,9 +294,7 @@ void MultiVehicleManager::_sendGCSHeartbeat()
             MAV_STATE_ACTIVE
         );
 
-        uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-        const uint16_t len = mavlink_msg_to_send_buffer(buffer, &message);
-        (void) link->writeBytesThreadSafe(reinterpret_cast<const char*>(buffer), len);
+        link->sendMessageThreadSafe(message);
     }
 }
 

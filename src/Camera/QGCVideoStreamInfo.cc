@@ -1,12 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "QGCVideoStreamInfo.h"
 #include "QGCLoggingCategory.h"
 
@@ -18,6 +9,12 @@ QGCVideoStreamInfo::QGCVideoStreamInfo(const mavlink_video_stream_information_t 
     qCDebug(QGCVideoStreamInfoLog) << this;
 
     (void) memcpy(&_streamInfo, &info, sizeof(mavlink_video_stream_information_t));
+    //FoxFour part
+    //We do not send stream encoding for now, so we cast if from the url
+    if(uri().contains("265")){
+        qCDebug(QGCVideoStreamInfoLog) << "stream is 265!!!!!!!!!!!!";
+        _streamInfo.encoding = 2;
+    }
 }
 
 QGCVideoStreamInfo::~QGCVideoStreamInfo()

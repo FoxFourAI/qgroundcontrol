@@ -1,12 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
 #include "MapProvider.h"
@@ -14,7 +5,7 @@
 class EsriMapProvider : public MapProvider
 {
 protected:
-    EsriMapProvider(const QString &mapName, const QString &mapTypeId, quint32 averageSize, QGeoMapType::MapStyle mapType)
+    EsriMapProvider(const QString &mapName, const QString &mapTypeId, quint32 averageSize, MapProvider::MapStyle mapType)
         : MapProvider(
             mapName,
             QStringLiteral(""),
@@ -41,7 +32,7 @@ public:
             QStringLiteral("Esri World Street"),
             QStringLiteral("World_Street_Map"),
             QGC_AVERAGE_TILE_SIZE,
-            QGeoMapType::StreetMap) {}
+            MapProvider::StreetMap) {}
 };
 
 class EsriWorldSatelliteMapProvider : public EsriMapProvider
@@ -52,7 +43,7 @@ public:
             QStringLiteral("Esri World Satellite"),
             QStringLiteral("World_Imagery"),
             QGC_AVERAGE_TILE_SIZE,
-            QGeoMapType::SatelliteMapDay) {}
+            MapProvider::SatelliteMapDay) {}
 };
 
 class EsriTerrainMapProvider : public EsriMapProvider
@@ -63,5 +54,5 @@ public:
             QStringLiteral("Esri Terrain"),
             QStringLiteral("World_Terrain_Base"),
             QGC_AVERAGE_TILE_SIZE,
-            QGeoMapType::TerrainMap) {}
+            MapProvider::TerrainMap) {}
 };

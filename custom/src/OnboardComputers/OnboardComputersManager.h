@@ -90,7 +90,7 @@ public:
             }
         }osVersion;
 
-        mavlink_companion_version_t info{0};
+        mavlink_companion_version_t info;
         Vehicle* vehicle{nullptr};
     };
 

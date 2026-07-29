@@ -1,14 +1,7 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "AppSettings.h"
+#include "QGCFileHelper.h"
 #include "QGCPalette.h"
+#include "AppMessages.h"
 #include "QGCApplication.h"
 #include "QGCMAVLink.h"
 #include "LinkManager.h"
@@ -24,7 +17,7 @@
 // Release languages are 90%+ complete
 QList<QLocale::Language> AppSettings::_rgReleaseLanguages = {
     QLocale::English,
-    QLocale::Azerbaijani,    
+    QLocale::Azerbaijani,
     QLocale::Chinese,
     QLocale::Japanese,
     QLocale::Korean,
@@ -93,7 +86,7 @@ DECLARE_SETTINGGROUP(App, "")
                     qDebug() << "Save to SD card specified for application data. But no SD card present or permissions not granted. Using internal storage.";
                 } else if (!QFileInfo(rootDirPath).isWritable()) {
                     rootDirPath.clear();
-                    qgcApp()->showAppMessage(AppSettings::tr("Save to SD card specified for application data. But SD card is write protected. Using internal storage."));
+                    QGC::showAppMessage(AppSettings::tr("Save to SD card specified for application data. But SD card is write protected. Using internal storage."));
                 }
             }
         #endif
@@ -102,9 +95,14 @@ DECLARE_SETTINGGROUP(App, "")
         }
         savePathFact->setRawValue(QDir(rootDirPath).filePath(appName));
     #endif
-    savePathFact->setVisible(false);
+    savePathFact->setUserVisible(false);
 #else
-        QDir rootDir = QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+        QDir rootDir;
+        if (QGC::runningUnitTests() || qgcApp()->simpleBootTest()) {
+            rootDir = QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation));
+        } else {
+            rootDir = QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+        }
         savePathFact->setRawValue(rootDir.filePath(appName));
 #endif
     }
@@ -113,8 +111,22 @@ DECLARE_SETTINGGROUP(App, "")
     connect(savePathFact, &Fact::rawValueChanged, this, &AppSettings::_checkSavePathDirectories);
 
     _checkSavePathDirectories();
+
+    // When a specific preferred firmware/vehicle is chosen, keep the offline editing settings in sync
+    connect(preferredFirmwareClass(), &Fact::rawValueChanged, this, [this](QVariant value) {
+        if (value.toUInt() != 0) {
+            offlineEditingFirmwareClass()->setRawValue(value);
+        }
+    });
+    connect(preferredVehicleClass(), &Fact::rawValueChanged, this, [this](QVariant value) {
+        if (value.toUInt() != 0) {
+            offlineEditingVehicleClass()->setRawValue(value);
+        }
+    });
 }
 
+DECLARE_SETTINGSFACT(AppSettings, preferredFirmwareClass)
+DECLARE_SETTINGSFACT(AppSettings, preferredVehicleClass)
 DECLARE_SETTINGSFACT(AppSettings, offlineEditingFirmwareClass)
 DECLARE_SETTINGSFACT(AppSettings, offlineEditingVehicleClass)
 DECLARE_SETTINGSFACT(AppSettings, offlineEditingCruiseSpeed)
@@ -124,10 +136,11 @@ DECLARE_SETTINGSFACT(AppSettings, offlineEditingDescentSpeed)
 DECLARE_SETTINGSFACT(AppSettings, batteryPercentRemainingAnnounce)
 DECLARE_SETTINGSFACT(AppSettings, defaultMissionItemAltitude)
 DECLARE_SETTINGSFACT(AppSettings, audioMuted)
+DECLARE_SETTINGSFACT(AppSettings, audioVolume)
 DECLARE_SETTINGSFACT(AppSettings, virtualJoystick)
 DECLARE_SETTINGSFACT(AppSettings, virtualJoystickAutoCenterThrottle)
 DECLARE_SETTINGSFACT(AppSettings, virtualJoystickLeftHandedMode)
-DECLARE_SETTINGSFACT(AppSettings, appFontPointSize)
+DECLARE_SETTINGSFACT(AppSettings, uiScalePercent)
 DECLARE_SETTINGSFACT(AppSettings, savePath)
 DECLARE_SETTINGSFACT(AppSettings, androidDontSaveToSDCard)
 DECLARE_SETTINGSFACT(AppSettings, useChecklist)
@@ -143,11 +156,11 @@ DECLARE_SETTINGSFACT(AppSettings, vworldToken)
 DECLARE_SETTINGSFACT(AppSettings, openaipToken)
 DECLARE_SETTINGSFACT(AppSettings, gstDebugLevel)
 DECLARE_SETTINGSFACT(AppSettings, followTarget)
+DECLARE_SETTINGSFACT(AppSettings, clearSettingsNextBoot)
 DECLARE_SETTINGSFACT(AppSettings, disableAllPersistence)
 DECLARE_SETTINGSFACT(AppSettings, firstRunPromptIdsShown)
-DECLARE_SETTINGSFACT(AppSettings, loginAirLink)
-DECLARE_SETTINGSFACT(AppSettings, passAirLink)
-DECLARE_SETTINGSFACT(AppSettings, cacheParameters)
+DECLARE_SETTINGSFACT(AppSettings, favoriteParameters)
+DECLARE_SETTINGSFACT(AppSettings, showAppLogTimestampAsElapsedTime)
 
 DECLARE_SETTINGSFACT_NO_FUNC(AppSettings, indoorPalette)
 {
@@ -193,6 +206,11 @@ DECLARE_SETTINGSFACT_NO_FUNC(AppSettings, qLocaleLanguage)
             }
         }
 #endif
+#ifdef QT_DEBUG
+        // Debug builds include pseudo-localization for UI layout testing
+        rgEnumStrings.append(AppSettings::tr("Pseudo Localization (Test Only)"));
+        rgEnumValues.append(QLocale::Esperanto);
+#endif
         metaData->setEnumInfo(rgEnumStrings, rgEnumValues);
 
         if (_qLocaleLanguageFact->enumIndex() == -1) {
@@ -209,20 +227,18 @@ void AppSettings::_qLocaleLanguageChanged()
 
 void AppSettings::_checkSavePathDirectories(void)
 {
-    QDir savePathDir(savePath()->rawValue().toString());
-    if (!savePathDir.exists()) {
-        QDir().mkpath(savePathDir.absolutePath());
-    }
-    if (savePathDir.exists()) {
-        savePathDir.mkdir(parameterDirectory);
-        savePathDir.mkdir(telemetryDirectory);
-        savePathDir.mkdir(missionDirectory);
-        savePathDir.mkdir(logDirectory);
-        savePathDir.mkdir(videoDirectory);
-        savePathDir.mkdir(photoDirectory);
-        savePathDir.mkdir(crashDirectory);
-        savePathDir.mkdir(mavlinkActionsDirectory);
-        savePathDir.mkdir(settingsDirectory);
+    const QString savePath = this->savePath()->rawValue().toString();
+    if (QGCFileHelper::ensureDirectoryExists(savePath)) {
+        // Create all subdirectories
+        QGCFileHelper::ensureDirectoryExists(QGCFileHelper::joinPath(savePath, parameterDirectory));
+        QGCFileHelper::ensureDirectoryExists(QGCFileHelper::joinPath(savePath, telemetryDirectory));
+        QGCFileHelper::ensureDirectoryExists(QGCFileHelper::joinPath(savePath, missionDirectory));
+        QGCFileHelper::ensureDirectoryExists(QGCFileHelper::joinPath(savePath, logDirectory));
+        QGCFileHelper::ensureDirectoryExists(QGCFileHelper::joinPath(savePath, videoDirectory));
+        QGCFileHelper::ensureDirectoryExists(QGCFileHelper::joinPath(savePath, photoDirectory));
+        QGCFileHelper::ensureDirectoryExists(QGCFileHelper::joinPath(savePath, crashDirectory));
+        QGCFileHelper::ensureDirectoryExists(QGCFileHelper::joinPath(savePath, mavlinkActionsDirectory));
+        QGCFileHelper::ensureDirectoryExists(QGCFileHelper::joinPath(savePath, settingsDirectory));
     }
 }
 
@@ -322,9 +338,9 @@ void AppSettings::firstRunPromptIdsMarkIdAsShown(int id)
 }
 
 /// Returns the current qLocaleLanguage setting bypassing the standard SettingsGroup path. It also validates
-/// that the value is a supported language. This should only be used by QGCApplication::setLanguage to query 
-/// the language setting as early in the boot process as possible. Specfically prior to any JSON files being 
-/// loaded such that JSON file can be translated. Also since this is a one-off mechanism custom build overrides 
+/// that the value is a supported language. This should only be used by QGCApplication::setLanguage to query
+/// the language setting as early in the boot process as possible. Specfically prior to any JSON files being
+/// loaded such that JSON file can be translated. Also since this is a one-off mechanism custom build overrides
 /// for language are not currently supported.
 QLocale::Language AppSettings::_qLocaleLanguageEarlyAccess(void)
 {
@@ -337,6 +353,12 @@ QLocale::Language AppSettings::_qLocaleLanguageEarlyAccess(void)
             return localeLanguage;
         }
     }
+
+#ifdef QT_DEBUG
+    if (localeLanguage == QLocale::Esperanto) {
+        return localeLanguage;
+    }
+#endif
 
     localeLanguage = QLocale::AnyLanguage;
     settings.setValue(qLocaleLanguageName, localeLanguage);

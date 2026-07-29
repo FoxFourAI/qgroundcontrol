@@ -1,23 +1,12 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
-#include <QtCore/QLoggingCategory>
 #include <QtQmlIntegration/QtQmlIntegration>
 
 #include "QGCTileSet.h"
-#include "QGCMapTasks.h"
-
-Q_DECLARE_LOGGING_CATEGORY(QGCMapEngineManagerLog)
+#include "QGCMapTaskBase.h"
 
 class QGCCachedTileSet;
+class QGCCompressionJob;
 class QmlObjectListModel;
 
 class QGCMapEngineManager : public QObject
@@ -58,6 +47,12 @@ public:
     Q_INVOKABLE bool exportSets(const QString &path = QString());
     Q_INVOKABLE bool findName(const QString &name) const;
     Q_INVOKABLE bool importSets(const QString &path = QString());
+
+    /// Import tile sets from an archive file (.zip, .tar.gz, etc.)
+    /// If the path is an archive, it will be extracted first, then imported.
+    /// @param archivePath Path to the archive file
+    /// @return true if import/extraction started successfully
+    Q_INVOKABLE bool importArchive(const QString &archivePath);
     Q_INVOKABLE QString getUniqueName() const;
     Q_INVOKABLE void deleteTileSet(QGCCachedTileSet *tileSet);
     Q_INVOKABLE void loadTileSets();
@@ -113,6 +108,8 @@ private slots:
     void _tileSetFetched(QGCCachedTileSet *tileSets);
     void _tileSetSaved(QGCCachedTileSet *set);
     void _updateTotals(quint32 totaltiles, quint64 totalsize, quint32 defaulttiles, quint64 defaultsize);
+    void _handleExtractionProgress(qreal progress);
+    void _handleExtractionFinished(bool success);
 
 private:
     QmlObjectListModel *_tileSets = nullptr;
@@ -130,6 +127,8 @@ private:
     QString _errorMessage;
     bool _fetchElevation = true;
     bool _importReplace = false;
+    QGCCompressionJob *_extractionJob = nullptr;
+    QString _extractionOutputDir;
 
     static constexpr const char *kQmlOfflineMapKeyName = "QGCOfflineMap";
 };

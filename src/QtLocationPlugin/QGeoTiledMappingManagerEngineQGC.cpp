@@ -1,12 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "QGeoTiledMappingManagerEngineQGC.h"
 
 #include <mutex>
@@ -21,8 +12,8 @@
 #include <QtLocation/private/qgeotiledmap_p.h>
 #include <QtLocation/private/qgeofiletilecache_p.h>
 
-#include "DeviceInfo.h"
 #include "MapProvider.h"
+#include "QGCNetworkHelper.h"
 #include "QGCApplication.h"
 #include "QGCLoggingCategory.h"
 #include "QGCMapEngine.h"
@@ -66,7 +57,7 @@ QGeoTiledMappingManagerEngineQGC::QGeoTiledMappingManagerEngineQGC(const QVarian
     const QList<SharedMapProvider> providers = UrlFactory::getProviders();
     for (const SharedMapProvider &provider : providers) {
         const QGeoMapType map = QGeoMapType(
-            provider->getMapStyle(),
+            static_cast<QGeoMapType::MapStyle>(provider->getMapStyle()),
             provider->getMapName(),
             provider->getMapName(),
             false,
@@ -89,7 +80,7 @@ QGeoTiledMappingManagerEngineQGC::QGeoTiledMappingManagerEngineQGC(const QVarian
         getQGCMapEngine()->init(fileTileCache->getDatabaseFilePath());
     });
 
-    m_prefetchStyle = QGCDeviceInfo::isInternetAvailable() ? QGeoTiledMap::PrefetchTwoNeighbourLayers : QGeoTiledMap::NoPrefetching;
+    m_prefetchStyle = QGCNetworkHelper::isInternetAvailable() ? QGeoTiledMap::PrefetchTwoNeighbourLayers : QGeoTiledMap::NoPrefetching;
     (void) connect(QNetworkInformation::instance(), &QNetworkInformation::reachabilityChanged, this, [this](QNetworkInformation::Reachability newReachability) {
         if (newReachability == QNetworkInformation::Reachability::Online) {
             m_prefetchStyle = QGeoTiledMap::PrefetchTwoNeighbourLayers;

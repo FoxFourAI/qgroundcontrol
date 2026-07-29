@@ -21,11 +21,9 @@ if(ANDROID)
             set(DEFAULT_ANDROID_DIR "${CMAKE_SOURCE_DIR}/android")
             set(FINAL_ANDROID_DIR "${CMAKE_BINARY_DIR}/custom/android")
 
-            # Copy default Android template
             file(COPY "${DEFAULT_ANDROID_DIR}/." DESTINATION "${FINAL_ANDROID_DIR}")
 
-            # Overlay custom Android files
-            file(COPY "${CUSTOM_ANDROID_DIR}/." DESTINATION "${FINAL_ANDROID_DIR}")
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory "${CUSTOM_ANDROID_DIR}" "${FINAL_ANDROID_DIR}")
 
             # Track changes to Android directories
             set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
@@ -70,6 +68,13 @@ qgc_set_qt_resource_alias(
         ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CustomSimpleMessageDialog.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CustomPopupDialog.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Toolbar/VioIndicatorPage.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourControlPage.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CopterConfiguratorPage.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusButton.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusRadioButton.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusRect.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusLabel.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusColors.qml
 )
 
 qt_add_qml_module(CustomModule
@@ -80,6 +85,13 @@ qt_add_qml_module(CustomModule
         ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CustomSimpleMessageDialog.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CustomPopupDialog.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Toolbar/VioIndicatorPage.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourControlPage.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CopterConfiguratorPage.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusButton.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusRadioButton.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusRect.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusLabel.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusColors.qml
     NO_PLUGIN
     SOURCES
 )
@@ -115,6 +127,20 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MapMatching/MapMatching.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MandatoryParameters/MandatoryParameters.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MandatoryParameters/MandatoryParameters.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Settings/FoxFourSettings.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Settings/FoxFourSettings.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Dialect/VGMDialect.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Dialect/VGMDialect.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/VioTrajectory/VioTrajectoryPoints.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/VioTrajectory/VioTrajectoryPoints.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterConfigurator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterConfigurator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterState.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterState.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterType.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterType.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterMission.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterMission.cpp
     CACHE INTERNAL "adding custom sources" FORCE
 )
 
@@ -145,6 +171,7 @@ set(CUSTOM_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OnboardComputers
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ParameterSetter
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Settings
     CACHE INTERNAL "" FORCE
 )
 

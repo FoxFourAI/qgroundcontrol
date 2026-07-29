@@ -1,12 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "QGCMapEngine.h"
 
 #include <QtCore/QApplicationStatic>
@@ -46,13 +37,23 @@ QGCMapEngine::QGCMapEngine(QObject *parent)
 
 QGCMapEngine::~QGCMapEngine()
 {
-    if (m_initialized && m_worker) {
+    shutdown();
+
+    qCDebug(QGCMapEngineLog) << this;
+}
+
+void QGCMapEngine::shutdown()
+{
+    // Tear down whenever a worker exists, even if init() failed partway and
+    // cleared m_initialized - otherwise the worker thread would leak.
+    if (m_worker) {
         (void) disconnect(m_worker);
         m_worker->stop();
         (void) m_worker->wait();
+        delete m_worker;
+        m_worker = nullptr;
     }
-
-    qCDebug(QGCMapEngineLog) << this;
+    m_initialized = false;
 }
 
 QGCMapEngine *QGCMapEngine::instance()
@@ -81,6 +82,13 @@ void QGCMapEngine::init(const QString &databasePath)
 
 bool QGCMapEngine::addTask(QGCMapTask *task)
 {
+    if (!m_worker) {
+        return false;
+    }
+
+    // DirectConnection is intentional: the worker thread uses a custom loop (not
+    // an event loop), so queued connections would never be delivered. The queue
+    // is mutex-protected in enqueueTask, so calling from the main thread is safe.
     bool result = false;
     (void) QMetaObject::invokeMethod(m_worker, &QGCCacheWorker::enqueueTask, Qt::DirectConnection, qReturnArg(result), task);
     return result;

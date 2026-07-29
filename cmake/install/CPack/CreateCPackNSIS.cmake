@@ -11,7 +11,7 @@ include(CreateCPackCommon)
 list(APPEND CPACK_GENERATOR "NSIS")
 set(CPACK_BINARY_NSIS ON)
 
-set(QGC_INSTALLER_SOURCE "${CMAKE_BINARY_DIR}/deploy/windows")
+set(QGC_INSTALLER_SOURCE "${CMAKE_SOURCE_DIR}/deploy/windows")
 
 # ----------------------------------------------------------------------------
 # Installer Appearance
@@ -26,6 +26,7 @@ set(CPACK_NSIS_MUI_UNIICON "${QGC_INSTALLER_SOURCE}/WindowsQGC.ico")
 # ----------------------------------------------------------------------------
 # Install/Uninstall Commands
 # ----------------------------------------------------------------------------
+set(EXENAME ${CMAKE_PROJECT_NAME})
 # set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "")
 set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
     CreateDirectory \"\$SMPROGRAMS\\${CMAKE_PROJECT_NAME}\"

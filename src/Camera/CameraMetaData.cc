@@ -1,47 +1,38 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "CameraMetaData.h"
 
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 
-#include "JsonHelper.h"
+#include "JsonParsing.h"
 #include "QGCLoggingCategory.h"
 
 QGC_LOGGING_CATEGORY(CameraMetaDataLog, "Camera.CameraMetaData")
 
-CameraMetaData::CameraMetaData(const QString &canonicalName,
-                               const QString &brand,
-                               const QString &model,
-                               double sensorWidth,
-                               double sensorHeight,
-                               double imageWidth,
-                               double imageHeight,
-                               double focalLength,
-                               bool landscape,
-                               bool fixedOrientation,
-                               double minTriggerInterval,
-                               const QString &deprecatedTranslatedName)
-    : canonicalName(canonicalName)
-    , brand(brand)
-    , model(model)
-    , sensorWidth(sensorWidth)
-    , sensorHeight(sensorHeight)
-    , imageWidth(imageWidth)
-    , imageHeight(imageHeight)
-    , focalLength(focalLength)
-    , landscape(landscape)
-    , fixedOrientation(fixedOrientation)
-    , minTriggerInterval(minTriggerInterval)
-    , deprecatedTranslatedName(deprecatedTranslatedName)
+CameraMetaData::CameraMetaData(const QString &canonicalName_,
+                               const QString &brand_,
+                               const QString &model_,
+                               double sensorWidth_,
+                               double sensorHeight_,
+                               double imageWidth_,
+                               double imageHeight_,
+                               double focalLength_,
+                               bool landscape_,
+                               bool fixedOrientation_,
+                               double minTriggerInterval_,
+                               const QString &deprecatedTranslatedName_)
+    : canonicalName(canonicalName_)
+    , brand(brand_)
+    , model(model_)
+    , sensorWidth(sensorWidth_)
+    , sensorHeight(sensorHeight_)
+    , imageWidth(imageWidth_)
+    , imageHeight(imageHeight_)
+    , focalLength(focalLength_)
+    , landscape(landscape_)
+    , fixedOrientation(fixedOrientation_)
+    , minTriggerInterval(minTriggerInterval_)
+    , deprecatedTranslatedName(deprecatedTranslatedName_)
 {
     qCDebug(CameraMetaDataLog) << this;
 }
@@ -57,21 +48,25 @@ QList<CameraMetaData*> CameraMetaData::parseCameraMetaData()
 
     QString errorString;
     int version = 0;
-    const QJsonObject jsonObject = JsonHelper::openInternalQGCJsonFile(QStringLiteral(":/json/CameraMetaData.json"), "CameraMetaData", 1, 1, version, errorString);
+    const QJsonObject jsonObject = JsonParsing::openInternalQGCJsonFile(QStringLiteral(":/json/CameraMetaData.json"), "CameraMetaData", 1, 1, version, errorString);
     if (!errorString.isEmpty()) {
         qCWarning(CameraMetaDataLog) << "Internal Error:" << errorString;
         return cameraList;
     }
 
-    static const QList<JsonHelper::KeyValidateInfo> rootKeyInfoList = {
+    static const QList<JsonParsing::KeyValidateInfo> rootKeyInfoList = {
+        { JsonParsing::jsonFileTypeKey, QJsonValue::String, true },    // Standard header, validated by openInternalQGCJsonFile
+        { JsonParsing::jsonVersionKey, QJsonValue::Double, true },     // Standard header, validated by openInternalQGCJsonFile
+        { "comment", QJsonValue::String, false },                      // Developer notes only, never parsed
         { "cameraMetaData", QJsonValue::Array, true }
     };
-    if (!JsonHelper::validateKeys(jsonObject, rootKeyInfoList, errorString)) {
+    if (!JsonParsing::validateKeysStrict(jsonObject, rootKeyInfoList, errorString)) {
         qCWarning(CameraMetaDataLog) << errorString;
         return cameraList;
     }
 
-    static const QList<JsonHelper::KeyValidateInfo> cameraKeyInfoList = {
+    static const QList<JsonParsing::KeyValidateInfo> cameraKeyInfoList = {
+        { "comment", QJsonValue::String, false },   // Developer notes only, never parsed
         { "canonicalName", QJsonValue::String, true },
         { "brand", QJsonValue::String, true },
         { "model", QJsonValue::String, true },
@@ -93,7 +88,7 @@ QList<CameraMetaData*> CameraMetaData::parseCameraMetaData()
         }
 
         const QJsonObject obj = jsonValue.toObject();
-        if (!JsonHelper::validateKeys(obj, cameraKeyInfoList, errorString)) {
+        if (!JsonParsing::validateKeysStrict(obj, cameraKeyInfoList, errorString)) {
             qCWarning(CameraMetaDataLog) << errorString;
             return cameraList;
         }

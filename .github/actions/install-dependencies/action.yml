@@ -1,0 +1,137 @@
+name: Install Dependencies
+description: Install platform-specific build dependencies (GStreamer, etc.)
+
+inputs:
+  gstreamer:
+    description: 'Install GStreamer (Windows x64 only)'
+    required: false
+    default: 'true'
+  gstreamer-version:
+    description: 'GStreamer version (default: from build-config.json)'
+    required: false
+    default: ''
+  vulkan:
+    description: 'Install Vulkan SDK (Windows only, for validation layers)'
+    required: false
+    default: 'false'
+  msvc:
+    description: 'Install Visual Studio Build Tools / VCTools (Windows only)'
+    required: false
+    default: 'false'
+  msvc-arm64:
+    description: 'Also add the ARM64 cross compiler component (Windows only)'
+    required: false
+    default: 'false'
+  nsis:
+    description: 'Install NSIS / makensis for the installer build (Windows only)'
+    required: false
+    default: 'false'
+  extra-packages:
+    description: 'Additional packages to install (space-separated, Linux only)'
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Python (Windows)
+      if: runner.os == 'Windows'
+      uses: ./.github/actions/setup-python
+
+    - name: Install dependencies (Windows)
+      if: runner.os == 'Windows'
+      uses: nick-fields/retry@v4
+      env:
+        INPUT_GSTREAMER: ${{ inputs.gstreamer }}
+        INPUT_GSTREAMER_VERSION: ${{ inputs.gstreamer-version }}
+        INPUT_VULKAN: ${{ inputs.vulkan }}
+        INPUT_MSVC: ${{ inputs.msvc }}
+        INPUT_MSVC_ARM64: ${{ inputs.msvc-arm64 }}
+        INPUT_NSIS: ${{ inputs.nsis }}
+      with:
+        timeout_minutes: 20
+        max_attempts: 3
+        shell: python
+        command: |
+          import os, subprocess, sys
+          args = [sys.executable, './tools/setup/install_dependencies', '--platform', 'windows']
+          if os.environ.get('INPUT_GSTREAMER_VERSION'):
+              args += ['--gstreamer-version', os.environ['INPUT_GSTREAMER_VERSION']]
+          if os.environ.get('INPUT_GSTREAMER') != 'true':
+              args.append('--skip-gstreamer')
+          if os.environ.get('INPUT_VULKAN') == 'true':
+              args.append('--vulkan')
+          if os.environ.get('INPUT_MSVC') == 'true':
+              args.append('--msvc')
+          if os.environ.get('INPUT_MSVC_ARM64') == 'true':
+              args.append('--msvc-arm64')
+          if os.environ.get('INPUT_NSIS') == 'true':
+              args.append('--nsis')
+          sys.exit(subprocess.run(args).returncode)
+
+    - name: Get system package list (Linux)
+      if: runner.os == 'Linux'
+      id: linux-deps
+      shell: bash
+      run: python3 "${GITHUB_WORKSPACE}/.github/scripts/install_dependencies_helper.py" print-packages
+
+    - name: Enable universe repository (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: python3 "${GITHUB_WORKSPACE}/.github/scripts/install_dependencies_helper.py" enable-universe
+
+    - name: Install apt packages (Linux)
+      if: runner.os == 'Linux'
+      # Retry: a slow apt mirror can stall the download past the job timeout; fast-fail and retry.
+      uses: nick-fields/retry@v4
+      env:
+        APT_PACKAGES: ${{ steps.linux-deps.outputs.packages }}
+      with:
+        timeout_minutes: 20
+        max_attempts: 3
+        shell: bash
+        # Acquire::*::Timeout aborts a stalled mirror connection so retries can fire.
+        command: |
+          APT_OPTS="-o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30"
+          # shellcheck disable=SC2086
+          sudo apt-get $APT_OPTS update -qq
+          # shellcheck disable=SC2086
+          sudo apt-get $APT_OPTS install -y --no-install-recommends $APT_PACKAGES
+
+    - name: Fix apt alternatives (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: python3 "${GITHUB_WORKSPACE}/.github/scripts/install_dependencies_helper.py" fix-apt-alternatives
+
+    - name: Install optional apt packages (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: python3 "${GITHUB_WORKSPACE}/.github/scripts/install_dependencies_helper.py" install-optional
+
+    - name: Install pipx packages (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: python3 tools/setup/install_dependencies --platform debian --skip-system-packages
+
+    - name: Install extra packages (Linux)
+      if: runner.os == 'Linux' && inputs.extra-packages != ''
+      uses: nick-fields/retry@v4
+      env:
+        EXTRA_PACKAGES: ${{ inputs.extra-packages }}
+      with:
+        timeout_minutes: 5
+        max_attempts: 3
+        command: |
+          validated="$(python3 tools/setup/install_dependencies --validate-extra-packages $EXTRA_PACKAGES)"
+          # shellcheck disable=SC2086
+          sudo apt-get install -y $validated
+
+    - name: Install dependencies (macOS)
+      if: runner.os == 'macOS'
+      uses: nick-fields/retry@v4
+      with:
+        timeout_minutes: 10
+        max_attempts: 3
+        command: |
+          python3 tools/setup/install_dependencies --platform macos
+

@@ -11,12 +11,14 @@
 #include "FoxFourAutoPilotPlugin.h"
 #include "Vehicle.h"
 #include "Camera/FoxFourCameraControl.h"
+#include "FoxFourSettings.h"
+#include "SettingsManager.h"
 AutoPilotPlugin* FoxFourFirmwarePlugin::autopilotPlugin(Vehicle *vehicle) const
 {
     return new FoxFourAutoPilotPlugin(vehicle, vehicle);
 }
 
-MavlinkCameraControl *FoxFourFirmwarePlugin::createCameraControl(const mavlink_camera_information_t *info, Vehicle *vehicle, int compID, QObject *parent) const
+MavlinkCameraControlInterface *FoxFourFirmwarePlugin::createCameraControl(const mavlink_camera_information_t *info, Vehicle *vehicle, int compID, QObject *parent) const
 {
     return new FoxFourCameraControl(info,vehicle,compID,parent);
 }
@@ -24,6 +26,7 @@ MavlinkCameraControl *FoxFourFirmwarePlugin::createCameraControl(const mavlink_c
 const QVariantList &FoxFourFirmwarePlugin::toolIndicators(const Vehicle *vehicle)
 {
     if(_toolIndicatorList.isEmpty()){
+        _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/CopterIndicator.qml")));
         _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/VioIndicator.qml")));
         _toolIndicatorList.append(ArduCopterFirmwarePlugin::toolIndicators(vehicle));
         _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/EK3Sources.qml")));

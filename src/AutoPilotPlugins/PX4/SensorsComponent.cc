@@ -1,12 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "SensorsComponent.h"
 #include "ParameterManager.h"
 #include "Vehicle.h"
@@ -34,7 +25,7 @@ QString SensorsComponent::name(void) const
 
 QString SensorsComponent::description(void) const
 {
-    return tr("Sensors Setup is used to calibrate the sensors within your vehicle.");
+    return tr("Configure and calibrate gyroscope, accelerometer, magnetometer, and airspeed sensors.");
 }
 
 QString SensorsComponent::iconResource(void) const
@@ -84,12 +75,12 @@ bool SensorsComponent::setupComplete(void) const
 QStringList SensorsComponent::setupCompleteChangedTriggerList(void) const
 {
     QStringList triggers;
-    
+
     triggers << _deviceIds << _magCalParam << _magEnabledParam;
     if (_vehicle->fixedWing() || _vehicle->vtol() || _vehicle->airship()) {
         triggers << _airspeedCalTriggerParams;
     }
-    
+
     return triggers;
 }
 
@@ -98,16 +89,42 @@ QUrl SensorsComponent::setupSource(void) const
     return QUrl::fromUserInput("qrc:/qml/QGroundControl/AutoPilotPlugins/PX4/SensorsComponent.qml");
 }
 
+QStringList SensorsComponent::sections() const
+{
+    QStringList sectionList;
+
+    // Compass (hidden when all mags disabled)
+    bool allMagsDisabled = false;
+    if (_vehicle->parameterManager()->parameterExists(ParameterManager::defaultComponentId, _magEnabledParam)) {
+        allMagsDisabled = !_vehicle->parameterManager()->getParameter(ParameterManager::defaultComponentId, _magEnabledParam)->rawValue().toBool();
+    }
+    if (!allMagsDisabled) {
+        sectionList << tr("Compass");
+    }
+
+    sectionList << tr("Gyroscope");
+    sectionList << tr("Accelerometer");
+    sectionList << tr("Level Horizon");
+
+    if (_airspeedCalSupported()) {
+        sectionList << tr("Airspeed");
+    }
+
+    sectionList << tr("Orientations");
+
+    return sectionList;
+}
+
 QUrl SensorsComponent::summaryQmlSource(void) const
 {
     QString summaryQml;
-    
+
     if (_vehicle->fixedWing() || _vehicle->vtol() || _vehicle->airship()) {
         summaryQml = "qrc:/qml/QGroundControl/AutoPilotPlugins/PX4/SensorsComponentSummaryFixedWing.qml";
     } else {
         summaryQml = "qrc:/qml/QGroundControl/AutoPilotPlugins/PX4/SensorsComponentSummary.qml";
     }
-    
+
     return QUrl::fromUserInput(summaryQml);
 }
 
@@ -133,3 +150,33 @@ QUrl SensorsComponent::summaryQmlSource(void) const
  {
     return _airspeedCalSupported() && _vehicle->parameterManager()->getParameter(ParameterManager::defaultComponentId, "SENS_DPRES_OFF")->rawValue().toFloat() == 0.0f;
  }
+
+bool SensorsComponent::sectionSetupComplete(const QString &sectionName) const
+{
+    auto *pm = _vehicle->parameterManager();
+
+    if (sectionName == tr("Compass")) {
+        bool magEnabled = true;
+        if (pm->parameterExists(ParameterManager::defaultComponentId, _magEnabledParam)) {
+            magEnabled = pm->getParameter(ParameterManager::defaultComponentId, _magEnabledParam)->rawValue().toBool();
+        }
+        if (!magEnabled) return true;
+        return pm->getParameter(ParameterManager::defaultComponentId, _magCalParam)->rawValue().toFloat() != 0.0f;
+    }
+    if (sectionName == tr("Gyroscope")) {
+        return pm->getParameter(ParameterManager::defaultComponentId, "CAL_GYRO0_ID")->rawValue().toFloat() != 0.0f;
+    }
+    if (sectionName == tr("Accelerometer")) {
+        return pm->getParameter(ParameterManager::defaultComponentId, "CAL_ACC0_ID")->rawValue().toFloat() != 0.0f;
+    }
+    if (sectionName == tr("Level Horizon")) {
+        // Level cal doesn't have a distinct completion indicator — consider complete if accel+gyro are done
+        return pm->getParameter(ParameterManager::defaultComponentId, "CAL_ACC0_ID")->rawValue().toFloat() != 0.0f
+            && pm->getParameter(ParameterManager::defaultComponentId, "CAL_GYRO0_ID")->rawValue().toFloat() != 0.0f;
+    }
+    if (sectionName == tr("Airspeed")) {
+        return !_airspeedCalRequired();
+    }
+
+    return true;
+}

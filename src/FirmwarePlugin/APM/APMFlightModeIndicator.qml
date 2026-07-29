@@ -1,12 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2022 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -21,7 +12,9 @@ SettingsGroupLayout {
     visible:                activeVehicle.multiRotor
 
     property var activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
-    property Fact rtlAltFact: controller.getParameterFact(-1, "RTL_ALT")
+    property Fact rtlAltFact: controller.getParameterFact(-1, "RTL_ALT_M")
+    // RTL_ALT_M (4.7+) is in meters, RTL_ALT (pre-4.7) is in centimeters
+    property bool _rtlAltIsMeters: controller.parameterExists(-1, "noremap.RTL_ALT_M")
 
     FactPanelController { id: controller }
 
@@ -30,7 +23,7 @@ SettingsGroupLayout {
         spacing:            ScreenTools.defaultFontPixelWidth * 2
 
         QGCLabel {
-            id:                 label  
+            id:                 label
             Layout.fillWidth:   true
             text:               qsTr("Return At")
         }
@@ -54,7 +47,8 @@ SettingsGroupLayout {
                 if (index === 0) {
                     rtlAltFact.rawValue = 0
                 } else {
-                    rtlAltFact.rawValue = 1500
+                    // RTL_ALT_M (4.7+) is in meters, RTL_ALT (pre-4.7) is in centimeters
+                    rtlAltFact.rawValue = _rtlAltIsMeters ? 15 : 1500
                 }
             }
 

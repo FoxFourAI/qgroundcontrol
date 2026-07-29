@@ -49,7 +49,7 @@ set(_nsis_args
     /INPUTCHARSET UTF8
     /V4
     "/DAPPNAME=${CMAKE_PROJECT_NAME}"
-    "/DEXENAME=${QGC_ORG_NAME}"
+    "/DEXENAME=${CMAKE_PROJECT_NAME}"
     "/DORGNAME=${QGC_ORG_NAME}"
     "/DDESTDIR=${QGC_PAYLOAD_DIR}"
 )
@@ -67,7 +67,7 @@ if(_APPVER)
     list(APPEND _nsis_args "/DAPPVERSION=${_APPVER}")
 endif()
 
-list(APPEND _nsis_args "/XOutFile ${QGC_INSTALLER_OUT}")
+list(APPEND _nsis_args "/XOutFile \"${QGC_INSTALLER_OUT}\"")
 
 # ----------------------------------------------------------------------------
 # Execute NSIS Installer Creation

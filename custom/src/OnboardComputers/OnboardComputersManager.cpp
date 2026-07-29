@@ -19,7 +19,7 @@
 #include "qtmetamacros.h"
 #include "f4_autonomy/version.h"
 #include "SettingsManager.h"
-#include "FlyViewSettings.h"
+#include "FoxFourSettings.h"
 
 QGC_LOGGING_CATEGORY(OnboardComputersManagerLog, "OnboardComputersManager")
 
@@ -92,7 +92,8 @@ void OnboardComputersManager::_checkTimeouts()
                     setCurrentComputerComponent(_onboardComputers.first().compId);
                 }
             }
-            _vehicle->parameterManager()->removeComponent(compId);
+            //FOXFOUR_TODO: add remove component to the parameter manager
+            // _vehicle->parameterManager()->removeComponent(compId);
             emit onboardComputerTimeout(compId);
             emit computersInfoChanged();
             emit computersListChanged();
@@ -149,7 +150,7 @@ QVariantMap OnboardComputersManager::computerInfo(uint8_t compId)
 
 }
 
-void OnboardComputersManager::_vehicleMessageReceived(int sysid, int componentid, int severity, QString text, QString description)
+void OnboardComputersManager::_vehicleMessageReceived(int /*sysid*/, int componentid, int /*severity*/, QString text, QString /*description*/)
 {
     // While we do not have osVersion or trying to request it, we reading logs, in case we get version from it.
     if(!_onboardComputers.contains(componentid) ||
@@ -213,7 +214,8 @@ void OnboardComputersManager::_handleHeartbeat(const mavlink_message_t& message)
         _onboardComputers[computerId].lastHeartbeat.start();
 
         qCDebug(OnboardComputersManagerLog) << "CompId:" << computerId << "Request COMPANION_VERSION form VGM.";
-        auto settings = SettingsManager::instance()->flyViewSettings();
+        //FOXFOUR_TODO: add parameter to settings
+        auto settings = SettingsManager::instance()->foxFourSettings();
         if(settings->enableVGMDialect()->rawValue().toBool()){
         _vehicle->sendMavCommand(computerId, MAV_CMD_REQUEST_MESSAGE, true,
                                  MAVLINK_MSG_ID_COMPANION_VERSION, //first param set id of message
@@ -312,7 +314,7 @@ void OnboardComputersManager::sendExternalPositionEstimate(const QGeoCoordinate&
                                         coord.longitude(), coord.altitude());
 }
 
-bool OnboardComputersManager::checkVersion(QString desctiption, int major, int minor, int patch)
+bool OnboardComputersManager::checkVersion(QString /*desctiption*/, int major, int minor, int patch)
 {
     OnboardComputerStruct::OsVersion version{static_cast<uint8_t>(major),
                                              static_cast<uint8_t>(minor),

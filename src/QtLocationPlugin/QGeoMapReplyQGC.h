@@ -1,23 +1,12 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
-#include <QtCore/QLoggingCategory>
 #include <QtLocation/private/qgeotiledmapreply_p.h>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
 
-#include "QGCMapTasks.h"
+#include "QGCMapTaskBase.h"
 
-Q_DECLARE_LOGGING_CATEGORY(QGeoTiledMapReplyQGCLog)
-
+struct QGCCacheTile;
 class QNetworkAccessManager;
 class QSslError;
 
@@ -48,9 +37,4 @@ private:
 
     static QByteArray _bingNoTileImage;
     static QByteArray _badTile;
-
-    enum HTTP_Response {
-        SUCCESS_OK = 200,
-        REDIRECTION_MULTIPLE_CHOICES = 300
-    };
 };

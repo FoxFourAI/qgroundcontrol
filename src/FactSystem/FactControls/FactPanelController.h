@@ -1,26 +1,15 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
-#include <QtCore/QLoggingCategory>
 #include <QtCore/QObject>
 #include <QtCore/QStringList>
 #include <QtCore/QTimer>
 #include <QtQmlIntegration/QtQmlIntegration>
 
-Q_DECLARE_LOGGING_CATEGORY(FactPanelControllerLog)
-
 class Vehicle;
 class Fact;
 
-/// Used for handling missing Facts from C++ code.
+/// \brief Used for handling missing Facts from C++ code.
+///
 class FactPanelController : public QObject
 {
     Q_OBJECT

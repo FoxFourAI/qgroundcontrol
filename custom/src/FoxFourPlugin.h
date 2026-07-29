@@ -22,7 +22,6 @@
 #include "MandatoryParameters/MandatoryParameters.h"
 #include "ParameterSetter/ParameterSetter.h"
 class QQmlApplicationEngine;
-
 Q_DECLARE_LOGGING_CATEGORY(FoxFourLog)
 
 class FoxFourPlugin : public QGCCorePlugin {
@@ -38,8 +37,7 @@ public:
     void cleanup() final;
     QGCOptions* options() final { return _options; }
     MandatoryParameters* mandatoryParameters();
-    bool overrideSettingsGroupVisibility(const QString& name) final;
-    VideoReceiver* createVideoReceiver(QObject* parent);
+    VideoReceiver* createVideoReceiver(QObject* parent) override;
 
     ParameterSetter* parameterSetter();
 
@@ -49,7 +47,6 @@ signals:
 
 private slots:
     void _advancedChanged(bool advanced);
-
 private:
     ParameterSetter* _parameterSetter = nullptr;
     QString _version = "0.0.0";

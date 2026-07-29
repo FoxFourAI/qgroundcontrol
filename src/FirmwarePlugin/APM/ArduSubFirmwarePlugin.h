@@ -1,20 +1,7 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
-
-#include <QtCore/QLoggingCategory>
 
 #include "FactGroup.h"
 #include "APMFirmwarePlugin.h"
-
-Q_DECLARE_LOGGING_CATEGORY(APMSubmarineFactGroupLog)
 
 class APMSubmarineFactGroup : public FactGroup
 {
@@ -94,19 +81,18 @@ public:
     int defaultJoystickTXMode() const override { return 3; }
     void initializeStreamRates(Vehicle *vehicle) override;
     bool isCapable(const Vehicle *vehicle, FirmwareCapabilities capabilities) const override;
-    bool supportsThrottleModeCenterZero() const override { return false; }
+    bool supportsThrottleModeCenterZero() const override { return true; }
+    bool supportsNegativeThrust(Vehicle *vehicle) const override { Q_UNUSED(vehicle); return true; }
     bool supportsRadio() const override { return false; }
     bool supportsJSButton() const override { return true; }
     bool supportsMotorInterference() const override { return false; }
 
     /// Return the resource file which contains the vehicle icon used in the flight view when the view is dark (Satellite for instance)
-    QString vehicleImageOpaque(const Vehicle* vehicle) const override { return QStringLiteral("/qmlimages/subVehicleArrowOpaque.png"); }
+    QString vehicleImageOpaque(const Vehicle* /*vehicle*/) const override { return QStringLiteral("/qmlimages/subVehicleArrowOpaque.png"); }
 
     /// Return the resource file which contains the vehicle icon used in the flight view when the view is light (Map for instance)
     QString vehicleImageOutline(const Vehicle* vehicle) const override;
 
-    QString brandImageIndoor(const Vehicle *vehicle) const override { Q_UNUSED(vehicle); return QStringLiteral("/qmlimages/APM/BrandImageSub"); }
-    QString brandImageOutdoor(const Vehicle *vehicle) const override { Q_UNUSED(vehicle); return QStringLiteral("/qmlimages/APM/BrandImageSub"); }
     const FirmwarePlugin::remapParamNameMajorVersionMap_t& paramNameRemapMajorVersionMap() const override { return _remapParamName; }
     int remapParamNameHigestMinorVersionNumber(int majorVersionNumber) const override;
     bool adjustIncomingMavlinkMessage(Vehicle *vehicle, mavlink_message_t *message) override;

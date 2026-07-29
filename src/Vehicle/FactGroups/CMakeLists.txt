@@ -9,6 +9,8 @@ target_sources(${CMAKE_PROJECT_NAME}
         BatteryFactGroupListModel.h
         EscStatusFactGroupListModel.cc
         EscStatusFactGroupListModel.h
+        RadioStatusFactGroup.cc
+        RadioStatusFactGroup.h
         TerrainFactGroup.cc
         TerrainFactGroup.h
         VehicleClockFactGroup.cc
@@ -27,6 +29,8 @@ target_sources(${CMAKE_PROJECT_NAME}
         VehicleGPS2FactGroup.h
         VehicleGPSFactGroup.cc
         VehicleGPSFactGroup.h
+        VehicleGPSAggregateFactGroup.cc
+        VehicleGPSAggregateFactGroup.h
         VehicleLocalPositionFactGroup.cc
         VehicleLocalPositionFactGroup.h
         VehicleLocalPositionSetpointFactGroup.cc
@@ -45,9 +49,6 @@ target_sources(${CMAKE_PROJECT_NAME}
         VehicleHygrometerFactGroup.h
 )
 
-# ----------------------------------------------------------------------------
-# Fact Group Definition Resources
-# ----------------------------------------------------------------------------
 set(JSON_FILES
     RPMFact.json
     TemperatureFact.json
@@ -63,6 +64,7 @@ set(JSON_FILES
     DistanceSensorFact.json
     GeneratorFact.json
     HygrometerFact.json
+    RadioStatusFact.json
     TerrainFactGroup.json
     VehicleFact.json
     VibrationFact.json
@@ -73,7 +75,6 @@ qt_add_resources(${CMAKE_PROJECT_NAME} json_vehicle_fact_group
     FILES ${JSON_FILES}
 )
 
-# Create alias for LocalPositionSetpointFact.json
 set_source_files_properties(LocalPositionFact.json PROPERTIES QT_RESOURCE_ALIAS LocalPositionSetpointFact.json)
 qt_add_resources(${CMAKE_PROJECT_NAME} json_vehicle_fact_group_alias
     PREFIX "/json/Vehicle"

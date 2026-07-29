@@ -1,19 +1,9 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
 #include "LinkConfiguration.h"
 #include "LinkInterface.h"
 
 #include <QtCore/QByteArray>
-#include <QtCore/QLoggingCategory>
 #include <QtCore/QString>
 #include <QtNetwork/QAbstractSocket>
 
@@ -21,8 +11,6 @@
 
 class QTcpSocket;
 class QThread;
-
-Q_DECLARE_LOGGING_CATEGORY(TCPLinkLog)
 
 /*===========================================================================*/
 

@@ -6,6 +6,8 @@
 #include "VioGpsComparer/VioGpsComparer.h"
 #include "ButtonList/ButtonList.h"
 #include "MapMatching/MapMatching.h"
+#include "VioTrajectory/VioTrajectoryPoints.h"
+#include "CopterConfigurator/CopterConfigurator.h"
 
 class Vehicle;
 class FoxFourCameraControl;
@@ -15,9 +17,11 @@ class FoxFourAutoPilotPlugin : public APMAutoPilotPlugin {
     Q_PROPERTY(VioGpsComparer* vioGpsComparer MEMBER _vioGpsComparer)
     Q_PROPERTY(EKSources* ekSources MEMBER _ekSources)
     Q_PROPERTY(ButtonList* buttonList MEMBER _buttonList)
+    Q_PROPERTY(VioTrajectoryPoints* vioTrajectory MEMBER _vioTrajectory)
     Q_PROPERTY(MapMatching* mapMatching READ mapMatching NOTIFY mapMatchingCreated)
     Q_PROPERTY(QString storageCapacity READ storageCapacity NOTIFY storageCapacityChanged)
     Q_PROPERTY(bool isDropper READ isDropper NOTIFY isDropperChanged)
+    Q_PROPERTY(CopterConfigurator* configurator MEMBER _configurator)
 public:
     explicit FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent = nullptr);
     ~FoxFourAutoPilotPlugin();
@@ -45,9 +49,11 @@ private:
     EKSources* _ekSources = nullptr;
     ButtonList* _buttonList = nullptr;
     MapMatching* _mapMatching = nullptr;
+    VioTrajectoryPoints* _vioTrajectory = nullptr;
     QVariantList _components;
     OnboardComputersManager* _onboardComputersMngr = nullptr;
     VioGpsComparer* _vioGpsComparer = nullptr;
     QString _storageCapacityStr = "0 / 0 MB";
+    CopterConfigurator* _configurator = nullptr;
     QMetaObject::Connection _cameraConnection;
 };

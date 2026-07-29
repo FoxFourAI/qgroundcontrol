@@ -4,131 +4,138 @@ on:
   push:
     branches:
       - master
-      - Stable*
+      - 'Stable*'
     tags:
-      - v*
+      - 'v*'
     paths-ignore:
-      - docs/** # Do not trigger for any changes under docs
+      - 'docs/**'
   pull_request:
-    paths:
-      - .github/workflows/macos.yml
-      - deploy/macos/**
-      - src/**
-      - CMakeLists.txt
-      - cmake/**
-      - custom/**
+  merge_group:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: false
+        default: 'Release'
+        type: choice
+        options:
+          - Release
+          - Debug
 
-# concurrency:
-#   group: ${{ github.workflow }}-${{ github.ref }}
-#   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+permissions:
+  contents: read
+  actions: read
 
 jobs:
+  changes:
+    uses: ./.github/workflows/_detect-changes.yml
+    with:
+      platform: macos
+
   build:
-    runs-on: macos-latest
+    needs: changes
+    if: needs.changes.outputs.should_build == 'true'
+    runs-on: macos-15
+    timeout-minutes: 120
+
+    # id-token/attestations scoped here: only the attestation upload step needs them.
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
 
     strategy:
+      fail-fast: false
       matrix:
-        BuildType: [Release]
+        build_type: ['${{ inputs.build_type || ''Release'' }}']
 
     defaults:
       run:
         shell: bash
 
-    env:
-      QT_VERSION: 6.10.0
-
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
-          submodules: recursive
-          fetch-depth: 0
+          fetch-depth: ${{ github.event_name == 'pull_request' && 1 || 0 }}
+          persist-credentials: false
 
-      - name: Initial Setup
-        uses: ./.github/actions/common
-
-      - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+      - name: Build Setup
+        id: setup
+        uses: ./.github/actions/build-setup
         with:
-          xcode-version: '<=16.x'
+          qt-host: mac
+          qt-arch: clang_64
+          build-type: ${{ matrix.build_type }}
 
-      - name: Install Dependencies (include GStreamer)
-        working-directory: ${{ github.workspace }}/tools/setup
-        run: sh install-dependencies-osx.sh
-
-      - name: Setup Caching
-        uses: ./.github/actions/cache
-        with:
-          host: mac
-          target: clang_64
-          build-type: ${{ matrix.BuildType }}
-          cpm-modules: ${{ runner.temp }}/build/cpm_modules
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: ${{ env.QT_VERSION }}
-          host: mac
-          target: desktop
-          arch: clang_64
-          dir: ${{ runner.temp }}
-          modules: qtcharts qtlocation qtpositioning qtspeech qt5compat qtmultimedia qtserialport qtimageformats qtshadertools qtconnectivity qtquick3d qtsensors qtscxml
-          setup-python: false
-          cache: true
+      - name: Install Dependencies
+        uses: ./.github/actions/install-dependencies
 
       - name: CMake configure
-        working-directory: ${{ runner.temp }}/build
-        run: ${{ env.QT_ROOT_DIR }}/bin/qt-cmake -S ${{ github.workspace }} -B . -G Ninja
-              -DCMAKE_BUILD_TYPE=${{ matrix.BuildType }}
-              -DQGC_STABLE_BUILD=${{ github.ref_type == 'tag' || contains(github.ref, 'Stable') && 'ON' || 'OFF' }}
-              -DQGC_MACOS_SIGN_WITH_IDENTITY='OFF'
+        uses: ./.github/actions/cmake-configure
+        with:
+          build-dir: ${{ runner.temp }}/build
+          build-type: ${{ matrix.build_type }}
+          extra-args: -DQGC_MACOS_SIGN_WITH_IDENTITY=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
 
       - name: Build
-        working-directory: ${{ runner.temp }}/build
-        run: cmake --build . --target all --config ${{ matrix.BuildType }} --parallel
+        uses: ./.github/actions/cmake-build
+        with:
+          build-dir: ${{ runner.temp }}/build
+          build-type: ${{ matrix.build_type }}
 
-      - name: Sanity check dev build executable
-        working-directory: ${{ runner.temp }}/build/Release/QGroundControl.app/Contents/MacOS
-        run: ./QGroundControl --simple-boot-test
+      - name: Verify dev build executable
+        uses: ./.github/actions/verify-executable
+        with:
+          binary-path: ${{ runner.temp }}/build/${{ matrix.build_type }}/QGroundControl.app/Contents/MacOS/QGroundControl
+          build-dir: ${{ runner.temp }}/build
 
-      - name: Create DMG
-        if: startsWith(github.ref, 'refs/tags/')
-        working-directory: ${{ runner.temp }}/build
-        run: cmake --install . --config ${{ matrix.BuildType }}
+      - name: Import Code Signing Certificate
+        if: github.event_name != 'pull_request'
+        uses: apple-actions/import-codesign-certs@v7
+        with:
+          p12-file-base64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          p12-password: ${{ secrets.MACOS_CERT_P12_PASSWORD }}
 
-      - name: Find DMG file
-        if: startsWith(github.ref, 'refs/tags/')
-        shell: bash
-        working-directory: ${{ runner.temp }}/build
-        run: |
-          DMG=$(find . -maxdepth 1 -name "MacOS-QGroundControl-*.dmg" -type f | head -n 1)
-          if [ -z "$DMG" ]; then
-            echo "DMG not found!"
-            exit 1
-          fi
-          DMG_NAME=$(basename "$DMG")
-          DMG_NAME_NO_EXT=$(basename "$DMG" .dmg)
-          echo "DMG_FILE=$DMG_NAME" >> $GITHUB_ENV
-          echo "DMG_NAME=$DMG_NAME_NO_EXT" >> $GITHUB_ENV
-          echo "Found DMG: $DMG_NAME"
+      # PRs configure with QGC_MACOS_SIGN_WITH_IDENTITY=OFF, so the signing env vars are unused there — leaving them resolved-but-empty is harmless and lets us avoid duplicating the install step.
+      - name: Create app bundle
+        uses: ./.github/actions/cmake-install
+        with:
+          build-dir: ${{ runner.temp }}/build
+          build-type: ${{ matrix.build_type }}
+        env:
+          QGC_MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          QGC_MACOS_NOTARIZATION_USERNAME: ${{ secrets.MACOS_NOTARIZATION_USERNAME }}
+          QGC_MACOS_NOTARIZATION_PASSWORD: ${{ secrets.MACOS_NOTARIZATION_PASSWORD }}
+          QGC_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.MACOS_NOTARIZATION_TEAM_ID }}
 
       - name: Mount DMG
-        if: startsWith(github.ref, 'refs/tags/')
         working-directory: ${{ runner.temp }}/build
-        run: hdiutil attach "${{ env.DMG_FILE }}"
+        run: |
+          if ! hdiutil attach QGroundControl.dmg; then
+            echo "::error::Failed to mount DMG"
+            ls -la QGroundControl.dmg 2>/dev/null || echo "DMG file not found"
+            exit 1
+          fi
 
-      - name: Sanity check DMG executable
-        if: startsWith(github.ref, 'refs/tags/')
-        working-directory: /Volumes/QGroundControl/QGroundControl.app/Contents/MacOS
-        run: ./QGroundControl --simple-boot-test
-
-      - name: Unmount DMG
-        if: startsWith(github.ref, 'refs/tags/')
-        run: hdiutil detach /Volumes/QGroundControl || true
-
-      - name: Upload Build File
-        if: matrix.BuildType == 'Release' && startsWith(github.ref, 'refs/tags/')
-        uses: ./.github/actions/upload
+      - name: Verify DMG executable
+        uses: ./.github/actions/verify-executable
         with:
-          artifact_name: ${{ env.DMG_FILE }}
-          package_name: ${{ env.DMG_NAME }}
+          binary-path: /Volumes/QGroundControl/QGroundControl.app/Contents/MacOS/QGroundControl
+
+      - name: Attest and Upload
+        if: matrix.build_type == 'Release'
+        uses: ./.github/actions/attest-and-upload
+        with:
+          artifact-name: QGroundControl.dmg
+          package-name: QGroundControl

@@ -1,21 +1,8 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
-
-#include <QtCore/QLoggingCategory>
 
 #include "TransectStyleComplexItem.h"
 #include "SettingsFact.h"
 #include "QGCMapPolyline.h"
-
-Q_DECLARE_LOGGING_CATEGORY(CorridorScanComplexItemLog)
 
 class CorridorScanComplexItem : public TransectStyleComplexItem
 {
@@ -45,7 +32,7 @@ public:
     Q_INVOKABLE void rotateEntryPoint(void);
 
     // Overrides from TransectStyleComplexItem
-    QString patternName         (void) const final { return name; }
+    QString patternName         (void) const final { return tr(canonicalName); }
     void    save                (QJsonArray&  planItems) final;
     bool    specifiesCoordinate (void) const final;
     double  timeBetweenShots    (void) final;
@@ -61,10 +48,11 @@ public:
     QString             commandDescription  (void) const final { return tr("Corridor Scan"); }
     QString             commandName         (void) const final { return tr("Corridor Scan"); }
     QString             abbreviation        (void) const final { return tr("C"); }
+    void                setCoordinate       (const QGeoCoordinate& coordinate) final;
     ReadyForSaveState   readyForSaveState   (void) const final;
     double              additionalTimeDelay (void) const final { return 0; }
 
-    static const QString name;
+    static constexpr const char* canonicalName = QT_TR_NOOP("Corridor Scan");
 
     static constexpr const char* settingsGroup =            "CorridorScan";
     static constexpr const char* corridorWidthName =        "CorridorWidth";

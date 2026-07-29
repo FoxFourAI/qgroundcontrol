@@ -39,7 +39,7 @@ std::optional<uint64_t> decodeBERNumber(uint8_t *data, size_t &i, size_t dataSiz
     return {};
 }
 
-std::optional<uint32_t> decodeBEROIDTag(uint8_t *data, size_t &i, size_t dataSize) {
+std::optional<uint32_t> decodeBEROIDTag(uint8_t *data, size_t &i, size_t /*dataSize*/) {
     // FIXME: currently only one-byte tags are used, but in furute a BER_OID tag should be parsed here
     return data[i++];
 }

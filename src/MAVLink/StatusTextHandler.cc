@@ -1,13 +1,5 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #include "StatusTextHandler.h"
+#include "MAVLinkLib.h"
 #include <QGCLoggingCategory.h>
 
 #include <QtCore/QTimer>
@@ -74,7 +66,7 @@ QString StatusTextHandler::formattedMessages() const
 {
     QString result;
     for (const StatusText *message: messages()) {
-        (void) result.append(message->getFormattedText());
+        (void) result.prepend(message->getFormattedText());
     }
 
     return result;
