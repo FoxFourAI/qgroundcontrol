@@ -23,4 +23,6 @@ public:
     const QVariantList &toolIndicators(const Vehicle *vehicle);
 private:
     QVariantList _toolIndicatorList;
+    ParameterMetaData* _createParameterMetaData();
+
 };
