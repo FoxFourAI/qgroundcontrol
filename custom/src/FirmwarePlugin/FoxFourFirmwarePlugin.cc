@@ -11,8 +11,7 @@
 #include "FoxFourAutoPilotPlugin.h"
 #include "Vehicle.h"
 #include "Camera/FoxFourCameraControl.h"
-#include "FoxFourSettings.h"
-#include "SettingsManager.h"
+#include "ParameterMetaData/FoxFourParameterMetaData.h"
 AutoPilotPlugin* FoxFourFirmwarePlugin::autopilotPlugin(Vehicle *vehicle) const
 {
     return new FoxFourAutoPilotPlugin(vehicle, vehicle);
@@ -32,4 +31,9 @@ const QVariantList &FoxFourFirmwarePlugin::toolIndicators(const Vehicle *vehicle
         _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/EK3Sources.qml")));
     }
     return _toolIndicatorList;
+}
+
+ParameterMetaData* FoxFourFirmwarePlugin::_createParameterMetaData() {
+    //returning custom parameters metadata
+    return new FoxFourParameterMetaData(this);
 }

@@ -60,5 +60,6 @@
     </qresource>
     <qresource prefix="/json">
         <file alias="FoxFour.SettingsGroup.json">src/Settings/FoxFour.SettingsGroup.json</file>
+        <file alias="parameters.metadata.json">res/parameters.metadata.json</file>
     </qresource>
 </RCC>

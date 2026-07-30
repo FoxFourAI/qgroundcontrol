@@ -137,7 +137,15 @@ FactMetaData *CompInfoParam::_lookupJsonMetaData(const QString &name)
 
 ParameterMetaData *CompInfoParam::_getParameterMetaData()
 {
-    if (!_parameterMetaData && compId == MAV_COMP_ID_AUTOPILOT1) {
+    //FoxFour part
+    static const QVector<int> available_comps{
+                                MAV_COMP_ID_AUTOPILOT1,
+                                MAV_COMP_ID_ONBOARD_COMPUTER,
+                                MAV_COMP_ID_ONBOARD_COMPUTER2,
+                                MAV_COMP_ID_ONBOARD_COMPUTER3,
+                                MAV_COMP_ID_ONBOARD_COMPUTER4};
+
+    if (!_parameterMetaData && available_comps.contains(compId)) {
         _parameterMetaData = vehicle->firmwarePlugin()->loadParameterMetaData(vehicle);
         if (_parameterMetaData) {
             _parameterMetaData->setParent(this);
