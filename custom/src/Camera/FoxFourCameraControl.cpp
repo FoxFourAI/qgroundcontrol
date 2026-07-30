@@ -158,11 +158,11 @@ void FoxFourCameraControl::_unsubscribeFromCameraFact() {
 }
 
 //-----------------------------------------------------------------------------
-void FoxFourCameraControl::_zoomResponse(void *resultHandlerData, int compId, const mavlink_command_ack_t &ack, Vehicle::MavCmdResultFailureCode_t failureCode)
+void FoxFourCameraControl::_zoomResponse(void *resultHandlerData, int /*compId*/, const mavlink_command_ack_t &ack, Vehicle::MavCmdResultFailureCode_t /*failureCode*/)
 {
     auto camControl = reinterpret_cast<FoxFourCameraControl*>(resultHandlerData);
-    qCDebug(CameraControlLog) << "new factor is " << ack.result_param2 / 100.;
-    float new_factor = qMin(camControl->maxZoomLevel(),qMax(camControl->minZoomLevel(),ack.result_param2 / 100.));
+    qCDebug(FoxFourCameraControlLog) << "new factor is " << ack.result_param2 / 100.;
+    float new_factor = qMin(camControl->maxZoomLevel(),qMax(camControl->minZoomLevel(),ack.result_param2 / 100));
 
     camControl->setZoomLevel(new_factor);
 }
@@ -333,7 +333,10 @@ void FoxFourCameraControl::zoomToRegion(QRectF rec, QString timestamp)
     }
     uint64_t time = timestamp.toULongLong();
     uint32_t timestampLow = static_cast<uint32_t>(time);
-    uint32_t timestampHight = static_cast<uint32_t>(time >> 32);
+    uint32_t timestampHigh = static_cast<uint32_t>(time >> 32);
+
+    float param5 = *reinterpret_cast<float*>(timestampLow);
+    float param6 = *reinterpret_cast<float*>(timestampHigh);
 
     auto handler = new Vehicle::MavCmdAckHandlerInfo_t();
     handler->resultHandlerData = this;
@@ -343,7 +346,7 @@ void FoxFourCameraControl::zoomToRegion(QRectF rec, QString timestamp)
                              rec.topLeft().y(),
                              rec.width(),
                              rec.height(),
-                             *reinterpret_cast<float*>(&timestampLow),
-                             *reinterpret_cast<float*>(&timestampHight));
+                             param5,
+                             param6);
 }
 
