@@ -153,9 +153,9 @@ Item {
         var h = y1 - y0
 
         // Ignore degenerate rectangles (e.g. mostly-horizontal/vertical drags)
-        if (w < 0.01 || h < 0.01) {
-            return
-        }
+        // if (w < 0.01 || h < 0.01) {
+        //     return
+        // }
 
         // Drag = rectangle tracking
         camera.startTracking(Qt.rect(x0, y0, w, h), false)
