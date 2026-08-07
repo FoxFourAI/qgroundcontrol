@@ -288,6 +288,6 @@ void FoxFourCameraControl::setZoomLevel(qreal level) {
     emit zoomLevelChanged();
 }
 
-void FoxFourCameraControl::handleCameraCaptureStatus(const mavlink_camera_capture_status_t& cameraCaptureStatus) {
+void FoxFourCameraControl::handleCameraCaptureStatus(const mavlink_camera_capture_status_t& /*cameraCaptureStatus*/) {
     // VehicleCameraControl::handleCameraCaptureStatus(cameraCaptureStatus);
 }

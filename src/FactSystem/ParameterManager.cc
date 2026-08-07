@@ -709,13 +709,13 @@ int ParameterManager::_actualComponentId(int componentId) const
     return componentId;
 }
 
-void ParameterManager::refreshParameter(int componentId, const QString &paramName)
+void ParameterManager::refreshParameter(int componentId, const QString &paramName, bool notify)
 {
     componentId = _actualComponentId(componentId);
 
     qCDebug(ParameterManagerLog) << _logVehiclePrefix(componentId) << "refreshParameter - name:" << paramName << ")";
 
-    _mavlinkParamRequestRead(componentId, paramName, -1, true /* notifyFailure */);
+    _mavlinkParamRequestRead(componentId, paramName, -1, notify);
 }
 
 void ParameterManager::refreshParametersPrefix(int componentId, const QString &namePrefix)
