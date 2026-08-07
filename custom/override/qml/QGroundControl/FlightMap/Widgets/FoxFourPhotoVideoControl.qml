@@ -770,6 +770,7 @@ Rectangle {
         ColumnLayout{
             Layout.fillHeight: true
             spacing:0
+            visible: _activeVehicle.autopilotPlugin.exposureAvailable
 
             QGCLabel {
                 Layout.alignment:   Qt.AlignHCenter

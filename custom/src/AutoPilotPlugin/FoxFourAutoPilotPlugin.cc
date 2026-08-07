@@ -31,6 +31,7 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent
     _configurator = new CopterConfigurator(vehicle,this);
     emit mapMatchingCreated();
     auto cameraMgr = vehicle->cameraManager();
+    connect(_vehicle->parameterManager(), &ParameterManager::factAdded, this, &FoxFourAutoPilotPlugin::handleFactAdded);
     connect(cameraMgr, &QGCCameraManager::currentCameraChanged, this, [this, cameraMgr]() {
         if (_cameraConnection) {
             disconnect(_cameraConnection);
@@ -38,19 +39,6 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent
         auto camera = reinterpret_cast<FoxFourCameraControl*>(cameraMgr->currentCameraInstance());
         _cameraConnection = connect(camera, &FoxFourCameraControl::storageCapacityChanged, this,
                                     &FoxFourAutoPilotPlugin::handleStorageCapacityChanged);
-        connect(_vehicle->parameterManager(), &ParameterManager::parametersReadyChanged, this, [this](bool ready) {
-            if (!ready) {
-                return;
-            }
-            auto pm = _vehicle->parameterManager();
-            const int compId = _onboardComputersMngr->currentComputerComponent();
-            if (!pm->parameterExists(compId, "GUID_FRAME_TYPE")) {
-                return;
-            }
-            auto fact = pm->getParameter(compId, "GUID_FRAME_TYPE");
-            connect(fact, &Fact::rawValueChanged, this, [this](QVariant value) { setIsDropper(value.toInt()); });
-            setIsDropper(fact->rawValue().toInt());
-        });
     });
 }
 
@@ -101,4 +89,22 @@ void FoxFourAutoPilotPlugin::handleStorageCapacityChanged(uint32_t total, uint32
     _storageCapacityStr =
             QGC::bigSizeMBToString(free).split(' ').first() + " / " + QGC::bigSizeMBToString(total);
     emit storageCapacityChanged();
+}
+
+void FoxFourAutoPilotPlugin::handleFactAdded(int compinentId, Fact* fact) {
+    if (compinentId == _vehicle->defaultComponentId()) {
+        return;
+    }
+
+    const QString factName = fact->name();
+    if (factName == "GUID_FRAME_TYPE") {
+        connect(fact, &Fact::rawValueChanged, this, [this](QVariant value) { setIsDropper(value.toInt()); });
+        setIsDropper(fact->rawValue().toInt());
+        return;
+    }
+    if (factName == "CAM_EXPOSURE") {
+        _exposureAvailable = true;
+        emit exposureAvailableChanged();
+        return;
+    }
 }
