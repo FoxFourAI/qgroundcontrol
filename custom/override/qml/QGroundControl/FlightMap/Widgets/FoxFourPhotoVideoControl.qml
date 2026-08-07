@@ -353,9 +353,9 @@ Rectangle {
                             centerIn:           parent
                             alignWhenCentered:  false
                         }
-                        width:              parent.width * (_isShootingInCurrentMode ? 0.5 : 0.75)
+                        width:              parent.width * (!_videoCaptureIdle ? 0.5 : 0.75)
                         height:             width
-                        radius:             _isShootingInCurrentMode ? 0 : width * 0.5
+                        radius:             !_videoCaptureIdle ? 0 : width * 0.5
                         color:              _isShootingInCurrentMode || _canShootInCurrentMode ? qgcPal.colorRed : qgcPal.colorGrey
 
                         property bool _isShootingInPhotoMode:   _cameraInPhotoMode && _camera.photoCaptureStatus === MavlinkCameraControlInterface.CapturePhotosStateCapturingSinglePhoto

@@ -28,7 +28,7 @@ QGC_LOGGING_CATEGORY(FoxFourCameraControlLog, "FoxFour.CameraControl")
 FoxFourCameraControl::FoxFourCameraControl(const mavlink_camera_information_t* info, Vehicle* vehicle, int compID,
                                            QObject* parent)
     : VehicleCameraControl(info, vehicle, compID, parent) {
-    _cameraMode = CAM_MODE_VIDEO;
+    setCameraMode(CameraMode::CAM_MODE_VIDEO);
     connect(VideoManager::instance(), &VideoManager::recordingChanged, this,
             &FoxFourCameraControl::_processRecordingChanged);
     qCDebug(FoxFourCameraControlLog) << "FoxFour camera control initialized";
@@ -57,29 +57,9 @@ FoxFourCameraControl::~FoxFourCameraControl() {
 //-----------------------------------------------------------------------------
 bool FoxFourCameraControl::startVideoRecording() {
     if (!_resetting) {
-        qCDebug(FoxFourCameraControlLog) << "startVideoRecording()";
-        //-- Check if camera can capture videos or if it can capture it while in Photo Mode
-        if ((cameraMode() == CAM_MODE_PHOTO && !videoInPhotoMode())) {
-            return false;
-        } else if (!capturesVideo()) {
-            // If camera can't record video, just do the normal ground station recording here
-            VideoManager::instance()->startRecording();
-
-            if (captureVideoState() == CaptureVideoStateCapturing) {
-                qCWarning(FoxFourCameraControlLog) << "startVideoRecording: Camera already recording";
-                return false;
-            }
-
-            _videoRecordTimeUpdateTimer.start();
-            _videoRecordTimeElapsedTimer.start();
-            VideoManager::instance()->startRecording();
-            _setVideoCaptureStatus(VIDEO_CAPTURE_STATUS_RUNNING);
-            return true;
-        }
-
-        if (_videoCaptureStatus() != VIDEO_CAPTURE_STATUS_RUNNING) {
-            return true;
-        }
+        VideoManager::instance()->startRecording();
+        _setVideoCaptureStatus(VIDEO_CAPTURE_STATUS_RUNNING);
+        return true;
     }
     return false;
 }
@@ -178,6 +158,18 @@ void _cameraSwitchHandler(void* resultHandlerData, int /*compId*/, const mavlink
     emit ctrl->cameraSwitched();
 }
 
+//-----------------------------------------------------------------------------
+bool FoxFourCameraControl::toggleVideoRecording() {
+    if (captureVideoState() == CaptureVideoState::CaptureVideoStateCapturing) {
+        qCDebug(FoxFourCameraControlLog) << "stopping capturing";
+        return stopVideoRecording();
+    } else {
+        qCDebug(FoxFourCameraControlLog) << "starting capturing";
+        return startVideoRecording();
+    }
+}
+
+//-----------------------------------------------------------------------------
 void FoxFourCameraControl::setCameraIndex(int index) {
     if (!_commandSwitch) {
         if (_cameraSwitchFact == nullptr && _vehicle->parameterManager()->parameterExists(_vehicle->defaultComponentId(), "SCR_USER3")) {
@@ -206,31 +198,16 @@ void FoxFourCameraControl::handleStorageInfo(const mavlink_storage_information_t
 //-----------------------------------------------------------------------------
 bool FoxFourCameraControl::stopVideoRecording() {
     if (!_resetting) {
-        if (!capturesVideo()) {
-            // Again, if camera doesn't have the recording, do one on the ground station
-            if (_videoCaptureStatus() != VIDEO_CAPTURE_STATUS_RUNNING) {
-                qCWarning(FoxFourCameraControlLog) << "stopVideoRecording: Camera not recording";
-                return false;
-            }
-
-            _videoRecordTimeUpdateTimer.stop();
-            VideoManager::instance()->stopRecording();
-            _setVideoCaptureStatus(VIDEO_CAPTURE_STATUS_STOPPED);
-            return true;
+        // Again, if camera doesn't have the recording, do one on the ground station
+        if (captureVideoState() != CaptureVideoState::CaptureVideoStateCapturing) {
+            qCWarning(FoxFourCameraControlLog) << "stopVideoRecording: Camera not recording";
+            return false;
         }
 
-        // Firstly, stop video recording on the UAV
-        qCDebug(FoxFourCameraControlLog) << "stopVideoRecording()";
-        if (_videoCaptureStatus() == VIDEO_CAPTURE_STATUS_RUNNING) {
-            _vehicle->sendMavCommand(_compID,                     // Target component
-                                     MAV_CMD_VIDEO_STOP_CAPTURE,  // Command id
-                                     false,                       // Don't Show Error (handle locally)
-                                     0);                          // Reserved (Set to 0)
-
-            VideoManager::instance()->stopRecording();
-
-            return true;
-        }
+        _videoRecordTimeUpdateTimer.stop();
+        VideoManager::instance()->stopRecording();
+        _setVideoCaptureStatus(VIDEO_CAPTURE_STATUS_STOPPED);
+        return true;
     }
     return false;
 }
@@ -309,4 +286,8 @@ void FoxFourCameraControl::setZoomLevel(qreal level) {
         emit zoomEnabledChanged();
     }
     emit zoomLevelChanged();
+}
+
+void FoxFourCameraControl::handleCameraCaptureStatus(const mavlink_camera_capture_status_t& cameraCaptureStatus) {
+    // VehicleCameraControl::handleCameraCaptureStatus(cameraCaptureStatus);
 }
