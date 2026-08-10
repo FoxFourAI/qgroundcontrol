@@ -75,7 +75,7 @@ void CopterMission::_handleFacts(int componentId, Fact* fact)
     }
 
     if (fact->name() == "MISSN_GUID_TYPE") {
-        connect(fact, &Fact::rawValueChanged, this, [this](const QVariant& /*value*/) { _update(); });
+        connect(fact, &Fact::rawValueChanged, this, [this]([[maybe_unused]] const QVariant& value) { _update(); });
         _missionChangeFact = fact;
         _update();
         return;
