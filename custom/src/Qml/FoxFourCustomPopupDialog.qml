@@ -49,7 +49,7 @@ Popup {
     margins:            0
 
     x: (mainWindow.width - width) / 2.
-    y:  mainWindow.height - height - ScreenTools.defaultFontPixelHeight * 2
+    y:  mainWindow.height - height - ScreenTools.defaultFontPixelHeight * 5
 
 
     property string title

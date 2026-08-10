@@ -468,7 +468,7 @@ ApplicationWindow {
     Component {
         id: simpleMessageDialogComponent
 
-        CustomSimpleMessageDialog {}
+        FoxFourCustomSimpleMessageDialog {}
     }
 
     property bool _forceClose: false
