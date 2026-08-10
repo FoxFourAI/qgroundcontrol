@@ -55,7 +55,7 @@ void CopterType::_handleFacts(int componentId, Fact* fact)
         return;
     }
     if (fact->name() == "GUID_FRAME_TYPE") {
-        connect(fact, &Fact::rawValueChanged, this, [this](const QVariant& /*value*/) { _update(); });
+        connect(fact, &Fact::rawValueChanged, this, [this]([[maybe_unused]] const QVariant& value) { _update(); });
         // dont know why, but the first value that appears when Fact received, is 0, so
         // trigger the timer to update it after a second of delay....
         _typeChangeFact = fact;

@@ -33,7 +33,7 @@ private slots:
     void _setCurrentSource(int indx);
 
 private:
-    static void _changeSrcHandler(void* responceData, int /*compid*/, const mavlink_command_ack_t& ack,
+    static void _changeSrcHandler(void* responceData,[[maybe_unused]] int compid, const mavlink_command_ack_t& ack,
                                   Vehicle::MavCmdResultFailureCode_t failureCode);
     void _setDirty(bool newState);
 

@@ -13,14 +13,14 @@ EKSources::EKSources(Vehicle* vehicle, QObject* parent) : QObject(parent), _vehi
         _setVisible(true);
     });
     connect(_vehicle->parameterManager(), &ParameterManager::_paramRequestReadFailure, this,
-            [this](const int /*componentId*/, const QString& paramName, const int /*parameterIndex*/) {
+            [this]([[maybe_unused]] const int componentId, const QString& paramName,[[maybe_unused]] const int parameterIndex) {
                 if (paramName == _ekfParamName) {
                     _refreshFailedCount++;
                     _setDirty(_refreshFailedCount > _maximumFaildeCount);
                 }
             });
     connect(_vehicle->parameterManager(), &ParameterManager::_paramRequestReadSuccess, this,
-            [this](const int /*componentId*/, const QString& paramName, const int /*parameterIndex*/) {
+            [this]([[maybe_unused]] const int componentId, const QString& paramName,[[maybe_unused]] const int parameterIndex) {
                 if(paramName == _ekfParamName) {
                     _refreshFailedCount = 0;
                     _setDirty(_refreshFailedCount > _maximumFaildeCount);
@@ -104,7 +104,7 @@ void EKSources::_setCurrentSource(int indx) {
     emit currentSourceChanged();
 }
 
-void EKSources::_changeSrcHandler(void* /*responceData*/, int, const mavlink_command_ack_t& ack,
+void EKSources::_changeSrcHandler([[maybe_unused]] void* responceData, int, const mavlink_command_ack_t& ack,
                                   Vehicle::MavCmdResultFailureCode_t failureCode) {
     if (ack.result != MAV_RESULT_ACCEPTED) {
         switch (failureCode) {

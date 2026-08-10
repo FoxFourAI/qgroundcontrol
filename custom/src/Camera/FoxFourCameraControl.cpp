@@ -96,11 +96,11 @@ void FoxFourCameraControl::_processRecordingChanged() {
 }
 
 //-----------------------------------------------------------------------------
-void FoxFourCameraControl::_connectFact(int /*componentId*/, Fact* fact) {
+void FoxFourCameraControl::_connectFact([[maybe_unused]] int componentId, Fact* fact) {
     // signing to maximal zoom value
     if (fact->name() == "VID_ZOOM_MAX" && _maxZoomFact == nullptr) {
         _maxZoomFact = fact;
-        connect(_maxZoomFact, &Fact::valueChanged, this, [this](const QVariant& /*value*/) { emit maxZoomLevelChanged(); });
+        connect(_maxZoomFact, &Fact::valueChanged, this, [this]([[maybe_unused]] const QVariant& value) { emit maxZoomLevelChanged(); });
         emit maxZoomLevelChanged();
     }
 
@@ -118,7 +118,7 @@ void FoxFourCameraControl::_connectFact(int /*componentId*/, Fact* fact) {
     // signing to minimal zoom value
     if (fact->name() == "VID_ZOOM_MIN" && _minZoomFact == nullptr) {
         _minZoomFact = fact;
-        connect(_minZoomFact, &Fact::valueChanged, this, [this](const QVariant& /*value*/) { emit minZoomLevelChanged(); });
+        connect(_minZoomFact, &Fact::valueChanged, this, [this]([[maybe_unused]] const QVariant& value) { emit minZoomLevelChanged(); });
         emit minZoomLevelChanged();
     }
 }
@@ -140,8 +140,8 @@ void FoxFourCameraControl::_unsubscribeFromCameraFact() {
 //-----------------------------------------------------------------------------
 
 // handler for camera switch responce
-void _cameraSwitchHandler(void* resultHandlerData, int /*compId*/, const mavlink_command_ack_t& ack,
-                          Vehicle::MavCmdResultFailureCode_t /*failureCode*/) {
+void _cameraSwitchHandler(void* resultHandlerData,[[maybe_unused]] int compId, const mavlink_command_ack_t& ack,
+                          [[maybe_unused]] Vehicle::MavCmdResultFailureCode_t failureCode) {
     if (ack.result != MAV_RESULT_ACCEPTED) {
         qCDebug(FoxFourCameraControlLog) << "error occured while switching cameras!";
     }
@@ -288,6 +288,7 @@ void FoxFourCameraControl::setZoomLevel(qreal level) {
     emit zoomLevelChanged();
 }
 
-void FoxFourCameraControl::handleCameraCaptureStatus(const mavlink_camera_capture_status_t& /*cameraCaptureStatus*/) {
+void FoxFourCameraControl::handleCameraCaptureStatus([[maybe_unused]] const mavlink_camera_capture_status_t& cameraCaptureStatus) {
+    //For now camera capture status sends zeros, so do not handle them.
     // VehicleCameraControl::handleCameraCaptureStatus(cameraCaptureStatus);
 }
