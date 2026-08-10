@@ -84,7 +84,7 @@ CopterType::CopterType(Type type, Vehicle* vehicle, QObject* parent) : CopterSta
             _missions.append(new CopterMission(CopterMission::TerminalAttack, {"MISSN_AUTONOMY", "MISSN_TERM_VEL", "MISSN_ONE_WAY"}, _vehicle, this));
             _missions.append(new CopterMission(CopterMission::Tuning, {"MISSN_AUTONOMY"}, _vehicle, this));
             _missions.append(new CopterMission(CopterMission::Cruise, {"MISSN_AUTONOMY", "MISSN_CRUISE_VEL", "MISSN_ONE_WAY"}, _vehicle, this));
-            _missions.append(new CopterMission(CopterMission::TerminalBombing, {"MISSN_AUTONOMY", "MISSN_BOMB_BIAS", "MISSN_ASCEND_ALT", "MISSN_BOMB_ALT"}, _vehicle, this));
+            _missions.append(new CopterMission(CopterMission::TerminalBombing, {"MISSN_AUTONOMY", "MISSN_BOMB_BIAS", "MISSN_ASCEND_ALT", "MISSN_BOMB_ALT", "MISSN_TERM_VEL", "MISSN_DRP_SRV_N", "MISSN_DRP_SRV_PW"}, _vehicle, this));
             break;
         case Plane:
             _missions.append(new CopterMission(CopterMission::Disable, {}, _vehicle, this));

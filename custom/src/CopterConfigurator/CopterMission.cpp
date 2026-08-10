@@ -57,7 +57,8 @@ void CopterMission::checkParameters()
             _requiredParameters.removeAt(i);
             i--;
         } else {
-            pm->refreshParameter(compId, _requiredParameters[i]);
+            //trying to refresh parameter if exist, do not throw failure, if parameter does not exist.
+            pm->refreshParameter(compId, _requiredParameters[i], false);
         }
     }
     _parametersReady = _requiredParameters.isEmpty();
