@@ -158,7 +158,16 @@ void FoxFourCameraControl::_unsubscribeFromCameraFact() {
 }
 
 //-----------------------------------------------------------------------------
+void FoxFourCameraControl::_zoomResponse(void *resultHandlerData, int /*compId*/, const mavlink_command_ack_t &ack, Vehicle::MavCmdResultFailureCode_t /*failureCode*/)
+{
+    auto camControl = reinterpret_cast<FoxFourCameraControl*>(resultHandlerData);
+    qCDebug(FoxFourCameraControlLog) << "new factor is " << ack.result_param2 / 100.;
+    float new_factor = qMin(camControl->maxZoomLevel(),qMax(camControl->minZoomLevel(),ack.result_param2 / 100));
 
+    camControl->setZoomLevel(new_factor);
+}
+
+//-----------------------------------------------------------------------------
 // handler for camera switch responce
 void _cameraSwitchHandler(void* resultHandlerData, int /*compId*/, const mavlink_command_ack_t& ack,
                           Vehicle::MavCmdResultFailureCode_t /*failureCode*/) {
@@ -178,6 +187,7 @@ void _cameraSwitchHandler(void* resultHandlerData, int /*compId*/, const mavlink
     emit ctrl->cameraSwitched();
 }
 
+//-----------------------------------------------------------------------------
 void FoxFourCameraControl::setCameraIndex(int index) {
     if (!_commandSwitch) {
         if (_cameraSwitchFact == nullptr && _vehicle->parameterManager()->parameterExists(_vehicle->defaultComponentId(), "SCR_USER3")) {
@@ -201,6 +211,7 @@ void FoxFourCameraControl::handleStorageInfo(const mavlink_storage_information_t
     VehicleCameraControl::handleStorageInformation(st);
     qDebug()<<"capacity changed";
     emit storageCapacityChanged(_storageTotal, _storageFree);
+    // }
 }
 
 //-----------------------------------------------------------------------------
@@ -234,6 +245,7 @@ bool FoxFourCameraControl::stopVideoRecording() {
     }
     return false;
 }
+
 //-----------------------------------------------------------------------------
 void FoxFourCameraControl::startTracking(QRectF rec, bool zoom) {
     uint64_t time = 0;
@@ -259,6 +271,7 @@ void FoxFourCameraControl::startTracking(QRectF rec, bool zoom) {
                 emit zoomLevelChanged();
             }
         }
+
         uint32_t timestampLow = static_cast<uint32_t>(time);
         uint32_t timestampHight = static_cast<uint32_t>(time >> 32);
 
@@ -310,3 +323,30 @@ void FoxFourCameraControl::setZoomLevel(qreal level) {
     }
     emit zoomLevelChanged();
 }
+
+//-----------------------------------------------------------------------------
+void FoxFourCameraControl::zoomToRegion(QRectF rec, QString timestamp)
+{
+    int vgmCompID = reinterpret_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager()->currentComputerComponent();
+    if(vgmCompID == 0){
+        return;
+    }
+    uint64_t time = timestamp.toULongLong();
+    uint32_t timestampLow = static_cast<uint32_t>(time);
+    uint32_t timestampHigh = static_cast<uint32_t>(time >> 32);
+
+    float param5 = *reinterpret_cast<float*>(timestampLow);
+    float param6 = *reinterpret_cast<float*>(timestampHigh);
+
+    auto handler = new Vehicle::MavCmdAckHandlerInfo_t();
+    handler->resultHandlerData = this;
+    handler->resultHandler = _zoomResponse;
+    _vehicle->sendMavCommandWithHandler(handler,vgmCompID, MAV_CMD_DO_REGION_ZOOM,
+                             rec.topLeft().x(),
+                             rec.topLeft().y(),
+                             rec.width(),
+                             rec.height(),
+                             param5,
+                             param6);
+}
+
