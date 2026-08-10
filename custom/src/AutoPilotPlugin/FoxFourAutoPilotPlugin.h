@@ -21,6 +21,7 @@ class FoxFourAutoPilotPlugin : public APMAutoPilotPlugin {
     Q_PROPERTY(MapMatching* mapMatching READ mapMatching NOTIFY mapMatchingCreated)
     Q_PROPERTY(QString storageCapacity READ storageCapacity NOTIFY storageCapacityChanged)
     Q_PROPERTY(bool isDropper READ isDropper NOTIFY isDropperChanged)
+    Q_PROPERTY(bool exposureAvailable READ exposureAvailable NOTIFY exposureAvailableChanged)
     Q_PROPERTY(CopterConfigurator* configurator MEMBER _configurator)
 public:
     explicit FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent = nullptr);
@@ -35,7 +36,9 @@ public:
     MapMatching* mapMatching() {return _mapMatching;}
     bool isDropper() { return _isDropper; }
     OnboardComputersManager* onboardComputersManager();
+    bool exposureAvailable() {return _exposureAvailable;}
 signals:
+    void exposureAvailableChanged();
     void storageCapacityChanged();
     void isDropperChanged();
     void buttonListChanged();
@@ -43,9 +46,11 @@ signals:
 private slots:
     void setIsDropper(int type);
     void handleStorageCapacityChanged(uint32_t total, uint32_t free);
+    void handleFactAdded(int compinentId, Fact* fact);
 
 private:
     bool _isDropper = false;
+    bool _exposureAvailable = false;
     EKSources* _ekSources = nullptr;
     ButtonList* _buttonList = nullptr;
     MapMatching* _mapMatching = nullptr;

@@ -14,7 +14,7 @@ import QGroundControl
 import QGroundControl.Controls
 
 import Custom.Widgets 1.0
-CustomPopupDialog {
+FoxFourCustomPopupDialog {
     property alias  text:           label.text
     property var    acceptFunction: null        // Mainly used by MainRootWindow.showMessage to specify accept function in call
     property var    closeFunction:  null

@@ -92,6 +92,8 @@ ToolIndicatorPage{
                         Repeater{
                             model:currMissn.tunableParameters
                             delegate: LabelledFactTextField{
+                                textFieldPreferredWidth: ScreenTools.defaultFontPixelWidth * 15
+
                                 Layout.fillWidth: true
                                 fact: modelData
                                 label: fact.name

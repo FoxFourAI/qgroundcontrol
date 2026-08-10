@@ -22,6 +22,8 @@
 #include "VehicleLinkManager.h"
 #include "QGCStateMachine.h"
 #include "MultiVehicleManager.h"
+#include "SettingsManager.h"
+#include "FoxFourSettings.h"
 
 #include <QtCore/QEasingCurve>
 #include <QtCore/QFile>
@@ -709,13 +711,13 @@ int ParameterManager::_actualComponentId(int componentId) const
     return componentId;
 }
 
-void ParameterManager::refreshParameter(int componentId, const QString &paramName)
+void ParameterManager::refreshParameter(int componentId, const QString &paramName, bool notify)
 {
     componentId = _actualComponentId(componentId);
 
     qCDebug(ParameterManagerLog) << _logVehiclePrefix(componentId) << "refreshParameter - name:" << paramName << ")";
 
-    _mavlinkParamRequestRead(componentId, paramName, -1, true /* notifyFailure */);
+    _mavlinkParamRequestRead(componentId, paramName, -1, notify);
 }
 
 void ParameterManager::refreshParametersPrefix(int componentId, const QString &namePrefix)
@@ -797,7 +799,10 @@ Fact *ParameterManager::getParameter(int componentId, const QString &paramName)
 
     const QString mappedParamName = _remapParamNameToVersion(paramName);
     if (!_mapCompId2FactMap.contains(componentId) || !_mapCompId2FactMap[componentId].contains(mappedParamName)) {
-        qgcApp()->reportMissingParameter(componentId, mappedParamName);
+        //FoxFour part: if we are in the minimal mode, we do not report missing parameters.
+        if (!SettingsManager::instance()->foxFourSettings()->minimalMode()->rawValue().toBool()) {
+            qgcApp()->reportMissingParameter(componentId, mappedParamName);
+        }
         return &_defaultFact;
     }
 

@@ -34,6 +34,7 @@ public:
 
     static QGCCorePlugin* instance();
 
+    void factValueGridCreateDefaultSettings(FactValueGrid* factValueGrid);
     void cleanup() final;
     QGCOptions* options() final { return _options; }
     MandatoryParameters* mandatoryParameters();
@@ -55,6 +56,7 @@ private:
     class CustomOverrideInterceptor* _selector = nullptr;
     QVariantList _customSettingsList;  // Not to be mixed up with QGCCorePlugin implementation
     MandatoryParameters* _mandatoryParameters = nullptr;
+
 };
 
 /*===========================================================================*/

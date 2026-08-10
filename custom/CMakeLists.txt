@@ -65,8 +65,8 @@ qt_add_library(CustomModule STATIC)
 
 # new method of setting aliases
 qgc_set_qt_resource_alias(
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CustomSimpleMessageDialog.qml
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CustomPopupDialog.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourCustomSimpleMessageDialog.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourCustomPopupDialog.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Toolbar/VioIndicatorPage.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourControlPage.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CopterConfiguratorPage.qml
@@ -82,8 +82,8 @@ qt_add_qml_module(CustomModule
     VERSION 1.0
     RESOURCE_PREFIX /qml
     QML_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CustomSimpleMessageDialog.qml
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CustomPopupDialog.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourCustomSimpleMessageDialog.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourCustomPopupDialog.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Toolbar/VioIndicatorPage.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourControlPage.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CopterConfiguratorPage.qml

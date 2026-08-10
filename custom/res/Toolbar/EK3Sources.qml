@@ -35,6 +35,7 @@ Item{
 			text: qsTr("Position Src")
 		}
 		QGCComboBox{
+			_showHighlight: ekSrc.dirty
 			Layout.minimumWidth: ScreenTools.defaultFontPixelWidth * 13
 			model: ekSrc.sources 
 			onCurrentIndexChanged: {ekSrc.setSource(currentIndex + 1)}

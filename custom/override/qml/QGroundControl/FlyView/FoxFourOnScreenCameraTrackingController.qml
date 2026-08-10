@@ -176,8 +176,8 @@ Item {
         id: trackRect
         visible: _trackingEnabled && !_zooming
         color: "transparent"
-        border.color: "green"
-        border.width: 2
+        border.color: "#0bfc03"
+        border.width: 4
         width:_trackSize
         height: _trackSize
         x: _currentX - width / 2

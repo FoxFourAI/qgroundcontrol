@@ -7,11 +7,26 @@ QGC_LOGGING_CATEGORY(EKSourcesLog, "FoxFour.EKSources")
 EKSources::EKSources(Vehicle* vehicle, QObject* parent) : QObject(parent), _vehicle(vehicle) {
     connect(_vehicle->parameterManager(), &ParameterManager::parametersReadyChanged, this, &EKSources::_fetchSources);
     connect(_vehicle->parameterManager(), &ParameterManager::factAdded, this, [this](int srcId, Fact* fact) {
-        if (srcId != _vehicle->defaultComponentId() || fact->name() != "SCR_EKF_SRC") {
+        if (srcId != _vehicle->defaultComponentId() || fact->name() != _ekfParamName) {
             return;
         }
         _setVisible(true);
     });
+    connect(_vehicle->parameterManager(), &ParameterManager::_paramRequestReadFailure, this,
+            [this]([[maybe_unused]] const int componentId, const QString& paramName,[[maybe_unused]] const int parameterIndex) {
+                if (paramName == _ekfParamName) {
+                    _refreshFailedCount++;
+                    _setDirty(_refreshFailedCount > _maximumFaildeCount);
+                }
+            });
+    connect(_vehicle->parameterManager(), &ParameterManager::_paramRequestReadSuccess, this,
+            [this]([[maybe_unused]] const int componentId, const QString& paramName,[[maybe_unused]] const int parameterIndex) {
+                if(paramName == _ekfParamName) {
+                    _refreshFailedCount = 0;
+                    _setDirty(_refreshFailedCount > _maximumFaildeCount);
+
+                }
+            });
 }
 
 QStringList EKSources::sources() const { return _sources; }
@@ -60,11 +75,11 @@ void EKSources::_fetchSources(bool ready) {
     emit sourcesChanged();
 
     // getting current source
-    QString currentSourceParamName = "SCR_EKF_SRC";
+    QString currentSourceParamName = _ekfParamName;
     if (!parameterManager->parameterExists(_vehicle->defaultComponentId(), currentSourceParamName)) {
         return;
     }
-    qCDebug(EKSourcesLog) << "SCR_EKF_SRC exist";
+    qCDebug(EKSourcesLog) << _ekfParamName << " exist";
     auto fact = parameterManager->getParameter(_vehicle->defaultComponentId(), currentSourceParamName);
     connect(fact, &Fact::rawValueChanged, this, [this](const QVariant& value) { _setCurrentSource(value.toInt()); });
     _setCurrentSource(fact->rawValue().toInt());
@@ -89,7 +104,7 @@ void EKSources::_setCurrentSource(int indx) {
     emit currentSourceChanged();
 }
 
-void EKSources::_changeSrcHandler(void* /*responceData*/, int, const mavlink_command_ack_t& ack,
+void EKSources::_changeSrcHandler([[maybe_unused]] void* responceData, int, const mavlink_command_ack_t& ack,
                                   Vehicle::MavCmdResultFailureCode_t failureCode) {
     if (ack.result != MAV_RESULT_ACCEPTED) {
         switch (failureCode) {
@@ -103,5 +118,12 @@ void EKSources::_changeSrcHandler(void* /*responceData*/, int, const mavlink_com
             qCDebug(EKSourcesLog) << "MAV_CMD_SET_EKF_SOURCE_SET failed: duplicate command";
             break;
         }
+    }
+}
+
+void EKSources::_setDirty(bool newState) {
+    if (_dirty != newState) {
+        _dirty = newState;
+        emit dirtyChanged();
     }
 }
