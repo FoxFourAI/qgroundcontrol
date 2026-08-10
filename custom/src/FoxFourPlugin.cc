@@ -7,6 +7,10 @@
 #include "MandatoryParameters/MandatoryParameters.h"
 #include "QGCLoggingCategory.h"
 #include "QGCPalette.h"
+
+#include "InstrumentValueData.h"
+#include "FactValueGrid.h"
+#include <QmlObjectListModel.h>
 QGC_LOGGING_CATEGORY(FoxFourPluginLog, "FoxFour.Plugin")
 
 Q_APPLICATION_STATIC(FoxFourPlugin, _customPluginInstance);
@@ -23,6 +27,79 @@ FoxFourPlugin::FoxFourPlugin(QObject* parent) : QGCCorePlugin(parent) {
 }
 
 QGCCorePlugin* FoxFourPlugin::instance() { return _customPluginInstance(); }
+
+void FoxFourPlugin::factValueGridCreateDefaultSettings(FactValueGrid* factValueGrid) {
+    factValueGrid->setFontSize(FactValueGrid::LargeFontSize);
+    (void) factValueGrid->appendColumn();
+    (void) factValueGrid->appendColumn();
+    (void) factValueGrid->appendColumn();
+    (void) factValueGrid->appendColumn();
+    (void) factValueGrid->appendColumn();
+    (void) factValueGrid->appendRow();
+
+    int rowIndex =0;
+    //first column
+    QmlObjectListModel *column = factValueGrid->columns()->value<QmlObjectListModel*>(0);
+
+    InstrumentValueData* value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","GroundSpeed");
+    value->setText("Ground Spd.");
+    value->setShowUnits(true);
+
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","DistanceToHome");
+    value->setText("Distance to home");
+    value->setShowUnits(true);
+
+    //second column
+    rowIndex = 0;
+    column = factValueGrid->columns()->value<QmlObjectListModel*>(1);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","AltitudeRelative");
+    value->setText("Alt(Rel)");
+    value->setShowUnits(true);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","ClimbRate");
+    value->setText("Climb Rate");
+    value->setShowUnits(true);
+
+    //third column
+    rowIndex = 0;
+    column = factValueGrid->columns()->value<QmlObjectListModel*>(2);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","FlightTime");
+    value->setText("Flight Time");
+    value->setShowUnits(true);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","RangeFinderDist");
+    value->setText("Range finder");
+    value->setShowUnits(true);
+
+    //fourth column
+    rowIndex = 0;
+    column = factValueGrid->columns()->value<QmlObjectListModel*>(3);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","Roll");
+    value->setText("Roll");
+    value->setShowUnits(true);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","Pitch");
+    value->setText("Pitch");
+    value->setShowUnits(true);
+
+    //fourth column
+    rowIndex = 0;
+    column = factValueGrid->columns()->value<QmlObjectListModel*>(4);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","ThrottlePct");
+    value->setText("Throttle");
+    value->setShowUnits(true);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Clock","CurrentDate");
+    value->setText("Date");
+    value->setShowUnits(true);
+
+}
 
 void FoxFourPlugin::cleanup() {
     if (_qmlEngine) {
