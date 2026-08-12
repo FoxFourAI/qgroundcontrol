@@ -15,12 +15,14 @@
 #include "QGCCorePlugin.h"
 #include "QGCOptions.h"
 
+
 #ifdef QGC_GST_STREAMING
 #include "VideoReceiver/FoxFourGstVideoReceiver.h"
 #endif
 
 #include "MandatoryParameters/MandatoryParameters.h"
 #include "ParameterSetter/ParameterSetter.h"
+class Plugin;
 class QQmlApplicationEngine;
 Q_DECLARE_LOGGING_CATEGORY(FoxFourLog)
 
@@ -33,7 +35,7 @@ public:
     explicit FoxFourPlugin(QObject* parent = nullptr);
 
     static QGCCorePlugin* instance();
-
+    void init() final;
     void factValueGridCreateDefaultSettings(FactValueGrid* factValueGrid);
     void cleanup() final;
     QGCOptions* options() final { return _options; }
@@ -56,7 +58,7 @@ private:
     class CustomOverrideInterceptor* _selector = nullptr;
     QVariantList _customSettingsList;  // Not to be mixed up with QGCCorePlugin implementation
     MandatoryParameters* _mandatoryParameters = nullptr;
-
+    QList<Plugin*> _plugins;
 };
 
 /*===========================================================================*/
@@ -64,6 +66,8 @@ private:
 class CustomOverrideInterceptor : public QQmlAbstractUrlInterceptor {
 public:
     CustomOverrideInterceptor();
-
+    void setPlugins(QList<Plugin*> plugins) {_plugins = plugins;}
     QUrl intercept(const QUrl& url, QQmlAbstractUrlInterceptor::DataType type) final;
+private:
+    QList<Plugin*> _plugins;
 };

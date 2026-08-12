@@ -5,7 +5,7 @@ import QGroundControl
 import QGroundControl.Controls
 import QGroundControl.FactControls
 
-import Custom.Widgets 1.0
+import FoxFour.Widgets 1.0
 
 ToolIndicatorPage{
     id: root

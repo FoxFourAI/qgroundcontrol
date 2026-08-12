@@ -12,7 +12,7 @@ import QGroundControl.FlightMap
 import QGroundControl.PlanView
 import QGroundControl.Toolbar
 
-import Custom.Widgets 1.0
+import FoxFour.Widgets 1.0
 
 /// @brief Native QML top level window
 /// All properties defined here are visible to all QML pages.
