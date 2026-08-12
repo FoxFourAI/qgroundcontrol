@@ -57,7 +57,7 @@ set(QML_IMPORT_PATH ${QML_IMPORT_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/res" CACHE S
 # Custom QML Module
 # ============================================================================
 
-qt_add_library(CustomModule STATIC)
+qt_add_library(FoxFourModule STATIC)
 
 # Set resource aliases for custom widgets
 # deprecated method of setting aliases
@@ -77,8 +77,8 @@ qgc_set_qt_resource_alias(
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusColors.qml
 )
 
-qt_add_qml_module(CustomModule
-    URI Custom.Widgets
+qt_add_qml_module(FoxFourModule
+    URI FoxFour.Widgets
     VERSION 1.0
     RESOURCE_PREFIX /qml
     QML_FILES
@@ -143,6 +143,7 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterMission.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ParameterMetaData/FoxFourParameterMetaData.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ParameterMetaData/FoxFourParameterMetaData.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/plugins/Plugin.h
     CACHE INTERNAL "adding custom sources" FORCE
 )
 
@@ -162,7 +163,7 @@ endif()
 
 # Custom libraries to link
 set(CUSTOM_LIBRARIES
-    CustomModule
+    FoxFourModule
     CACHE INTERNAL "" FORCE
 )
 
@@ -248,3 +249,15 @@ set(CUSTOM_QT_COMPONENTS
     Core
     CACHE INTERNAL "adding custom components to qgc" FORCE
 )
+
+#Adding plugins from plugins subdirectory
+file(GLOB PLUGIN_CANDIDATES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/plugins ${CMAKE_CURRENT_SOURCE_DIR}/plugins/*)
+foreach(PLUGIN_DIR ${PLUGIN_CANDIDATES})
+    set(PLUGIN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/plugins/${PLUGIN_DIR})
+
+    # Only add it if it's a directory and contains a CMakeLists.txt
+    if(IS_DIRECTORY ${PLUGIN_PATH} AND EXISTS ${PLUGIN_PATH}/CMakeLists.txt)
+        message(STATUS "Adding plugin: ${PLUGIN_DIR}")
+        add_subdirectory(${PLUGIN_PATH})
+    endif()
+endforeach()

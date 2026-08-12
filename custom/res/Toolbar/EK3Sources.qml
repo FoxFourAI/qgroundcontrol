@@ -13,7 +13,7 @@ import QtQuick.Layouts
 import QGroundControl
 import QGroundControl.Controls
 
-import Custom.Widgets 1.0
+import FoxFour.Widgets 1.0
 Item{
 	id: root
 	//to prevent empty spaces, resize widget when its needed

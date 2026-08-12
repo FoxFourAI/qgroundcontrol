@@ -2,7 +2,7 @@ import QtQuick
 
 import QGroundControl.Controls
 
-import Custom.Widgets 1.0
+import FoxFour.Widgets 1.0
 
 Item {
     id: root

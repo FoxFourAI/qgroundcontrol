@@ -11,6 +11,13 @@
 #include "InstrumentValueData.h"
 #include "FactValueGrid.h"
 #include <QmlObjectListModel.h>
+
+//Plugin system.
+#include "custom/plugins/Plugin.h"
+#ifdef SNS_ENABLE
+#include "SinePlugin.h"
+#endif
+
 QGC_LOGGING_CATEGORY(FoxFourPluginLog, "FoxFour.Plugin")
 
 Q_APPLICATION_STATIC(FoxFourPlugin, _customPluginInstance);
@@ -24,9 +31,27 @@ FoxFourPlugin::FoxFourPlugin(QObject* parent) : QGCCorePlugin(parent) {
     _showAdvancedUI = true;
     (void)connect(this, &FoxFourPlugin::showAdvancedUIChanged, this, &FoxFourPlugin::_advancedChanged);
 
+#ifdef SNS_ENABLE
+    _plugins.append(new SinePlugin());
+#endif
+
+}
+
+FoxFourPlugin::~FoxFourPlugin()
+{
+    for(auto *plugin: _plugins){
+        delete plugin;
+    }
 }
 
 QGCCorePlugin* FoxFourPlugin::instance() { return _customPluginInstance(); }
+
+void FoxFourPlugin::init()
+{
+    for (auto *plugin: _plugins) {
+        plugin->init();
+    }
+}
 
 void FoxFourPlugin::factValueGridCreateDefaultSettings(FactValueGrid* factValueGrid) {
     factValueGrid->setFontSize(FactValueGrid::LargeFontSize);
@@ -102,6 +127,11 @@ void FoxFourPlugin::factValueGridCreateDefaultSettings(FactValueGrid* factValueG
 }
 
 void FoxFourPlugin::cleanup() {
+
+    for (auto *plugin: _plugins) {
+        plugin->cleanup();
+    }
+
     if (_qmlEngine) {
         _qmlEngine->removeUrlInterceptor(_selector);
     }
@@ -134,7 +164,12 @@ QQmlApplicationEngine* FoxFourPlugin::createQmlApplicationEngine(QObject* parent
     _qmlEngine = QGCCorePlugin::createQmlApplicationEngine(parent);
     // TODO: Investigate _qmlEngine->setExtraSelectors({"custom"})
     _selector = new CustomOverrideInterceptor();
+    _selector->setPlugins(_plugins);
     _qmlEngine->addUrlInterceptor(_selector);
+
+    for(auto *plugin: _plugins) {
+        plugin->attachToQmlEngine(_qmlEngine);
+    }
 
     return _qmlEngine;
 }
@@ -357,6 +392,14 @@ void FoxFourPlugin::paletteOverride(const QString& colorName, QGCPalette::Palett
 CustomOverrideInterceptor::CustomOverrideInterceptor() : QQmlAbstractUrlInterceptor() {}
 
 QUrl CustomOverrideInterceptor::intercept(const QUrl& url, QQmlAbstractUrlInterceptor::DataType type) {
+
+    for(auto *plugin : _plugins) {
+        QUrl newUrl = plugin->resourceIntercept(url,type);
+        if(newUrl != url) {
+            return newUrl;
+        }
+    }
+
     switch (type) {
     case QQmlAbstractUrlInterceptor::QmlFile:
     case QQmlAbstractUrlInterceptor::UrlString:

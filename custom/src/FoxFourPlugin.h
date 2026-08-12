@@ -21,6 +21,7 @@
 
 #include "MandatoryParameters/MandatoryParameters.h"
 #include "ParameterSetter/ParameterSetter.h"
+class Plugin;
 class QQmlApplicationEngine;
 Q_DECLARE_LOGGING_CATEGORY(FoxFourLog)
 
@@ -31,10 +32,10 @@ class FoxFourPlugin : public QGCCorePlugin {
     Q_PROPERTY(MandatoryParameters* mandatoryParameters READ mandatoryParameters MEMBER _mandatoryParameters)
 public:
     explicit FoxFourPlugin(QObject* parent = nullptr);
-
+    ~FoxFourPlugin();
     static QGCCorePlugin* instance();
-
-    void factValueGridCreateDefaultSettings(FactValueGrid* factValueGrid);
+    void init() final;
+    void factValueGridCreateDefaultSettings(FactValueGrid* factValueGrid) override;
     void cleanup() final;
     QGCOptions* options() final { return _options; }
     MandatoryParameters* mandatoryParameters();
@@ -56,7 +57,7 @@ private:
     class CustomOverrideInterceptor* _selector = nullptr;
     QVariantList _customSettingsList;  // Not to be mixed up with QGCCorePlugin implementation
     MandatoryParameters* _mandatoryParameters = nullptr;
-
+    QList<Plugin*> _plugins;
 };
 
 /*===========================================================================*/
@@ -64,6 +65,8 @@ private:
 class CustomOverrideInterceptor : public QQmlAbstractUrlInterceptor {
 public:
     CustomOverrideInterceptor();
-
+    void setPlugins(QList<Plugin*> plugins) {_plugins = plugins;}
     QUrl intercept(const QUrl& url, QQmlAbstractUrlInterceptor::DataType type) final;
+private:
+    QList<Plugin*> _plugins;
 };
