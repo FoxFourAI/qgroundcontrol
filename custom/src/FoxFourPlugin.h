@@ -33,10 +33,10 @@ class FoxFourPlugin : public QGCCorePlugin {
     Q_PROPERTY(MandatoryParameters* mandatoryParameters READ mandatoryParameters MEMBER _mandatoryParameters)
 public:
     explicit FoxFourPlugin(QObject* parent = nullptr);
-
+    ~FoxFourPlugin();
     static QGCCorePlugin* instance();
     void init() final;
-    void factValueGridCreateDefaultSettings(FactValueGrid* factValueGrid);
+    void factValueGridCreateDefaultSettings(FactValueGrid* factValueGrid) override;
     void cleanup() final;
     QGCOptions* options() final { return _options; }
     MandatoryParameters* mandatoryParameters();

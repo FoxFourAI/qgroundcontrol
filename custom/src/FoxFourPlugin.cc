@@ -37,6 +37,13 @@ FoxFourPlugin::FoxFourPlugin(QObject* parent) : QGCCorePlugin(parent) {
 
 }
 
+FoxFourPlugin::~FoxFourPlugin()
+{
+    for(auto *plugin: _plugins){
+        delete plugin;
+    }
+}
+
 QGCCorePlugin* FoxFourPlugin::instance() { return _customPluginInstance(); }
 
 void FoxFourPlugin::init()
