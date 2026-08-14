@@ -25,7 +25,7 @@ Item {
 
             PreFlightCheckButton {
                 name:           qsTr("Batteries")
-                manualText:     qsTr("Is connection quality visible on the RC screen?")
+                manualText:     qsTr("Check if the batteries have at least 4.0V per cell.")
             }
 
             PreFlightSensorsHealthCheck {
