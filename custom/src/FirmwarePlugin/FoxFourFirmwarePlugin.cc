@@ -28,7 +28,11 @@ const QVariantList &FoxFourFirmwarePlugin::toolIndicators(const Vehicle *vehicle
         _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/CopterIndicator.qml")));
         _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/VioIndicator.qml")));
         _toolIndicatorList.append(ArduCopterFirmwarePlugin::toolIndicators(vehicle));
+#ifdef SNS_ENABLE
+        _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Sine/qml/Toolbar/EK3Sources.qml")));
+#else
         _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/EK3Sources.qml")));
+#endif
     }
     return _toolIndicatorList;
 }
