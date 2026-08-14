@@ -15,7 +15,7 @@ Item {
 
             PreFlightCheckButton {
                 name:           qsTr("Hardware")
-                manualText:     qsTr("Props mounted, secured and do not collide? All antennas are connected?")
+                manualText:     qsTr("Are props mounted, secured, and not colliding? Are all antennas connected?")
             }
 
             PreFlightCheckButton {
@@ -25,7 +25,7 @@ Item {
 
             PreFlightCheckButton {
                 name:           qsTr("Batteries")
-                manualText:     qsTr("Check if the batteries has at least 4.0V per cell.")
+                manualText:     qsTr("Is connection quality visible on the RC screen?")
             }
 
             PreFlightSensorsHealthCheck {
@@ -37,7 +37,7 @@ Item {
 
             PreFlightCheckButton {
                 name:           qsTr("Connection")
-                manualText:     qsTr("Is connection quality visible on RC screen?")
+                manualText:     qsTr("Is connection quality visible on the RC screen?")
             }
 
             PreFlightCheckButton {
@@ -47,17 +47,17 @@ Item {
 
             PreFlightCheckButton {
                 name:           qsTr("VIO")
-                manualText:     qsTr("Can you switch VIO to \"Feeding Pose\"?")
+                manualText:     qsTr("Can you toggle VIO?")
             }
 
             PreFlightCheckButton {
                 name:           qsTr("Cameras")
-                manualText:     qsTr("Can you switch cameras? Change zoom on the front one?")
+                manualText:     qsTr("Can you switch cameras?")
             }
 
             PreFlightCheckButton {
                 name:           qsTr("Payload")
-                manualText:     qsTr("Can you control payload drop? Does the fixation mechamism works properlly?")
+                manualText:     qsTr("Can you control payload drop? Does the fixation mechanism work properly?")
             }
         }
     }
