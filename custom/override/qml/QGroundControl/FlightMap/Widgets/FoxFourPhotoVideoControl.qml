@@ -807,7 +807,7 @@ Rectangle {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.fillHeight: true
                 from: 1
-                to: 15
+                to: 20
                 snapMode: Slider.SnapAlways
                 stepSize: 1
 
@@ -819,7 +819,7 @@ Rectangle {
                     let goldenRatio = 1.61803398875
                     let compId = globalShortcuts.currentComputerId
                     let paramSetter = globalShortcuts.parameterSetter
-                    let newExposure = Math.ceil(2 * Math.pow(goldenRatio, value))
+                    let newExposure = Math.floor(Math.pow(goldenRatio, value))
                     paramSetter.setParameter(compId, "CAM_EXPOSURE", newExposure)
                     enabled = false
                     exposureSliderTimeout.start()
