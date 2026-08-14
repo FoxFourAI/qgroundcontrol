@@ -28,11 +28,6 @@ Item {
                 manualText:     qsTr("Check if the batteries has at least 4.0V per cell.")
             }
 
-            // PreFlightBatteryCheck {
-            //     failurePercent:                 40
-            //     allowFailurePercentOverride:    false
-            // }
-
             PreFlightSensorsHealthCheck {
             }
         }
