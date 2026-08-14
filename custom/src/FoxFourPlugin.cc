@@ -111,14 +111,25 @@ void FoxFourPlugin::factValueGridCreateDefaultSettings(FactValueGrid* factValueG
     value->setText("Pitch");
     value->setShowUnits(true);
 
-    //fourth column
+    //fifth column
+    rowIndex = 0;
+    column = factValueGrid->columns()->value<QmlObjectListModel*>(3);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Battery0","Voltage");
+    value->setText("Voltage");
+    value->setShowUnits(true);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Battery0","Current");
+    value->setText("Current");
+    value->setShowUnits(true);
+
+    //sixth column
     rowIndex = 0;
     column = factValueGrid->columns()->value<QmlObjectListModel*>(4);
     value = column->value<InstrumentValueData*>(rowIndex++);
     value->setFact("Clock","CurrentTime");
     value->setText("Time");
     value->setShowUnits(true);
-
     value = column->value<InstrumentValueData*>(rowIndex++);
     value->setFact("Clock","CurrentDate");
     value->setText("Date");
