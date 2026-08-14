@@ -48,7 +48,8 @@ ColumnLayout{
 
         Component.onCompleted: {
             let rawMsges = _activeVehicle.formattedMessages.split('<br/>')
-            for (let message of rawMsges) {
+            for (let i = rawMsges.length - 1; i >= 0; i--) {
+                let message = rawMsges[i]
                 if (message === "") continue
                 messages.append({ "message": formatMessage(message) })
             }
