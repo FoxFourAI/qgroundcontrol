@@ -48,6 +48,8 @@
         <file alias="QGroundControl/FlyView/OnScreenGimbalController.qml">../src/FlyView/OnScreenGimbalController.qml</file>                           <!--just to link qml-->
         <file alias="QGroundControl/FlyView/GuidedActionsController.qml">override/qml/QGroundControl/FlyView/FoxFourGuidedActionsController.qml</file>
         <file alias="QGroundControl/FlyView/CustomGuidedActionsController.qml">../src/FlyView/CustomGuidedActionsController.qml</file>                 <!--just to link qml-->
+        <!-- PreFlight check -->
+        <file alias="QGroundControl/FlyView/MultiRotorChecklist.qml">override/qml/QGroundControl/FlyView/FoxFourMultiRotorChecklist.qml</file>
         <!--Controls-->
         <file alias="QGroundControl/Controls/InstrumentValueLabel.qml">override/qml/QGroundControl/QmlControls/FoxFourInstrumentValueLabel.qml</file>
         <file alias="QGroundControl/Controls/InstrumentValueValue.qml">override/qml/QGroundControl/QmlControls/FoxFourInstrumentValueValue.qml</file>
@@ -57,6 +59,7 @@
         <!--App Settings-->
         <file alias="QGroundControl/AppSettings/VideoSettings.qml">override/qml/QGroundControl/AppSettings/FoxFourVideoSettings.qml</file>
         <file alias="QGroundControl/AppSettings/SettingsPage.qml">../src/AppSettings/SettingsPage.qml</file>                                           <!--just to link qml-->
+
     </qresource>
     <qresource prefix="/json">
         <file alias="FoxFour.SettingsGroup.json">src/Settings/FoxFour.SettingsGroup.json</file>
