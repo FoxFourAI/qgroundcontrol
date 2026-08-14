@@ -70,10 +70,9 @@ void FoxFourPlugin::factValueGridCreateDefaultSettings(FactValueGrid* factValueG
     value->setFact("Vehicle","GroundSpeed");
     value->setText("Ground Spd.");
     value->setShowUnits(true);
-
     value = column->value<InstrumentValueData*>(rowIndex++);
-    value->setFact("Vehicle","DistanceToHome");
-    value->setText("Distance to home");
+    value->setFact("Vehicle","ThrottlePct");
+    value->setText("Throttle");
     value->setShowUnits(true);
 
     //second column
@@ -116,9 +115,10 @@ void FoxFourPlugin::factValueGridCreateDefaultSettings(FactValueGrid* factValueG
     rowIndex = 0;
     column = factValueGrid->columns()->value<QmlObjectListModel*>(4);
     value = column->value<InstrumentValueData*>(rowIndex++);
-    value->setFact("Vehicle","ThrottlePct");
-    value->setText("Throttle");
+    value->setFact("Clock","CurrentTime");
+    value->setText("Time");
     value->setShowUnits(true);
+
     value = column->value<InstrumentValueData*>(rowIndex++);
     value->setFact("Clock","CurrentDate");
     value->setText("Date");

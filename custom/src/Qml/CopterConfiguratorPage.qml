@@ -70,7 +70,7 @@ ToolIndicatorPage{
                 Layout.fillWidth:true
                 height: ScreenTools.defaultFontPixelHeight
                 id: tuningColumn
-                heading: qsTr("Tuning")
+                heading: qsTr("Configuration")
                 QGCLabel{
                     // Layout.fillWidth:true
                     Layout.alignment:Qt.AlignHCenter
@@ -91,12 +91,47 @@ ToolIndicatorPage{
                         width:flick.width - ScreenTools.defaultFontPixelWidth
                         Repeater{
                             model:currMissn.tunableParameters
-                            delegate: LabelledFactTextField{
-                                textFieldPreferredWidth: ScreenTools.defaultFontPixelWidth * 15
+                            delegate:ColumnLayout{
+                                Layout.fillWidth:true
+                                RowLayout{
+                                    Layout.fillWidth: true
+                                    ColumnLayout{
+                                        Layout.fillWidth: true
 
-                                Layout.fillWidth: true
-                                fact: modelData
-                                label: fact.name
+                                        HoverHandler{
+                                            id: hoverHandeler
+                                        }
+
+                                        ToolTip.visible: hoverHandeler.hovered
+                                        ToolTip.delay: 500
+                                        ToolTip.text: modelData.shortDescription
+
+                                        QGCLabel{
+                                            Layout.fillWidth: true
+                                            id: name
+                                            text: modelData.name
+                                            elide: Text.ElideRight
+                                        }
+                                        QGCLabel{
+                                            id:description
+                                            Layout.fillWidth: true
+                                            text: modelData.shortDescription.split(/<br\s*\/?>|\n/i)[0].trim()
+                                            font.pointSize: ScreenTools.smallFontPointSize
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+                                    FactTextField{
+                                        Layout.preferredWidth: ScreenTools.defaultFontPixelWidth * 18
+                                        Layout.alignment: Qt.AlignRight
+                                        fact: modelData
+                                    }
+                                }
+                                Rectangle{
+                                    Layout.fillWidth: true
+                                    radius: 2
+                                    height: 1
+                                    color: qgcPal.groupBorder
+                                }
                             }
                         }
                     }
