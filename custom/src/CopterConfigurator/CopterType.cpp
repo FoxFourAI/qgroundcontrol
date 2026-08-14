@@ -106,7 +106,6 @@ CopterType::CopterType(Type type, Vehicle* vehicle, QObject* parent) : CopterSta
         default:
             break;
     }
-    _currentMission = _missions.first();
     for (auto* mission : _missions) {
         connect(mission, &CopterMission::statusChanged, this, &CopterType::_currentMissionChangedCallback);
     }

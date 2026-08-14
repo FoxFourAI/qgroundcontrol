@@ -9,7 +9,7 @@ class CopterConfigurator: public QObject {
     Q_PROPERTY(CopterType* currentType READ currentType NOTIFY currentTypeChanged FINAL)
 public:
 
-
+    Q_INVOKABLE void refresh();
     CopterConfigurator(Vehicle* vehicle, QObject* parent=nullptr);
     QList<CopterType*> copterTypes() const;
     CopterType *currentType() const;
@@ -22,8 +22,10 @@ private:
     void _init();
 
 private:
+    static const QString _frameTypeFact;
+    static const QString _missnFact;
+    int _componentId = 0;
     Vehicle *_vehicle =nullptr;
     QList<CopterType *> _types;
     CopterType* _currentType = nullptr;
-
 };

@@ -1,17 +1,20 @@
 #include "CopterMission.h"
+
 #include "FoxFourAutoPilotPlugin.h"
 #include "ParameterManager.h"
 #include "Vehicle.h"
 
 const QMap<CopterMission::Type, int> CopterMission::type2index{
-    {Disable, -1}, {Hover, 0},   {TerminalAttack, 1},
-    {Tuning, 2},   {Cruise, 3}, {SupplyDelivery, 4},
-    {VisualPosHold, 1}, {TerminalBombing, 4}
-};
-const QMap<CopterMission::Type, QString> CopterMission::type2name{
-                                                                  {Disable, "Disable"}, {Hover, "Hover"},   {TerminalAttack, "Terminal Attack"},
-                                                                  {Tuning, "Tuning"},   {Cruise, "Cruise"}, {SupplyDelivery, "Supply Delivery"},
-                                                                  {VisualPosHold, "Visual position hold"}, {TerminalBombing,"Terminal Bombing"}};
+    {Disable, -1}, {Hover, 0},          {TerminalAttack, 1}, {Tuning, 2},
+    {Cruise, 3},   {SupplyDelivery, 4}, {VisualPosHold, 1},  {TerminalBombing, 4}};
+const QMap<CopterMission::Type, QString> CopterMission::type2name{{Disable, "No VGM Mission"},
+                                                                  {Hover, "Hover"},
+                                                                  {TerminalAttack, "Terminal Attack"},
+                                                                  {Tuning, "Tuning"},
+                                                                  {Cruise, "Cruise"},
+                                                                  {SupplyDelivery, "Supply Delivery"},
+                                                                  {VisualPosHold, "Visual position hold"},
+                                                                  {TerminalBombing, "Terminal Bombing"}};
 
 CopterMission::CopterMission(CopterMission::Type type, QStringList tunableParametersNames, Vehicle* vehicle,
                              QObject* parent)
@@ -39,7 +42,7 @@ void CopterMission::setActive()
 
 void CopterMission::checkParameters()
 {
-   //if we do not have all parameters that we need, try to pull them
+    // if we do not have all parameters that we need, try to pull them
     if (_parametersReady) {
         return;
     }
@@ -56,12 +59,12 @@ void CopterMission::checkParameters()
             _requiredParameters.removeAt(i);
             i--;
         } else {
-            //trying to refresh parameter if exist, do not throw failure, if parameter does not exist.
+            // trying to refresh parameter if exist, do not throw failure, if parameter does not exist.
             pm->refreshParameter(compId, _requiredParameters[i], false);
         }
     }
     _parametersReady = _requiredParameters.isEmpty();
-    if(_parametersReady) {
+    if (_parametersReady) {
         emit parametersReadyChanged();
     }
     _update();
@@ -81,7 +84,7 @@ void CopterMission::_handleFacts(int componentId, Fact* fact)
         return;
     }
 
-            // if we get all needed parameters, returning.
+    // if we get all needed parameters, returning.
     if (_requiredParameters.isEmpty()) {
         return;
     }
@@ -92,7 +95,7 @@ void CopterMission::_handleFacts(int componentId, Fact* fact)
         emit tunableParametersChanged();
     }
 
-    if(_requiredParameters.empty()){
+    if (_requiredParameters.empty()) {
         _parametersReady = true;
         emit parametersReadyChanged();
     }
@@ -104,5 +107,7 @@ void CopterMission::_update()
     if (_status == Unavailable || _missionChangeFact == nullptr) {
         return;
     }
-    setStatus(_missionIndx == _missionChangeFact->rawValue().toInt() ? _parametersReady ? CopterState::Status::Enable : CopterState::Status::Warning : CopterState::Status::Disable);
+    setStatus(_missionIndx == _missionChangeFact->rawValue().toInt()
+                  ? _parametersReady ? CopterState::Status::Enable : CopterState::Status::Warning
+                  : CopterState::Status::Disable);
 }

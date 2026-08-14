@@ -12,14 +12,14 @@ Item {
     property var currType: configurator?.currentType
     property var currMissn: currType?.currentMission
     StatusButton{
-        text: statusIndex != 0 ? currType.name + ' - ' + currMissn.name : "Unknown"
-        statusIndex: currType != undefined ? currType.status : 0
+        text: statusIndex != 0 ? root.currType.name + ' - ' + root.currMissn.name : "Unknown"
+        statusIndex: (root.currType != undefined && root.currMissn != undefined) ? root.currType.status : 0
         id: statusButton
         onClicked:{
             if (statusIndex == 0) {
-                _vehicle.parameterManager.refreshAllParameters()
+                root.configurator.refresh()
             } else  {
-                currMissn.checkParameters()
+                root.currMissn.checkParameters()
                 mainWindow.showIndicatorDrawer(copterConfigPage, anchor)
             }
         }

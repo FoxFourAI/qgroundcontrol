@@ -1,4 +1,7 @@
 #include "CopterConfigurator.h"
+#include "Vehicle.h"
+#include "ParameterManager.h"
+#include "FoxFourAutoPilotPlugin.h"
 
 CopterConfigurator::CopterConfigurator(Vehicle* vehicle, QObject* parent) : QObject(parent), _vehicle(vehicle)
 {
@@ -16,6 +19,18 @@ void CopterConfigurator::_init()
         connect(type, &CopterType::statusChanged, this, &CopterConfigurator::_currentTypeChangedCallback);
     }
     emit copterTypesChanged();
+}
+
+const QString CopterConfigurator::_frameTypeFact{"GUID_FRAME_TYPE"};
+const QString CopterConfigurator::_missnFact{"MISSN_GUID_TYPE"};
+
+void CopterConfigurator::refresh() {
+    if (_componentId == 0) {
+        _componentId = qobject_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager()->currentComputerComponent();
+    }
+    _vehicle->parameterManager()->refreshParameter(_componentId,_frameTypeFact, false);
+    _vehicle->parameterManager()->refreshParameter(_componentId,_missnFact, false);
+
 }
 
 QList<CopterType*> CopterConfigurator::copterTypes() const
