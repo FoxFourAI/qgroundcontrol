@@ -69,16 +69,16 @@ Item {
 
             SettingsGroupLayout {
                 heading: qsTr("General")
-                // FactCheckBoxSlider {
-                //     Layout.fillWidth: true
-                //     fact: control._settings.minimalMode
-                //     text: fact.label
+                FactCheckBoxSlider {
+                    Layout.fillWidth: true
+                    fact: control._settings.minimalMode
+                    text: fact.label
 
-                //     ToolTip {
-                //         visible: parent.hovered
-                //         text: parent.fact.shortDescription
-                //     }
-                // }
+                    ToolTip {
+                        visible: parent.hovered
+                        text: parent.fact.shortDescription
+                    }
+                }
                 FactCheckBoxSlider {
                     Layout.fillWidth: true
                     fact: control._settings.directVGM

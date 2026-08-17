@@ -23,6 +23,7 @@
 #include "QGCStateMachine.h"
 #include "MultiVehicleManager.h"
 #include "SettingsManager.h"
+//FoxFour part
 #include "FoxFourSettings.h"
 
 #include <QtCore/QEasingCurve>
@@ -57,6 +58,11 @@ ParameterManager::ParameterManager(Vehicle *vehicle)
     _hashCheckTimer.setSingleShot(true);
     _hashCheckTimer.setInterval(QGC::runningUnitTests() ? kTestHashCheckTimeoutMs : kHashCheckTimeoutMs);
     (void) connect(&_hashCheckTimer, &QTimer::timeout, this, &ParameterManager::_hashCheckTimeout);
+
+    //FoxFour part
+    if (SettingsManager::instance()->foxFourSettings()->minimalMode()) {
+        _disableAllRetries = true;
+    }
 
     _paramRequestListTimer.setSingleShot(true);
     _paramRequestListTimer.setInterval(QGC::runningUnitTests() ? kTestInitialRequestIntervalMs : kParamRequestListTimeoutMs);
