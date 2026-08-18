@@ -299,12 +299,12 @@ Item {
             color:          qgcPal.windowShade
 
             QGCLabel {
-                id:             headerLabel
-                anchors.verticalCenter: parent.verticalCenter
+                id:                     headerLabel
                 anchors.left:           parent.left
                 anchors.leftMargin:     ScreenTools.defaultFontPixelWidth / 2
-                text:           column === 0 ? qsTr("Mnd") : display
-                font.bold:      true
+                anchors.verticalCenter: parent.verticalCenter
+                text:                   column === 0 ? qsTr("Mnd") : display
+                font.bold:              true
             }
 
             // Top border
@@ -372,7 +372,7 @@ Item {
         }
 
         delegate: Rectangle {
-            implicitWidth:  column === 0 ? ScreenTools.implicitCheckBoxHeight + ScreenTools.defaultFontPixelWidth * 2
+            implicitWidth:  column === 0 ? ScreenTools.implicitCheckBoxHeight + ScreenTools.defaultFontPixelWidth
                                          : column === 1 ? nameRow.implicitWidth + ScreenTools.defaultFontPixelWidth
                                          : column === 2 ? ScreenTools.defaultFontPixelWidth * 16
                                                         : label.contentWidth + ScreenTools.defaultFontPixelWidth
