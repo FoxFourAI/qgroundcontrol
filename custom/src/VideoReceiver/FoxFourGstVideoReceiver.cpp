@@ -255,7 +255,6 @@ void FoxFourGstVideoReceiver::start(uint32_t timeout)
 
     if (!running) {
         qCCritical(FoxFourGstVideoReceiverLog) << "Failed";
-
         if (_pipeline) {
             (void) gst_element_set_state(_pipeline, GST_STATE_NULL);
             (void) gst_element_get_state(_pipeline, nullptr, nullptr, GST_CLOCK_TIME_NONE);
@@ -1355,7 +1354,6 @@ gboolean FoxFourGstVideoReceiver::_onBusMessage([[maybe_unused]] GstBus * bus, G
         }
 
         HwBuffers::dispatchBusMessage(msg);
-
         if (GstElement *pipelineRef = pThis->_acquirePipelineRef()) {
             // Native dump path (no-op without GST_DEBUG_DUMP_DOT_DIR) plus an unconditional
             // CacheLocation fallback so field-bug-report bundles include pipeline topology.
@@ -1367,12 +1365,12 @@ gboolean FoxFourGstVideoReceiver::_onBusMessage([[maybe_unused]] GstBus * bus, G
             gst_object_unref(pipelineRef);
         }
 
-        // GPU-side ERROR handling (cached-device drop) runs in HwBuffers::dispatchBusMessage above.
-        // _scheduleReconnect calls stop() then queues a backoff retry if autoReconnect is on.
-        pThis->_worker->dispatch([pThis]() {
-            qCDebug(FoxFourGstVideoReceiverLog) << "Stopping because of error";
-            pThis->_scheduleReconnect("pipeline error");
-        });
+        // // GPU-side ERROR handling (cached-device drop) runs in HwBuffers::dispatchBusMessage above.
+        // // _scheduleReconnect calls stop() then queues a backoff retry if autoReconnect is on.
+        // pThis->_worker->dispatch([pThis]() {
+        //     qCDebug(FoxFourGstVideoReceiverLog) << "Stopping because of error";
+        //     pThis->_scheduleReconnect("pipeline error");
+        // });
         break;
     }
     case GST_MESSAGE_WARNING: {
