@@ -445,8 +445,7 @@ ApplicationWindow {
                                                                    "text": dialogText,
                                                                    "buttons": buttons,
                                                                    "acceptFunction": acceptFunction,
-                                                                   "closeFunction": closeFunction,
-                                                                   "bypassNavigationCheck": bypassNavigationCheck
+                                                                   "closeFunction": closeFunction
                                                                })
         dialog.open()
     }

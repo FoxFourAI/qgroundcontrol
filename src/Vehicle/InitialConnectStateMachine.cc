@@ -460,7 +460,7 @@ void InitialConnectStateMachine::_requestParameters(SkippableAsyncState* state)
         vehicle()->_parameterManager->tryHashCheckCacheLoad();
         return;
     }
-    //FoxFour part
+    // FoxFour part
     MandatoryParameters* mp = reinterpret_cast<FoxFourPlugin*>(QGCCorePlugin::instance())->mandatoryParameters();
     Vehicle* activeVehicle = vehicle();
     bool minimalMode = SettingsManager::instance()->foxFourSettings()->minimalMode()->rawValue().toBool();
@@ -468,12 +468,11 @@ void InitialConnectStateMachine::_requestParameters(SkippableAsyncState* state)
     if (minimalMode) {
         // vgm update
         auto vgmParams = mp->rawParameters()[MandatoryParameters::ComponentType::VGM];
-        auto updateVGMParameters = [activeVehicle, vgmParams, state]() {
-            auto ocm =
-                reinterpret_cast<FoxFourAutoPilotPlugin*>(activeVehicle->_autopilotPlugin)->onboardComputersManager();
-            auto vgmId = ocm->currentComputerComponent();
+        auto* ocm =
+            reinterpret_cast<FoxFourAutoPilotPlugin*>(activeVehicle->_autopilotPlugin)->onboardComputersManager();
+        auto updateVGMParameters = [activeVehicle, vgmParams, state](int componentId) {
             for (auto parameter : vgmParams) {
-                activeVehicle->parameterManager()->refreshParameter(vgmId, parameter);
+                activeVehicle->parameterManager()->refreshParameter(componentId, parameter, false);
             }
             state->complete();
         };
@@ -484,23 +483,25 @@ void InitialConnectStateMachine::_requestParameters(SkippableAsyncState* state)
         if (!fcuParams.isEmpty()) {
             QString lastMParameter = fcuParams.last();
             for (const QString& parameter : fcuParams) {
-                activeVehicle->parameterManager()->refreshParameter(MAV_COMP_ID_AUTOPILOT1, parameter);
+                activeVehicle->parameterManager()->refreshParameter(MAV_COMP_ID_AUTOPILOT1, parameter, false);
             }
             _msgRecieveConnection =
                 connect(activeVehicle, &Vehicle::mavlinkMessageReceived, this,
-                        [lastMParameter, updateVGMParameters, this](const mavlink_message_t& msg) {
+                        [lastMParameter, updateVGMParameters, ocm, this](const mavlink_message_t& msg) {
                             if (msg.msgid == MAVLINK_MSG_ID_PARAM_VALUE) {
                                 mavlink_param_value_t paramMsg;
                                 mavlink_msg_param_value_decode(&msg, &paramMsg);
                                 if (lastMParameter == QLatin1String(paramMsg.param_id)) {
                                     disconnect(_msgRecieveConnection);
                                     // we update all of the FCU parameters, now we can update all of the vgm one
-                                    updateVGMParameters();
+                                    connect(ocm, &OnboardComputersManager::currentComputerComponentChanged, this,
+                                            updateVGMParameters, Qt::SingleShotConnection);
                                 }
                             }
                         });
         } else {
-            updateVGMParameters();
+            connect(ocm, &OnboardComputersManager::currentComputerComponentChanged, this, updateVGMParameters,
+                    Qt::SingleShotConnection);
         }
     } else {
         vehicle()->_parameterManager->refreshAllParameters(MAV_COMP_ID_ALL);
