@@ -95,6 +95,7 @@ Item {
         QGCMenuItem {
             text:           qsTr("Clear all favorites")
             onTriggered:    controller.clearAllFavorites()
+            visible: false
         }
         QGCMenuSeparator { visible: _showRCToParam }
         QGCMenuItem {
@@ -104,7 +105,7 @@ Item {
         }
         QGCMenuSeparator { }
         QGCMenuItem {
-            text:           qsTr(" Vehicle")
+            text:           qsTr("Reboot Vehicle")
             onTriggered:    QGroundControl.showMessageDialog(_root, qsTr("Reboot Vehicle"),
                                                          qsTr("Select Ok to reboot vehicle."),
                                                          Dialog.Cancel | Dialog.Ok,
@@ -217,13 +218,11 @@ Item {
 
         QGCTabButton { text: qsTr("Full List") }
         QGCTabButton { text: qsTr("Modified") }
-        QGCTabButton { text: qsTr("Favorites") }
         QGCTabButton { text: qsTr("Mandatory") }
 
         onCurrentIndexChanged: {
             controller.showModifiedOnly  = (currentIndex === 1)
-            controller.showFavoritesOnly = (currentIndex === 2)
-            _mandatoryController.showList  = (currentIndex === 3)
+            _mandatoryController.showList  = (currentIndex === 2)
         }
     }
 
@@ -301,8 +300,8 @@ Item {
         clip:               true
 
         delegate: Rectangle {
-            implicitWidth: column === 0 ? headerLabel2.contentWidth + ScreenTools.defaultFontPixelWidth : headerLabel1.contentWidth + headerLabel2.contentWidth + ScreenTools.defaultFontPixelWidth
-            implicitHeight: headerLabel2.contentHeight + ScreenTools.defaultFontPixelHeight * 0.5
+            implicitWidth: column === 0 ? headerLabel.contentWidth + ScreenTools.defaultFontPixelWidth : headerLabel.contentWidth + headerLabel.contentWidth + ScreenTools.defaultFontPixelWidth
+            implicitHeight: headerLabel.contentHeight + ScreenTools.defaultFontPixelHeight * 0.5
             color:          qgcPal.windowShade
 
             Row{
@@ -315,27 +314,13 @@ Item {
 
 
                 QGCLabel {
-                    id:             headerLabel1
+                    id:             headerLabel
                     anchors.verticalCenter: parent.verticalCenter
-                    text:           qsTr("Mnd")
-                    visible:        column === 0
+                    anchors.left:           parent.left
+                    anchors.leftMargin:     ScreenTools.defaultFontPixelWidth / 2
+                    text:           column === 0 ? qsTr("Mnd") : display
                     font.bold:      true
                 }
-                Rectangle {
-                    visible:        column == 0
-                    height:         parent.height
-                    width:          1
-                    color:          qgcPal.groupBorder
-                }
-                QGCLabel {
-                    id:                     headerLabel2
-                    // anchors.left:           parent.left
-                    // anchors.leftMargin:     ScreenTools.defaultFontPixelWidth / 2
-                    anchors.verticalCenter: parent.verticalCenter
-                    text:                   display
-                    font.bold:              true
-                }
-
             }
 
 
@@ -452,18 +437,6 @@ Item {
                     checked:                _mandatoryController.isMandatory(fact.name)
                     z:                      1
                     onClicked:              _mandatoryController.toggleParameter(fact.name,fact.componentId)
-                }
-
-                Rectangle {
-                    height:         parent.height
-                    width:          1
-                    color:          qgcPal.groupBorder
-                }
-                QGCCheckBox {
-                    anchors.verticalCenter: parent.verticalCenter
-                    checked:                _root._favorites.indexOf(fact.name) >= 0
-                    z:                      1
-                    onClicked:              controller.toggleFavorite(fact.name)
                 }
             }
 
