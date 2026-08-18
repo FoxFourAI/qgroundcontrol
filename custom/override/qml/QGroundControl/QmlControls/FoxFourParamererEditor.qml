@@ -91,12 +91,6 @@ Item {
                 fileDialog.openForSave()
             }
         }
-        QGCMenuSeparator { }
-        QGCMenuItem {
-            text:           qsTr("Clear all favorites")
-            onTriggered:    controller.clearAllFavorites()
-            visible: false
-        }
         QGCMenuSeparator { visible: _showRCToParam }
         QGCMenuItem {
             text:           qsTr("Clear all RC to Param")
