@@ -24,22 +24,7 @@ const QMap<MandatoryParameters::ComponentType, QStringList>& MandatoryParameters
     return _parameters;
 }
 
-void MandatoryParameters::removeParameter(const QString& parameter,const QString component) {
-    if (!componentNames.contains(component)) {
-        return;
-    }
-
-    ComponentType index = ComponentType(componentNames.indexOf(component));
-
-    if (!_parameters[index].contains(parameter)) {
-        return;
-    }
-    _parameters[index].removeAt(_parameters[index].indexOf(parameter));
-    emit parametersChanged();
-}
-
-void MandatoryParameters::addParameter(const QString& parameter, const int componentId) {
-    // user can add parameters only when there is an active vehicle
+void MandatoryParameters::toggleParameter(const QString& parameter, const int componentId) {
 
     Vehicle* vehicle = MultiVehicleManager::instance()->activeVehicle();
 
@@ -48,21 +33,36 @@ void MandatoryParameters::addParameter(const QString& parameter, const int compo
     }
 
     OnboardComputersManager* ocm =
-            reinterpret_cast<FoxFourAutoPilotPlugin*>(vehicle->autopilotPlugin())->onboardComputersManager();
+        reinterpret_cast<FoxFourAutoPilotPlugin*>(vehicle->autopilotPlugin())->onboardComputersManager();
 
     if (ocm->currentComputerComponent() != componentId && componentId != MAV_COMP_ID_AUTOPILOT1) {
         // we do not handle any onboard computers info except of VGM and FCU.
         return;
     }
 
+
     ComponentType type = componentId == 1 ? ComponentType::FCU : ComponentType::VGM;
 
-    // if we already have the parameter in the list, ignore it
+    // if we already have the parameter in the list, removing it
     if (_parameters[type].contains(parameter)) {
-        return;
+        _parameters[type].removeOne(parameter);
+    } else {
+        _parameters[type].append(parameter);
     }
-    _parameters[type].append(parameter);
+
     emit parametersChanged();
+
+}
+
+void MandatoryParameters::removeParameter(const QString& parameter) {
+    //nuke all entries of the parameter
+    bool parameterDeleted = false;
+    for (auto &paramGroup: _parameters) {
+        parameterDeleted |= paramGroup.removeOne(parameter);
+    }
+    if (parameterDeleted) {
+        emit parametersChanged();
+    }
 }
 
 void MandatoryParameters::_loadParameters() {
@@ -73,6 +73,8 @@ void MandatoryParameters::_loadParameters() {
     }
     settings.endGroup();
 }
+
+const QString MandatoryParameters::_groupKey = "mandatoryParams";
 
 void MandatoryParameters::_saveParameters() {
     QSettings settings;
@@ -99,3 +101,22 @@ void MandatoryParameters::loadDefaultParameters() {
     emit parametersChanged();
 }
 
+bool MandatoryParameters::isMandatory(const QString parameterName) {
+    for (auto paramGroup: _parameters) {
+        if (paramGroup.contains(parameterName)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void MandatoryParameters::pullAllParameters() {
+    Vehicle* vehicle = MultiVehicleManager::instance()->activeVehicle();
+
+    if (vehicle == nullptr) {
+        return;
+    }
+
+    ParameterManager* mgr= vehicle->parameterManager();
+    mgr->pullAllParameters();
+}

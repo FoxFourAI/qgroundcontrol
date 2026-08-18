@@ -90,6 +90,9 @@ public:
 
     bool pendingWrites() const;
 
+    //FoxFour part
+    void pullAllParameters();
+
 #ifdef QGC_UNITTEST_BUILD
     /// Test-only: deterministically force the pendingWrites state on or off,
     /// emitting pendingWritesChanged when the state actually changes. Used by

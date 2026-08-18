@@ -59,6 +59,9 @@ private:
 
     QString _lastSkipReason;
 
+    //FoxFour part
+    QMetaObject::Connection _msgRecieveConnection;
+
     // State pointers for wiring
     RetryableRequestMessageState* _stateAutopilotVersion = nullptr;
     AsyncFunctionState* _stateStandardModes = nullptr;

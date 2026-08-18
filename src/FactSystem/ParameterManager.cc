@@ -23,6 +23,7 @@
 #include "QGCStateMachine.h"
 #include "MultiVehicleManager.h"
 #include "SettingsManager.h"
+//FoxFour part
 #include "FoxFourSettings.h"
 
 #include <QtCore/QEasingCurve>
@@ -57,6 +58,11 @@ ParameterManager::ParameterManager(Vehicle *vehicle)
     _hashCheckTimer.setSingleShot(true);
     _hashCheckTimer.setInterval(QGC::runningUnitTests() ? kTestHashCheckTimeoutMs : kHashCheckTimeoutMs);
     (void) connect(&_hashCheckTimer, &QTimer::timeout, this, &ParameterManager::_hashCheckTimeout);
+
+    //FoxFour part
+    if (SettingsManager::instance()->foxFourSettings()->minimalMode()) {
+        _disableAllRetries = true;
+    }
 
     _paramRequestListTimer.setSingleShot(true);
     _paramRequestListTimer.setInterval(QGC::runningUnitTests() ? kTestInitialRequestIntervalMs : kParamRequestListTimeoutMs);
@@ -1562,6 +1568,20 @@ QList<int> ParameterManager::componentIds() const
 bool ParameterManager::pendingWrites() const
 {
     return _pendingWritesCount > 0;
+}
+
+void ParameterManager::pullAllParameters() {
+    _paramCountMap.clear();
+    _disableAllRetries = false;
+    _waitingReadParamIndexMap.clear();
+    _failedReadParamIndexMap.clear();
+    _parametersReady = false;
+    _missingParameters = false;
+    _initialLoadComplete = false;
+    _waitingForDefaultComponent = true;
+    emit parametersReadyChanged(_parametersReady);
+    emit missingParametersChanged(_missingParameters);
+    refreshAllParameters();
 }
 
 #ifdef QGC_UNITTEST_BUILD
