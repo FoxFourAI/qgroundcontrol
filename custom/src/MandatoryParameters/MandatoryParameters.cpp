@@ -109,3 +109,14 @@ bool MandatoryParameters::isMandatory(const QString parameterName) {
     }
     return false;
 }
+
+void MandatoryParameters::pullAllParameters() {
+    Vehicle* vehicle = MultiVehicleManager::instance()->activeVehicle();
+
+    if (vehicle == nullptr) {
+        return;
+    }
+
+    ParameterManager* mgr= vehicle->parameterManager();
+    mgr->pullAllParameters();
+}

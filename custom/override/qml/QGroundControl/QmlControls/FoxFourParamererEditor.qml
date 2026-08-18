@@ -53,6 +53,10 @@ Item {
             onTriggered:	controller.refresh()
         }
         QGCMenuItem {
+            text:           qsTr("Pull all parameters")
+            onTriggered:    _mandatoryController.pullAllParameters()
+        }
+        QGCMenuItem {
             text:           qsTr("Reset all to firmware's defaults")
             onTriggered:    QGroundControl.showMessageDialog(_root, qsTr("Reset All"),
                                                          qsTr("Select Reset to reset all parameters to their defaults.\n\nNote that this will also completely reset everything, including UAVCAN nodes, all vehicle settings, setup and calibrations."),

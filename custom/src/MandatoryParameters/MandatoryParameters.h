@@ -30,6 +30,7 @@ public:
     Q_INVOKABLE void removeParameter(const QString& parameter);
     Q_INVOKABLE void loadDefaultParameters();
     Q_INVOKABLE bool isMandatory(const QString parameterName);
+    Q_INVOKABLE void pullAllParameters();
 signals:
     void parametersChanged();
     void showListChanged();

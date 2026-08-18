@@ -62,6 +62,7 @@ ParameterManager::ParameterManager(Vehicle *vehicle)
     //FoxFour part
     if (SettingsManager::instance()->foxFourSettings()->minimalMode()) {
         _disableAllRetries = true;
+
     }
 
     _paramRequestListTimer.setSingleShot(true);
@@ -1568,6 +1569,20 @@ QList<int> ParameterManager::componentIds() const
 bool ParameterManager::pendingWrites() const
 {
     return _pendingWritesCount > 0;
+}
+
+void ParameterManager::pullAllParameters() {
+    _paramCountMap.clear();
+    _disableAllRetries = false;
+    _waitingReadParamIndexMap.clear();
+    _failedReadParamIndexMap.clear();
+    _parametersReady = false;
+    _missingParameters = false;
+    _initialLoadComplete = false;
+    _waitingForDefaultComponent = true;
+    emit parametersReadyChanged(_parametersReady);
+    emit missingParametersChanged(_missingParameters);
+    refreshAllParameters();
 }
 
 #ifdef QGC_UNITTEST_BUILD
