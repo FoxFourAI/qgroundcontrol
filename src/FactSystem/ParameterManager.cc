@@ -62,7 +62,6 @@ ParameterManager::ParameterManager(Vehicle *vehicle)
     //FoxFour part
     if (SettingsManager::instance()->foxFourSettings()->minimalMode()) {
         _disableAllRetries = true;
-
     }
 
     _paramRequestListTimer.setSingleShot(true);
