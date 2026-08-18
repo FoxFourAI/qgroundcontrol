@@ -406,8 +406,7 @@ Item {
             }
 
             QGCCheckBox {
-                width: ScreenTools.defaultFontPixelWidth * 5
-                visible:                colimn === 0
+                visible:                column === 0
                 anchors.centerIn:       parent
                 checked:                _mandatoryController.isMandatory(fact.name)
                 z:                      1
