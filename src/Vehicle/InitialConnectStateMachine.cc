@@ -475,7 +475,6 @@ void InitialConnectStateMachine::_requestParameters(SkippableAsyncState* state)
             for (auto parameter : vgmParams) {
                 activeVehicle->parameterManager()->refreshParameter(vgmId, parameter);
             }
-            // stateMachine->advance();
             state->complete();
         };
 

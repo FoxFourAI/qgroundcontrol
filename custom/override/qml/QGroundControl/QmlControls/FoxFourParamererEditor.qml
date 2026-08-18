@@ -298,26 +298,14 @@ Item {
             implicitHeight: headerLabel.contentHeight + ScreenTools.defaultFontPixelHeight * 0.5
             color:          qgcPal.windowShade
 
-            Row{
-                id: headerNamingRow
-                anchors.left:           parent.left
-                anchors.leftMargin:     ScreenTools.defaultFontPixelWidth
-                height:                 parent.height
+            QGCLabel {
+                id:             headerLabel
                 anchors.verticalCenter: parent.verticalCenter
-                spacing:                ScreenTools.defaultFontPixelWidth
-
-
-                QGCLabel {
-                    id:             headerLabel
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.left:           parent.left
-                    anchors.leftMargin:     ScreenTools.defaultFontPixelWidth / 2
-                    text:           column === 0 ? qsTr("Mnd") : display
-                    font.bold:      true
-                }
+                anchors.left:           parent.left
+                anchors.leftMargin:     ScreenTools.defaultFontPixelWidth / 2
+                text:           column === 0 ? qsTr("Mnd") : display
+                font.bold:      true
             }
-
-
 
             // Top border
             Rectangle {
@@ -384,7 +372,7 @@ Item {
         }
 
         delegate: Rectangle {
-            implicitWidth:  column === 0 ? checkboxRow.implicitWidth + ScreenTools.defaultFontPixelWidth * 2
+            implicitWidth:  column === 0 ? ScreenTools.implicitCheckBoxHeight + ScreenTools.defaultFontPixelWidth * 2
                                          : column === 1 ? nameRow.implicitWidth + ScreenTools.defaultFontPixelWidth
                                          : column === 2 ? ScreenTools.defaultFontPixelWidth * 16
                                                         : label.contentWidth + ScreenTools.defaultFontPixelWidth
@@ -417,21 +405,13 @@ Item {
                 visible:        column == 3
             }
 
-            Row {
-                id:                     checkboxRow
-                visible:                column === 0
-                anchors.left:           parent.left
-                anchors.leftMargin:     ScreenTools.defaultFontPixelWidth / 2
-                anchors.verticalCenter: parent.verticalCenter
-                spacing:                ScreenTools.defaultFontPixelWidth
-
-                QGCCheckBox {
-                    width: ScreenTools.defaultFontPixelWidth * 5
-                    anchors.verticalCenter: parent.verticalCenter
-                    checked:                _mandatoryController.isMandatory(fact.name)
-                    z:                      1
-                    onClicked:              _mandatoryController.toggleParameter(fact.name,fact.componentId)
-                }
+            QGCCheckBox {
+                width: ScreenTools.defaultFontPixelWidth * 5
+                visible:                colimn === 0
+                anchors.centerIn:       parent
+                checked:                _mandatoryController.isMandatory(fact.name)
+                z:                      1
+                onClicked:              _mandatoryController.toggleParameter(fact.name,fact.componentId)
             }
 
             Row {

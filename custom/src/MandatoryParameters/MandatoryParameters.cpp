@@ -20,13 +20,6 @@ const QVariantMap MandatoryParameters::parameters() {
     return result;
 }
 
-MandatoryParameters::ComponentType MandatoryParameters::componentType(const QString componentName) {
-    if(!componentNames.contains(componentName)) {
-        return ComponentType::Unknown;
-    }
-    return ComponentType(componentNames.indexOf(componentName));
-}
-
 const QMap<MandatoryParameters::ComponentType, QStringList>& MandatoryParameters::rawParameters() {
     return _parameters;
 }
@@ -50,14 +43,13 @@ void MandatoryParameters::toggleParameter(const QString& parameter, const int co
 
     ComponentType type = componentId == 1 ? ComponentType::FCU : ComponentType::VGM;
 
-            // if we already have the parameter in the list, removing it
+    // if we already have the parameter in the list, removing it
     if (_parameters[type].contains(parameter)) {
         _parameters[type].removeOne(parameter);
     } else {
         _parameters[type].append(parameter);
     }
 
-    qDebug() << "current mandatory parameters amount:" << _parameters[FCU].count() + _parameters[VGM].count();
     emit parametersChanged();
 
 }

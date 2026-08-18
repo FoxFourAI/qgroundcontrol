@@ -26,7 +26,6 @@ public:
     ~MandatoryParameters();
     const QVariantMap parameters();
     const QMap<ComponentType,QStringList>& rawParameters();
-    Q_INVOKABLE ComponentType componentType(const QString componentName);
     Q_INVOKABLE void toggleParameter(const QString& parameter, const int componentId);
     Q_INVOKABLE void removeParameter(const QString& parameter);
     Q_INVOKABLE void loadDefaultParameters();
