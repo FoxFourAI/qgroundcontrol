@@ -1366,13 +1366,6 @@ gboolean FoxFourGstVideoReceiver::_onBusMessage([[maybe_unused]] GstBus * bus, G
             }
             gst_object_unref(pipelineRef);
         }
-
-        // GPU-side ERROR handling (cached-device drop) runs in HwBuffers::dispatchBusMessage above.
-        // _scheduleReconnect calls stop() then queues a backoff retry if autoReconnect is on.
-        pThis->_worker->dispatch([pThis]() {
-            qCDebug(FoxFourGstVideoReceiverLog) << "Stopping because of error";
-            pThis->_scheduleReconnect("pipeline error");
-        });
         break;
     }
     case GST_MESSAGE_WARNING: {
