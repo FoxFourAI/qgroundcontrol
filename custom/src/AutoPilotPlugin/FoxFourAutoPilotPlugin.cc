@@ -29,7 +29,10 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent
     _mapMatching = new MapMatching(vehicle,this);
     _vioTrajectory = new VioTrajectoryPoints(vehicle,this);
     _configurator = new CopterConfigurator(vehicle,this);
-    emit mapMatchingCreated();
+    _computerStatus = new StatusHandler(vehicle, this);
+    qDebug() << "<<<<<<<<<<<<<<<<<<<<<" <<  metaObject()->className();
+    qDebug() << "<<<<<<<<<<<<<<<<<<<<<" <<  _computerStatus->metaObject()->className();
+    emit childsCreated();
     auto cameraMgr = vehicle->cameraManager();
     connect(_vehicle->parameterManager(), &ParameterManager::factAdded, this, &FoxFourAutoPilotPlugin::handleFactAdded);
     connect(cameraMgr, &QGCCameraManager::currentCameraChanged, this, [this, cameraMgr]() {

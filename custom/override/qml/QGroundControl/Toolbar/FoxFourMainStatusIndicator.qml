@@ -246,17 +246,68 @@ RowLayout {
             }
 
             SettingsGroupLayout {
-                heading: qsTr("VGM Logs")
-                LabelledLabel {
-                    property var app:           _activeVehicle.autopilotPlugin
+                id:                             f4CompStatusGroup
+                heading: qsTr("F4 Computer status")
+                property var app:               _activeVehicle.autopilotPlugin
+                property var computerStatus:    app.computerStatus
+
+                RowLayout {
                     Layout.fillWidth: true
-                    label: qsTr("Space available:")
-                    labelText: app.storageCapacity
+                    spacing: ScreenTools.defaultFontPixelWidth
+                    Rectangle {
+                        Layout.fillWidth: true
+                        property var info: f4CompStatusGroup.computerStatus.cpuInfo
+                        implicitHeight: ScreenTools.defaultFontPixelHeight * 1.2
+                        visible: info.totalUsage !== undefined
+                        radius: ScreenTools.defaultBorderRadius
+                        Rectangle {
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.left: parent.left
+                            width: parent.width * parent.info.totalUsage / 100
+                            color: qgcPal.buttonHighlight
+                            radius: ScreenTools.defaultBorderRadius
+                        }
+                        QGCLabel{
+                            text: qsTr("CPU " + parent.info.totalUsage + "%")
+                            font.bold: true
+                            anchors.centerIn: parent
+                        }
+                    }
+                    Rectangle {
+                        Layout.fillWidth: true
+                        property var info: f4CompStatusGroup.computerStatus.ramInfo
+                        implicitHeight: ScreenTools.defaultFontPixelHeight * 1.2
+                        visible: info.total !== undefined
+                        radius: ScreenTools.defaultBorderRadius
+                        Rectangle {
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.left: parent.left
+                            width: parent.width * parent.info.usage / parent.info.total
+                            color: qgcPal.buttonHighlight
+                            radius: ScreenTools.defaultBorderRadius
+                        }
+                        QGCLabel{
+                            text: qsTr("RAM " + parent.info.usage.toFixed(2) + " / " + parent.info.total.toFixed(2) + "GB")
+                            font.bold: true
+                            anchors.centerIn: parent
+                        }
+                    }
+                }
+                Repeater {
+                    model: f4CompStatusGroup.computerStatus.storageInfo
+                    delegate: LabelledLabel {
+                        property var storage: modelData
+                        visible: storage.type !== "SSD"
+                        label: storage.type
+                        labelText:qsTr(storage.usage.toFixed(2) + "/"+ storage.total.toFixed(2) + " GB")
+                        Layout.fillWidth: true
+                    }
                 }
                 QGCDelayButton {
                     property var paramSetter:   QGroundControl.corePlugin.parameterSetter
-                    property var app:           _activeVehicle.autopilotPlugin
-                    property var compId:        globals.activeVehicle.autopilotPlugin.onboardComputersManager.currentComputerComponent
+                    property var compId:        _activeVehicle.autopilotPlugin.onboardComputersManager.currentComputerComponent
                     Layout.fillWidth: true
                     text: qsTr("Clear logs and reboot VGM")
                     onActivated: {
@@ -266,7 +317,6 @@ RowLayout {
                     }
                 }
                 Timer{
-                    property var app:           _activeVehicle.autopilotPlugin
                     id: rebootTimer
                     interval: 1000
                     repeat: false

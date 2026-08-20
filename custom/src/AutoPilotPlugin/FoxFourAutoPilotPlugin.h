@@ -8,7 +8,7 @@
 #include "MapMatching/MapMatching.h"
 #include "VioTrajectory/VioTrajectoryPoints.h"
 #include "CopterConfigurator/CopterConfigurator.h"
-
+#include "StatusHandler/StatusHandler.h"
 class Vehicle;
 class FoxFourCameraControl;
 class FoxFourAutoPilotPlugin : public APMAutoPilotPlugin {
@@ -18,11 +18,12 @@ class FoxFourAutoPilotPlugin : public APMAutoPilotPlugin {
     Q_PROPERTY(EKSources* ekSources MEMBER _ekSources)
     Q_PROPERTY(ButtonList* buttonList MEMBER _buttonList)
     Q_PROPERTY(VioTrajectoryPoints* vioTrajectory MEMBER _vioTrajectory)
-    Q_PROPERTY(MapMatching* mapMatching READ mapMatching NOTIFY mapMatchingCreated)
+    Q_PROPERTY(MapMatching* mapMatching READ mapMatching NOTIFY childsCreated)
     Q_PROPERTY(QString storageCapacity READ storageCapacity NOTIFY storageCapacityChanged)
     Q_PROPERTY(bool isDropper READ isDropper NOTIFY isDropperChanged)
     Q_PROPERTY(bool exposureAvailable READ exposureAvailable NOTIFY exposureAvailableChanged)
     Q_PROPERTY(CopterConfigurator* configurator MEMBER _configurator)
+    Q_PROPERTY(StatusHandler* computerStatus MEMBER _computerStatus NOTIFY childsCreated)
 public:
     explicit FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent = nullptr);
     ~FoxFourAutoPilotPlugin();
@@ -42,7 +43,7 @@ signals:
     void storageCapacityChanged();
     void isDropperChanged();
     void buttonListChanged();
-    void mapMatchingCreated();
+    void childsCreated();
 private slots:
     void setIsDropper(int type);
     void handleStorageCapacityChanged(uint32_t total, uint32_t free);
@@ -55,6 +56,7 @@ private:
     ButtonList* _buttonList = nullptr;
     MapMatching* _mapMatching = nullptr;
     VioTrajectoryPoints* _vioTrajectory = nullptr;
+    StatusHandler* _computerStatus = nullptr;
     QVariantList _components;
     OnboardComputersManager* _onboardComputersMngr = nullptr;
     VioGpsComparer* _vioGpsComparer = nullptr;
