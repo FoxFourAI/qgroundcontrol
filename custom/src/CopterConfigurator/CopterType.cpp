@@ -23,6 +23,11 @@ CopterMission* CopterType::currentMission()
     return _currentMission;
 }
 
+void CopterType::refresh()
+{
+    _update();
+}
+
 void CopterType::_currentMissionChangedCallback()
 {
     CopterMission* newMission = reinterpret_cast<CopterMission*>(sender());

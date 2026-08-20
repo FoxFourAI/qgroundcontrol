@@ -36,6 +36,7 @@ public:
     MapMatching* mapMatching() {return _mapMatching;}
     bool isDropper() { return _isDropper; }
     OnboardComputersManager* onboardComputersManager();
+    CopterConfigurator* configurator() {return _configurator;}
     bool exposureAvailable() {return _exposureAvailable;}
 signals:
     void exposureAvailableChanged();

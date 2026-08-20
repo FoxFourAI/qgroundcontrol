@@ -16,8 +16,9 @@ Item {
         statusIndex: (root.currType != undefined && root.currMissn != undefined) ? root.currType.status : 0
         id: statusButton
         onClicked:{
+            if (statusIndex == 0) {
             root.configurator.refresh()
-            if (statusIndex != 0) {
+            } else {
                 root.currMissn.checkParameters()
                 mainWindow.showIndicatorDrawer(copterConfigPage, anchor)
             }
