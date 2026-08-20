@@ -10,7 +10,7 @@ Item {
     //to prevent empty spaces, resize widget when its needed
     width: comparer.vioStatus !== -1 ? mainRow.width : 0
     anchors.top: parent.top
-    visible: comparer.vioStatus !== -1
+    // visible: comparer.vioStatus !== -1
     anchors.bottom: parent.bottom
     property var parameterSetter: QGroundControl.corePlugin.parameterSetter
     property var comparer: globals.activeVehicle.autopilotPlugin.vioGpsComparer
@@ -33,7 +33,7 @@ Item {
             width: height
             fillMode: Image.PreserveAspectFit
             color: qgcPal.text
-            source: "qrc:/custom/img/eye-" + comparer.vioStatus + ".svg"
+            source: "qrc:/custom/img/eye_" + comparer.vioStatus + ".svg"
             Component.onCompleted: {
 
             }
@@ -58,6 +58,8 @@ Item {
     MouseArea {
         anchors.fill: parent
         onClicked: {
+            root.comparer.vioStatus === -1 ?
+            root.comparer.refreshParameter() :
             mainWindow.showIndicatorDrawer(vioIndicatorPage, root)
         }
     }

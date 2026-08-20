@@ -42,6 +42,15 @@ VioGpsComparer::~VioGpsComparer(){
     _refreshTimer.stop();
 }
 
+void VioGpsComparer::refreshParameter()
+{
+    int compId = reinterpret_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager()->currentComputerComponent();
+    if (compId == 0) {
+        return;
+    }
+    _vehicle->parameterManager()->refreshParameter(compId, "SCR_EKF_SRC", false);
+}
+
 void VioGpsComparer::_handleTrajectory(QGeoCoordinate coordinate, uint8_t src){
     switch (src){
     case MAVLINK_MSG_ID_GPS_RAW_INT:

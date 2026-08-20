@@ -29,6 +29,8 @@ public:
     double currentError(){
         return _currentError;
     }
+
+    Q_INVOKABLE void refreshParameter();
 signals:
     void ATEErrorChanged();
     void RMSEErrorChanged();
