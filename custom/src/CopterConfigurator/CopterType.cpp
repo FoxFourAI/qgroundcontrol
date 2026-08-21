@@ -68,6 +68,9 @@ void CopterType::_handleFacts(int componentId, Fact* fact)
 
 void CopterType::resetVgmBootType()
 {
+    if (!_typeChangeFact) {
+        return;
+    }
     _vgmBootType = Type(_typeChangeFact->rawValue().toInt());
     _update();
 }

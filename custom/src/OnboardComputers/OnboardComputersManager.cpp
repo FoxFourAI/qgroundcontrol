@@ -271,6 +271,7 @@ void OnboardComputersManager::rebootAllOnboardComputers() {
                                  0,               // do nothing to autopilot
                                  3,               // reboot onboard computer
                                  0, 0, 0, 0, 0);  // param 3-7 unused
+        qDebug() << "command sended";
     }
 }
 
