@@ -1366,7 +1366,6 @@ gboolean FoxFourGstVideoReceiver::_onBusMessage([[maybe_unused]] GstBus * bus, G
             }
             gst_object_unref(pipelineRef);
         }
-
         break;
     }
     case GST_MESSAGE_WARNING: {
