@@ -38,6 +38,7 @@ public:
     OnboardComputersManager* onboardComputersManager();
     CopterConfigurator* configurator() {return _configurator;}
     bool exposureAvailable() {return _exposureAvailable;}
+    void parametersReadyPreChecks();
 signals:
     void exposureAvailableChanged();
     void storageCapacityChanged();
@@ -45,6 +46,7 @@ signals:
     void buttonListChanged();
     void mapMatchingCreated();
 private slots:
+    void _recalcSetupComplete();
     void setIsDropper(int type);
     void handleStorageCapacityChanged(uint32_t total, uint32_t free);
     void handleFactAdded(int compinentId, Fact* fact);
@@ -62,4 +64,5 @@ private:
     QString _storageCapacityStr = "0 / 0 MB";
     CopterConfigurator* _configurator = nullptr;
     QMetaObject::Connection _cameraConnection;
+
 };
