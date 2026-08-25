@@ -22,9 +22,9 @@ QGC_LOGGING_CATEGORY(FoxFourArduPilotLog,"FoxFour.Ardupilot")
 
 FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent)
     : APMAutoPilotPlugin(vehicle, parent) {
+    _onboardComputersMngr = new OnboardComputersManager(vehicle, this);
     _buttonList = new ButtonList(vehicle,this);
     _ekSources = new EKSources(vehicle, this);
-    _onboardComputersMngr = new OnboardComputersManager(vehicle, this);
     _vioGpsComparer = new VioGpsComparer(vehicle, this);
     _mapMatching = new MapMatching(vehicle,this);
     _vioTrajectory = new VioTrajectoryPoints(vehicle,this);

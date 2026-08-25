@@ -143,6 +143,8 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterMission.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ParameterMetaData/FoxFourParameterMetaData.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ParameterMetaData/FoxFourParameterMetaData.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoPilotWidget/AutoPilotWidget.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoPilotWidget/AutoPilotWidget.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/plugins/Plugin.h
     CACHE INTERNAL "adding custom sources" FORCE
 )
