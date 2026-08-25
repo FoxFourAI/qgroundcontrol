@@ -18,7 +18,7 @@ Item {
         onClicked:{
             if (statusIndex == 0) {
                 root.configurator.refresh()
-            } else  {
+            } else {
                 root.currMissn.checkParameters()
                 mainWindow.showIndicatorDrawer(copterConfigPage, anchor)
             }

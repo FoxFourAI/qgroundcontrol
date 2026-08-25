@@ -1354,10 +1354,14 @@ void ParameterManager::_checkInitialLoadComplete()
     _missingParameters = false;
     if (initialLoadFailures) {
         _missingParameters = true;
-        const QString errorMsg = tr("%1 was unable to retrieve the full set of parameters from vehicle %2. "
+        QString errorMsg = tr("%1 was unable to retrieve the full set of parameters from vehicle %2. "
                                     "This will cause %1 to be unable to display its full user interface. "
                                     "If you are using modified firmware, you may need to resolve any vehicle startup errors to resolve the issue. "
                                     "If you are using standard firmware, you may need to upgrade to a newer version to resolve the issue.").arg(QCoreApplication::applicationName()).arg(_vehicle->id());
+        //FoxFour part
+        if (SettingsManager::instance()->foxFourSettings()->minimalMode()) {
+            errorMsg = tr("Due to Minimal mode ") + errorMsg;
+        }
         qCDebug(ParameterManagerLog) << errorMsg;
         QGC::showAppMessage(errorMsg);
         if (!QGC::runningUnitTests()) {

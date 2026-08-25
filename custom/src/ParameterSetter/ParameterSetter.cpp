@@ -47,6 +47,7 @@ bool ParameterSetter::setParameter(int compId, QString paramName, float value) {
     }
     auto parameter = parameterManager->getParameter(compId, paramName);
     if (parameter == nullptr) {
+        parameterManager->refreshParameter(compId, paramName);
         return false;
     }
     parameter->setRawValue(value);

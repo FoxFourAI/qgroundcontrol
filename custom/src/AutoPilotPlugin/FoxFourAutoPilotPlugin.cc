@@ -12,19 +12,23 @@
 #include "Camera/FoxFourCameraControl.h"
 #include "ParameterManager.h"
 #include "QGCApplication.h"
+#include "AppMessages.h"
 #include "QGCCameraManager.h"
 #include "QGCCorePlugin.h"
+#include "SettingsManager.h"
+#include "FoxFourSettings.h"
 #include "Vehicle.h"
 #include "QGCFormat.h"
 #include "f4_autonomy/f4_autonomy.h"
+#include "VehicleComponent.h"
 
 QGC_LOGGING_CATEGORY(FoxFourArduPilotLog,"FoxFour.Ardupilot")
 
 FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent)
     : APMAutoPilotPlugin(vehicle, parent) {
+    _onboardComputersMngr = new OnboardComputersManager(vehicle, this);
     _buttonList = new ButtonList(vehicle,this);
     _ekSources = new EKSources(vehicle, this);
-    _onboardComputersMngr = new OnboardComputersManager(vehicle, this);
     _vioGpsComparer = new VioGpsComparer(vehicle, this);
     _mapMatching = new MapMatching(vehicle,this);
     _vioTrajectory = new VioTrajectoryPoints(vehicle,this);
@@ -73,6 +77,52 @@ void FoxFourAutoPilotPlugin::setServo(int servo, int value) {
 }
 
 OnboardComputersManager* FoxFourAutoPilotPlugin::onboardComputersManager() { return _onboardComputersMngr; }
+
+void FoxFourAutoPilotPlugin::parametersReadyPreChecks()
+{
+    _recalcSetupComplete();
+
+    // Connect signals in order to keep setupComplete up to date
+    for (QVariant componentVariant : vehicleComponents()) {
+        VehicleComponent *const component = qobject_cast<VehicleComponent*>(qvariant_cast<QObject*>(componentVariant));
+        if (component) {
+            (void) connect(component, &VehicleComponent::setupCompleteChanged, this, &FoxFourAutoPilotPlugin::_recalcSetupComplete);
+        } else {
+            qCWarning(FoxFourArduPilotLog) << "Incorrectly typed VehicleComponent";
+        }
+    }
+
+    bool minimalMode = SettingsManager::instance()->foxFourSettings()->minimalMode()->rawValue().toBool();
+
+    if (!_setupComplete && !minimalMode) {
+        // Take the user to Vehicle Config Summary
+        qgcApp()->showVehicleConfig();
+        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+        QGC::showAppMessage(tr("One or more vehicle components require setup prior to flight."));
+    }
+}
+
+void FoxFourAutoPilotPlugin::_recalcSetupComplete()
+{
+    bool newSetupComplete = true;
+
+    for (const QVariant &componentVariant : vehicleComponents()) {
+        const VehicleComponent *const component = qobject_cast<const VehicleComponent*>(qvariant_cast<const QObject*>(componentVariant));
+        if (component) {
+            if (!component->setupComplete()) {
+                newSetupComplete = false;
+                break;
+            }
+        } else {
+            qCWarning(FoxFourArduPilotLog) << "Incorrectly typed VehicleComponent";
+        }
+    }
+
+    if (_setupComplete != newSetupComplete) {
+        _setupComplete = newSetupComplete;
+        emit setupCompleteChanged();
+    }
+}
 
 void FoxFourAutoPilotPlugin::setIsDropper(int type) {
     bool dropperFlag = type == 2;
