@@ -22,7 +22,6 @@ Item{
 	property var ekSrc : globals.activeVehicle.autopilotPlugin.ekSources
 	width: mainRow.implicitWidth
 	anchors.top: parent.top
-	visible: ekSrc.parametersReady
 	anchors.bottom: parent.bottom
 	QGCPalette { id: qgcPal; colorGroupEnabled: enabled }
 
@@ -34,12 +33,25 @@ Item{
 		QGCLabel{
 			Layout.alignment: Qt.AlignVCenter
 			text: qsTr("Position Src")
+			MouseArea {
+				anchors.fill: parent
+				onClicked: {
+					if (!ekSrc.parametersReady) {
+						ekSrc.refreshParameters()
+					}
+				}
+			}
 		}
 		QGCComboBox{
 			_showHighlight: ekSrc.dirty
 			Layout.minimumWidth: ScreenTools.defaultFontPixelWidth * 13
 			model: ekSrc.sources
-			onCurrentIndexChanged: ekSrc.ekfSrcFact.value = currentIndex
+			visible: ekSrc.parametersReady
+			onCurrentIndexChanged: {
+				if(ekSrc.parametersReady) {
+					ekSrc.ekfSrcFact.value = currentIndex
+				}
+			}
 			currentIndex: ekSrc.ekfSrcFact.value
 		}
 	}
