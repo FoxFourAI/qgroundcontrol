@@ -26,7 +26,6 @@ const QString CopterConfigurator::_missnFact{"MISSN_GUID_TYPE"};
 
 void CopterConfigurator::refresh() {
     int componentId = qobject_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager()->currentComputerComponent();
-    qDebug() << componentId;
     _vehicle->parameterManager()->refreshParameter(componentId,_frameTypeFact, false);
     _vehicle->parameterManager()->refreshParameter(componentId,_missnFact, false);
 
