@@ -4,6 +4,11 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QSettings>
 
+//FoxFour part
+#include <QtCore/QDir>
+#include <QtCore/QFileInfo>
+#include <QtCore/QRegularExpression>
+
 #include "QGCCacheTile.h"
 #include "QGCCachedTileSet.h"
 #include "QGCLoggingCategory.h"
@@ -182,6 +187,9 @@ void QGCCacheWorker::_runTask(QGCMapTask *task)
         break;
     case QGCMapTask::TaskType::taskImport:
         _importSets(task);
+        break;
+    case QGCMapTask::TaskType::taskExportMRF:
+        _exportSetAsMRF(task);
         break;
     default:
         qCWarning(QGCTileCacheWorkerLog) << "given unhandled task type" << task->type();
@@ -459,5 +467,59 @@ void QGCCacheWorker::_exportSets(QGCMapTask *mtask)
         return;
     }
 
+    task->setExportCompleted();
+}
+//FoxFour part
+void QGCCacheWorker::_exportSetAsMRF(QGCMapTask *mtask)
+{
+    if (!_testTask(mtask)) {
+        return;
+    }
+
+    QGCExportMRFTileTask *task = static_cast<QGCExportMRFTileTask*>(mtask);
+    const QList<TileSetRecord> &sets = task->sets();
+    if (sets.isEmpty()) {
+        task->setError("No tile sets selected for MRF export");
+        return;
+    }
+
+    // MRF describes one raster per file, so each set is written to its own file trio named
+    // after the chosen path plus the set name.
+    const QFileInfo baseInfo(task->basePath());
+    const QString stem = baseInfo.dir().filePath(baseInfo.completeBaseName());
+    static const QRegularExpression unsafeChars(QStringLiteral("[^A-Za-z0-9._-]+"));
+
+    QStringList failures;
+    for (qsizetype i = 0; i < sets.size(); i++) {
+        const TileSetRecord &set = sets.at(i);
+
+        // Give each set its own slice of the overall progress bar.
+        const int sliceStart = static_cast<int>((i * 100) / sets.size());
+        const int sliceEnd = static_cast<int>(((i + 1) * 100) / sets.size());
+        auto progress = [task, sliceStart, sliceEnd](int pct) {
+            task->setProgress(sliceStart + (((sliceEnd - sliceStart) * pct) / 100));
+        };
+
+        QString name = set.name;
+        name.replace(unsafeChars, QStringLiteral("_"));
+        const QString setPath = QStringLiteral("%1_%2").arg(stem, name);
+
+        const DatabaseResult result = _database->exportSetAsMRF(set, setPath, progress);
+        if (!result.success) {
+            qCWarning(QGCTileCacheWorkerLog) << "MRF export failed for" << set.name << ":" << result.errorString;
+            failures.append(QStringLiteral("%1: %2").arg(set.name, result.errorString));
+        }
+    }
+
+    if (failures.size() == sets.size()) {
+        task->setError(QStringLiteral("MRF export failed. %1").arg(failures.join(QStringLiteral("; "))));
+        return;
+    }
+    if (!failures.isEmpty()) {
+        // Some sets did export, so report the failures but still complete the action.
+        task->setError(QStringLiteral("Some tile sets could not be exported. %1").arg(failures.join(QStringLiteral("; "))));
+    }
+
+    task->setProgress(100);
     task->setExportCompleted();
 }

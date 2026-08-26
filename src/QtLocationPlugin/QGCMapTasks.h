@@ -337,3 +337,42 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+
+//FoxFour part
+class QGCExportMRFTileTask : public QGCMapTask
+{
+    Q_OBJECT
+
+public:
+    /// @param sets Tile sets to export; each becomes its own MRF file trio.
+    /// @param basePath User-chosen path; each set's filename is derived from it plus the set name.
+    explicit QGCExportMRFTileTask(const QList<TileSetRecord> &sets, const QString &basePath, QObject *parent = nullptr)
+        : QGCMapTask(TaskType::taskExportMRF, parent)
+        , m_sets(sets)
+        , m_basePath(basePath)
+    {}
+    ~QGCExportMRFTileTask() = default;
+
+    const QList<TileSetRecord> &sets() const { return m_sets; }
+    QString basePath() const { return m_basePath; }
+
+    void setExportCompleted()
+    {
+        emit actionCompleted();
+    }
+
+    void setProgress(int percentage)
+    {
+        emit actionProgress(percentage);
+    }
+
+signals:
+    void actionCompleted();
+    void actionProgress(int percentage);
+
+private:
+    const QList<TileSetRecord> m_sets;
+    const QString m_basePath;
+};
+
+//-----------------------------------------------------------------------------

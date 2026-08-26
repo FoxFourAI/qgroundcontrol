@@ -435,6 +435,57 @@ bool QGCMapEngineManager::exportSets(const QString &path)
     return true;
 }
 
+//FoxFour part
+bool QGCMapEngineManager::exportSetAsMRF(const QString &path)
+{
+    setImportAction(ImportAction::ActionNone);
+
+    if (path.isEmpty()) {
+        return false;
+    }
+
+    QList<TileSetRecord> records;
+
+    for (qsizetype i = 0; i < _tileSets->count(); i++) {
+        QGCCachedTileSet* const set = qobject_cast<QGCCachedTileSet*>(_tileSets->get(i));
+        if (set && set->selected()) {
+            TileSetRecord rec;
+            rec.setID = set->id();
+            rec.name = set->name();
+            rec.mapTypeStr = set->mapTypeStr();
+            rec.topleftLat = set->topleftLat();
+            rec.topleftLon = set->topleftLon();
+            rec.bottomRightLat = set->bottomRightLat();
+            rec.bottomRightLon = set->bottomRightLon();
+            rec.minZoom = set->minZoom();
+            rec.maxZoom = set->maxZoom();
+            rec.type = UrlFactory::getQtMapIdFromProviderType(set->type());
+            rec.numTiles = set->totalTileCount();
+            rec.defaultSet = set->defaultSet();
+            rec.date = set->creationDate().toSecsSinceEpoch();
+            records.append(rec);
+        }
+    }
+
+    if (records.isEmpty()) {
+        setErrorMessage(tr("No tile sets selected for export"));
+        return false;
+    }
+
+    setImportAction(ImportAction::ActionExporting);
+
+    QGCExportMRFTileTask *task = new QGCExportMRFTileTask(records, path);
+    (void) connect(task, &QGCExportMRFTileTask::actionCompleted, this, &QGCMapEngineManager::_actionCompleted);
+    (void) connect(task, &QGCExportMRFTileTask::actionProgress, this, &QGCMapEngineManager::_actionProgressHandler);
+    (void) connect(task, &QGCMapTask::error, this, &QGCMapEngineManager::taskError);
+    if (!getQGCMapEngine()->addTask(task)) {
+        task->deleteLater();
+        return false;
+    }
+
+    return true;
+}
+
 void QGCMapEngineManager::_actionCompleted()
 {
     const ImportAction oldState = _importAction;

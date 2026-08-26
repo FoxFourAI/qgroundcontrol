@@ -96,7 +96,7 @@ Item {
 
         onAcceptedForSave: (file) => {
             close()
-            _mapEngineManager.exportSets(file)
+            _mapEngineManager.exportSetAsMRF(file)
         }
 
         onAcceptedForLoad: (file) => {

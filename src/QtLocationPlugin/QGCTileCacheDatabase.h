@@ -63,6 +63,19 @@ public:
     DatabaseResult importSetsMerge(const QString &path, ProgressCallback progressCb);
     DatabaseResult exportSets(const QList<TileSetRecord> &sets, const QString &path, ProgressCallback progressCb);
 
+    // FoxFour part
+    /// Exports one tile set as a Meta Raster Format raster, writing three files: <basePath>.mrf
+    /// (XML metadata), <basePath>.idx (page offset/size index) and <basePath>.dat (the tile bytes).
+    ///
+    /// Only the set's maxZoom is written, as a single-level raster with no <Rsets>. MRF overviews are
+    /// downsampled versions of one fixed extent, whereas a set's lower zooms are crops of world tiles
+    /// covering far more ground than the set itself, so the two pyramids do not correspond; run
+    /// `gdaladdo` on the result to build real overviews.
+    ///
+    /// The whole file shares one Compression and band count, sampled from the cached tiles; tiles that
+    /// do not match are written as absent pages. Elevation sets are rejected (they are not web-mercator).
+    DatabaseResult exportSetAsMRF(const TileSetRecord &set, const QString &basePath, ProgressCallback progressCb);
+
     // Exposed for unit tests only
     QSqlDatabase database() const;
 
