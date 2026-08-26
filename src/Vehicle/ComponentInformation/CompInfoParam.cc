@@ -90,7 +90,15 @@ FactMetaData *CompInfoParam::_resolveMetaData(const QString &name, FactMetaData:
     if (_noJsonMetadata) {
         // No vehicle-provided metadata — use firmware-bundled metadata
         if (ParameterMetaData *fwMeta = _getParameterMetaData()) {
-            return fwMeta->getMetaDataForFact(name, valueType);
+            // return fwMeta->getMetaDataForFact(name, valueType);
+            // FoxFour part
+            FactMetaData* metadata = fwMeta->getMetaDataForFact(name, valueType);
+            // if the data is from FCU or has a description, return it.
+            if (compId == MAV_COMP_ID_AUTOPILOT1 || !metadata->shortDescription().isEmpty()) {
+                return metadata;
+            } else {
+                delete metadata;
+            }
         }
     } else {
         // Vehicle provided JSON metadata — check exact match then indexed patterns
