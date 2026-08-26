@@ -87,7 +87,6 @@ FactMetaData *CompInfoParam::factMetaDataForName(const QString &name, FactMetaDa
 
 FactMetaData *CompInfoParam::_resolveMetaData(const QString &name, FactMetaData::ValueType_t valueType)
 {
-
     if (_noJsonMetadata) {
         // No vehicle-provided metadata — use firmware-bundled metadata
         if (ParameterMetaData *fwMeta = _getParameterMetaData()) {
