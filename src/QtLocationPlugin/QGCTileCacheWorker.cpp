@@ -480,6 +480,7 @@ void QGCCacheWorker::_exportSetAsMRF(QGCMapTask *mtask)
     const QList<TileSetRecord> &sets = task->sets();
     if (sets.isEmpty()) {
         task->setError("No tile sets selected for MRF export");
+        task->setExportCompleted();
         return;
     }
 
@@ -513,6 +514,7 @@ void QGCCacheWorker::_exportSetAsMRF(QGCMapTask *mtask)
 
     if (failures.size() == sets.size()) {
         task->setError(QStringLiteral("MRF export failed. %1").arg(failures.join(QStringLiteral("; "))));
+        task->setExportCompleted();
         return;
     }
     if (!failures.isEmpty()) {
