@@ -660,7 +660,7 @@ void ParameterManager::_startParameterDownload(uint8_t componentId)
         FTPManager *const ftpManager = _vehicle->ftpManager();
         (void) connect(ftpManager, &FTPManager::downloadComplete, this, &ParameterManager::_ftpDownloadComplete);
         _waitingParamTimeoutTimer.stop();
-        if (ftpManager->download(MAV_COMP_ID_AUTOPILOT1,
+        if (ftpManager->download(componentId,
                                  QStringLiteral("@PARAM/param.pck?withdefaults=1"),
                                  QStandardPaths::writableLocation(QStandardPaths::TempLocation),
                                  QStringLiteral("param.pck"),
@@ -679,7 +679,10 @@ void ParameterManager::_startParameterDownload(uint8_t componentId)
             ? static_cast<uint8_t>(MAV_COMP_ID_AUTOPILOT1)
             : componentId;
         _requestHashCheck(hashCheckCompId);
-    } else {
+    }
+    if (!(_tryftp && componentId == MAV_COMP_ID_AUTOPILOT1))
+        {
+            qDebug(ParameterManagerLog) << "Resetting indices";
         if (!_initialLoadComplete) {
             _paramRequestListTimer.start();
         }
