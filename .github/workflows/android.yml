@@ -36,11 +36,40 @@ jobs:
     with:
       platform: android
 
-  build:
-    name: Android (${{ matrix.host }})
+  # The windows leg is the PR long pole by a decent amount; android_matrix.py drops it
+  # for pull requests and keeps it for push / merge queue / dispatch.
+  build-matrix:
     needs: changes
     if: needs.changes.outputs.should_build == 'true'
-    runs-on: ${{ matrix.runner }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    outputs:
+      include: ${{ steps.build.outputs.include }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: |
+            .github/scripts/android_matrix.py
+            .github/scripts/ci_bootstrap.py
+            tools/_bootstrap.py
+            tools/common/__init__.py
+            tools/common/file_traversal.py
+            tools/common/gh_actions.py
+          sparse-checkout-cone-mode: false
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Build matrix
+        id: build
+        env:
+          IS_PR: ${{ github.event_name == 'pull_request' && '1' || '0' }}
+        run: python3 .github/scripts/android_matrix.py
+
+  build:
+    name: Android (${{ matrix.host }})
+    needs: [changes, build-matrix]
+    if: needs.changes.outputs.should_build == 'true'
+    # RunsOn runners only when the leg defines one, on mavlink, and not from a fork.
+    runs-on: ${{ github.repository_owner == 'mavlink' && matrix.runson_runner != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('runs-on={0}/runner={1}', github.run_id, matrix.runson_runner) || matrix.fallback_runner }}
     timeout-minutes: 120
 
     # id-token/attestations scoped here: only the "Attest and Upload" step needs them.
@@ -53,14 +82,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - host: linux
-            runner: ${{ github.repository_owner == 'mavlink' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('runs-on={0}/runner=linux-x64-builder', github.run_id) || 'ubuntu-latest' }}
-            arch: linux_gcc_64
-            qt_host_path: gcc_64
-            shell: bash
-            primary: true
-            emulator: false
+        include: ${{ fromJSON(needs.build-matrix.outputs.include) }}
 
     defaults:
       run:
@@ -118,6 +140,10 @@ jobs:
           aqt-source: ${{ matrix.aqt_source || '' }}
           abis: ${{ env.QT_ANDROID_ABIS }}
           build-type: ${{ env.BUILD_TYPE }}
+          # matrix.host is unique per leg; linux and linux-emulator otherwise
+          # resolve to identical cache inputs and would race on the moccache
+          # save key.
+          cache-key-suffix: ${{ matrix.host }}
           cpm-modules: ${{ runner.temp }}/build/cpm_modules
 
       - name: Install host build dependencies

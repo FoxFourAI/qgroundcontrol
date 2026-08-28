@@ -11,6 +11,14 @@
 
 UT_REGISTER_TEST(APMVehicleConfigUITest, TestLabel::Integration)
 
+void APMVehicleConfigUITest::init()
+{
+    if (!apmFirmwareSupported()) {
+        QSKIP("ArduPilot support not registered in this build");
+    }
+    VehicleConfigUITestBase::init();
+}
+
 // ---------------------------------------------------------------------------
 // Shared implementation
 // ---------------------------------------------------------------------------
@@ -46,17 +54,15 @@ void APMVehicleConfigUITest::_runNavigateVehicleConfig(
 
 void APMVehicleConfigUITest::_testArduCopter()
 {
-    ignoreAPMMockLinkWarnings();
     _runNavigateVehicleConfig(
-        [] { return MockLink::startAPMArduCopterMockLink(false, false, false); },
+        [] { return MockLink::startAPMArduCopterMockLink(); },
         QStringLiteral("ArduCopter"));
 }
 
 void APMVehicleConfigUITest::_testArduPlane()
 {
-    ignoreAPMMockLinkWarnings();
     _runNavigateVehicleConfig(
-        [] { return MockLink::startAPMArduPlaneMockLink(false, false, false); },
+        [] { return MockLink::startAPMArduPlaneMockLink(); },
         QStringLiteral("ArduPlane"));
 }
 
@@ -69,8 +75,7 @@ void APMVehicleConfigUITest::_testArduSub()
 
 void APMVehicleConfigUITest::_testArduRover()
 {
-    ignoreAPMMockLinkWarnings();
     _runNavigateVehicleConfig(
-        [] { return MockLink::startAPMArduRoverMockLink(false, false, false); },
+        [] { return MockLink::startAPMArduRoverMockLink(); },
         QStringLiteral("ArduRover"));
 }
