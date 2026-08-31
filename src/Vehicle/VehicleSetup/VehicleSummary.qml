@@ -104,7 +104,7 @@ Rectangle {
 
                                 onClicked : {
                                     if (modelData.setupSource !== "") {
-                                        setupView.showVehicleComponentPanel(modelData)
+                                        vehicleConfigView.showVehicleComponentPanel(modelData)
                                     }
                                 }
                             }
