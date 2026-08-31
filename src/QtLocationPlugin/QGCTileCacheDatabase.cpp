@@ -1304,10 +1304,10 @@ int mrfReadBigEndian32(const QByteArray &b, qsizetype at)
            (static_cast<quint8>(b.at(at + 2)) << 8) | static_cast<quint8>(b.at(at + 3));
 }
 
-/// Reads the band count out of the encoded tile header rather than trusting the Tiles.format
-/// column or a QImage round-trip. MRF stores the original PNG/JPEG bytes verbatim and GDAL
-/// decodes them with libpng/libjpeg, so <Size c=".."> has to match the codec's own channel
-/// count -- a palette PNG decodes to one band plus a color table, not to three.
+// Reads the band count out of the encoded tile header rather than trusting the Tiles.format
+// column or a QImage round-trip. MRF stores the original PNG/JPEG bytes verbatim and GDAL
+// decodes them with libpng/libjpeg, so <Size c=".."> has to match the codec's own channel
+// count -- a palette PNG decodes to one band plus a color table, not to three.
 MRFPageFormat sniffMRFPageFormat(const QByteArray &img)
 {
     static const QByteArray pngSignature = QByteArrayLiteral("\x89PNG\r\n\x1a\n");
@@ -1343,7 +1343,7 @@ MRFPageFormat sniffMRFPageFormat(const QByteArray &img)
             return MRFPageFormat();
         }
         const quint8 marker = static_cast<quint8>(img.at(pos + 1));
-        if (marker == 0xFF) { // fill byte
+        if (marker == 0xFF) {
             pos++;
             continue;
         }
@@ -1383,14 +1383,14 @@ MRFPageFormat sniffMRFPageFormat(const QByteArray &img)
     return MRFPageFormat();
 }
 
-/// One 16-byte index record: page offset into the data file and encoded page length.
+// Page offset into the data file and encoded page length.
 struct MRFIndexEntry
 {
     quint64 offset = 0;
     quint64 size = 0;
 };
 
-/// One resolution level of the pyramid, in pages.
+// One resolution level of the pyramid, in pages.
 struct MRFLevel
 {
     quint64 pagesX = 0;
@@ -1398,8 +1398,6 @@ struct MRFLevel
     QVector<MRFIndexEntry> entries;
 };
 
-/// GDAL derives the data file name from the .mrf basename when <DataFile> is absent, using an
-/// extension that encodes the compression. Match that so the triplet is self-describing.
 QString mrfDataExtension(const QString &compression)
 {
     if (compression == QLatin1String("PNG")) {
@@ -1411,8 +1409,6 @@ QString mrfDataExtension(const QString &compression)
     return QStringLiteral(".til");
 }
 
-/// The QImage format whose PNG/JPEG encoding round-trips to exactly `channels` bands. Anything
-/// else and the pages we generate would disagree with the header's <Size c="..">.
 QImage::Format mrfImageFormat(int channels)
 {
     switch (channels) {
@@ -1450,8 +1446,6 @@ QByteArray encodeMRFPage(const QImage &page, const MRFPageFormat &fmt)
     return out;
 }
 
-/// bounds.json stores coordinates at 7 decimals, which is well under a millimetre on the ground
-/// and keeps the file diffable.
 double mrfRound7(double v)
 {
     return std::round(v * 1e7) / 1e7;
@@ -1595,9 +1589,6 @@ DatabaseResult QGCTileCacheDatabase::exportSetAsMRF(const TileSetRecord &set, co
         return result;
     }
 
-            // `typeStr` is the provider name the set was stored with, so it is tried first;
-            // getProviderTypeFromQtMapId() is a fallback because `type` holds a provider type id rather
-            // than a Qt map id for most sets and so often resolves to nothing.
     QStringList candidateTypes;
     for (const QString &candidate : {set.mapTypeStr, UrlFactory::getProviderTypeFromQtMapId(set.type)}) {
         if (!candidate.isEmpty() && !candidateTypes.contains(candidate)) {
@@ -1630,7 +1621,6 @@ DatabaseResult QGCTileCacheDatabase::exportSetAsMRF(const TileSetRecord &set, co
                                      << "-" << grid.tilesFound << "of" << setHashes.size()
                                      << "set tiles at this zoom";
 
-            // Only this set's rows are visible to the page fetch, matching the hash inventory above.
     QSqlQuery tileQuery(_database());
     if (!tileQuery.prepare("SELECT T.tile FROM Tiles T "
                            "INNER JOIN SetTiles S ON T.tileID = S.tileID "
@@ -1641,7 +1631,7 @@ DatabaseResult QGCTileCacheDatabase::exportSetAsMRF(const TileSetRecord &set, co
 
     auto fetchTile = [&](int x, int y) -> QByteArray {
         const QString hash = UrlFactory::getTileHash(type, x, y, zoom);
-        if (!setHashes.contains(hash)) { // absent page; no need to hit the database
+        if (!setHashes.contains(hash)) {
             return QByteArray();
         }
         tileQuery.addBindValue(set.setID);
@@ -1652,13 +1642,8 @@ DatabaseResult QGCTileCacheDatabase::exportSetAsMRF(const TileSetRecord &set, co
         return tileQuery.value(0).toByteArray();
     };
 
-            // --- Pick the one page format the whole file will declare ------------------------------
-            // A single Compression and channel count covers the whole file, so sample the grid to pick
-            // the format the majority of cached pages actually use before committing to a header.
     MRFPageFormat pageFormat;
     {
-        // Only a handful of (compression, band count) combinations exist, so tally them in a
-        // list rather than hashing a composite key.
         QList<QPair<MRFPageFormat, int>> votes;
         const quint64 step = qMax<quint64>(1, totalPages / kMRFFormatSampleLimit);
         int sampled = 0;
@@ -1682,11 +1667,6 @@ DatabaseResult QGCTileCacheDatabase::exportSetAsMRF(const TileSetRecord &set, co
             }
         }
 
-        // Color beats a headcount. Sampling 64 pages out of a large grid can easily let a few
-        // greyscale or paletted tiles outvote the imagery, and declaring 1 band would flatten
-        // the whole export to greyscale -- a much worse outcome than rescaling or transcoding a
-        // minority of pages. So once any sampled page has three or more bands, only those
-        // compete.
         bool colorAvailable = false;
         for (const auto &vote : votes) {
             colorAvailable = colorAvailable || (vote.first.channels >= 3);
@@ -1709,11 +1689,6 @@ DatabaseResult QGCTileCacheDatabase::exportSetAsMRF(const TileSetRecord &set, co
         return result;
     }
 
-            // Base pages are normally stored byte-for-byte, which is both lossless and fast. Three
-            // formats break that -- palette PNG, greyscale+alpha PNG, and the 4-component JPEG GDAL
-            // writes with an APP3 "Zen" marker -- because QImageWriter cannot reproduce them, so the
-            // overviews we generate could not match the header. Promote those sets to RGBA PNG and
-            // re-encode every page instead: still lossless, just slower.
     bool recodeBasePages = false;
     const bool unwritableShape = pageFormat.palette ||
                                  ((pageFormat.compression == QLatin1String("PNG")) && (pageFormat.channels == 2)) ||
@@ -1733,9 +1708,6 @@ DatabaseResult QGCTileCacheDatabase::exportSetAsMRF(const TileSetRecord &set, co
     const QString datPath = basePath + mrfDataExtension(pageFormat.compression);
     const QString boundsPath = QFileInfo(basePath).dir().filePath(QStringLiteral("bounds.json"));
 
-            // Any of the files left behind from a previous run would be read alongside a new one, so
-            // clear them all up front and again on every failure path below. Both possible data
-            // extensions are removed because the format vote may have picked a different one this time.
     auto discardOutputs = [&]() {
         (void) QFile::remove(mrfPath);
         (void) QFile::remove(idxPath);
@@ -1783,8 +1755,6 @@ DatabaseResult QGCTileCacheDatabase::exportSetAsMRF(const TileSetRecord &set, co
     quint64 workDone = 0;
     int lastProgress = -1;
 
-    // Brings a tile onto the file's declared page size and codec. Only called when the tile
-    // actually differs, so the common case stays a byte-for-byte copy with no recompression.
     auto normalizePage = [&](const QByteArray &src) -> QByteArray {
         QImage decoded = QImage::fromData(src);
         if (decoded.isNull()) {
@@ -1937,7 +1907,6 @@ DatabaseResult QGCTileCacheDatabase::exportSetAsMRF(const TileSetRecord &set, co
         }
     }
 
-            // close() swallows flush errors, so force the buffers out while they can still be reported.
     if (!datFile.flush()) {
         fail(QStringLiteral("Failed to flush MRF data file to disk"));
         return result;
@@ -2089,6 +2058,7 @@ DatabaseResult QGCTileCacheDatabase::exportSetAsMRF(const TileSetRecord &set, co
     result.success = true;
     return result;
 }
+//FoxFour end
 
 bool QGCTileCacheDatabase::_createDB(QSqlDatabase db, bool createDefault)
 {
