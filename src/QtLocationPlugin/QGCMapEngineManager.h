@@ -47,10 +47,6 @@ public:
     Q_INVOKABLE bool exportSets(const QString &path = QString());
 
     //FoxFour part
-    /// Exports the selected tile sets as MRF (Meta Raster Format) rasters, for use in GIS tools
-    /// that read MRF directly (e.g. QGIS/GDAL). One MRF describes exactly one raster, so each
-    /// selected set becomes its own <path>_<name>.mrf/.idx/.dat trio.
-    /// @return true if the export task started successfully
     Q_INVOKABLE bool exportSetAsMRF(const QString &path = QString());
 
     Q_INVOKABLE bool findName(const QString &name) const;
