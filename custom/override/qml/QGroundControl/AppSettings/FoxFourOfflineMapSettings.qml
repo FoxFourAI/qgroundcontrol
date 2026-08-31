@@ -16,12 +16,23 @@ Item {
     property var _appSettings:      QGroundControl.settingsManager.appSettings
     property bool _currentlyImportOrExporting: _mapEngineManager.importAction === QGCMapEngineManager.ImportAction.ActionExporting ||
                                                _mapEngineManager.importAction === QGCMapEngineManager.ImportAction.ActionImporting
-
+    property var _mapEditor
     Component.onCompleted: _mapEngineManager.loadTileSets()
+    Component.onDestruction: if (_mapEditor) _mapEditor.destroy()
 
     Connections {
         target:                 _mapEngineManager
         function onErrorMessageChanged() { errorDialogFactory.open() }
+    }
+
+    function showTileSetInfo(tileSet) {
+        _mapEditor = offlineMapEditorComponent.createObject(mainWindow.contentItem, { tileSet: tileSet })
+        _mapEditor.showInfo()
+    }
+
+    function addNewTileSet() {
+        _mapEditor = offlineMapEditorComponent.createObject(mainWindow.contentItem)
+        _mapEditor.addNewSet()
     }
 
     ColumnLayout {
@@ -37,9 +48,11 @@ Item {
                 model: _mapEngineManager.tileSets
 
                 OfflineMapInfo {
+                    property var mapEditor
+                    signal mapEditorCreated
                     tileSet:    object
                     enabled:    !object.deleting
-                    onClicked:  offlineMapEditorComponent.createObject(mainWindow.contentItem, { tileSet: object }).showInfo()
+                    onClicked:  root.showTileSetInfo(object)
                 }
             }
 
@@ -47,7 +60,7 @@ Item {
                 label:      qsTr("Add New Set")
                 buttonText: qsTr("Add")
                 enabled:    !_currentlyImportOrExporting
-                onClicked:  offlineMapEditorComponent.createObject(mainWindow.contentItem).addNewSet()
+                onClicked:  root.addNewTileSet()
             }
 
             LabelledButton {
@@ -196,6 +209,7 @@ Item {
             buttons:    Dialog.Close
         }
     }
+
 
     Component {
         id: offlineMapEditorComponent
