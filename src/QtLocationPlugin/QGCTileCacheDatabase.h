@@ -64,7 +64,7 @@ public:
     DatabaseResult exportSets(const QList<TileSetRecord> &sets, const QString &path, ProgressCallback progressCb);
 
     // FoxFour part
-    DatabaseResult exportSetAsMRF(const TileSetRecord &set, const QString &basePath, ProgressCallback progressCb);
+    DatabaseResult exportSetsAsMRF(const QList<TileSetRecord> &sets, const QString &path, ProgressCallback progressCb);
 
     // Exposed for unit tests only
     QSqlDatabase database() const;

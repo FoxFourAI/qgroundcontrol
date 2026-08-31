@@ -10,15 +10,6 @@
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
 
-//FoxFour part
-#include <QBuffer>
-#include <QImage>
-#include <QImageWriter>
-#include <QPainter>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <cmath>
-
 #include <atomic>
 
 #include "QGCCacheTile.h"
@@ -1214,851 +1205,100 @@ DatabaseResult QGCTileCacheDatabase::exportSets(const QList<TileSetRecord> &sets
 }
 
 //FoxFour part
-namespace {
-
-constexpr int kMRFTileSize = 256;
-// EPSG:3857 (Web Mercator) constants: half the projected world width/height in meters.
-constexpr double kMRFOriginShift = 20037508.342789244;
-// Latitude beyond which web mercator is undefined.
-constexpr double kMRFMaxLatitude = 85.05112878;
-// How many tiles to sample when deciding the pyramid's single page format.
-constexpr int kMRFFormatSampleLimit = 64;
-// Written into <Quality> and used when encoding the overview pages we generate.
-constexpr int kMRFJpegQuality = 90;
-// The nominal grid is probed one tile wider on each side so a differing rounding convention
-// between the downloader and this exporter cannot silently clip an edge row or column.
-constexpr int kMRFProbeMargin = 1;
-// Sanity bound on a sniffed page size, so a corrupt header cannot ask for a huge canvas.
-constexpr int kMRFMaxPageSize = 8192;
-
-// GDAL/PROJ's canonical WKT for EPSG:3857, embedded verbatim so exported MRFs are
-// georeferenced without depending on a PROJ database being available at export time.
-// The AUTHORITY nodes and the PROJ4 EXTENSION (in particular +nadgrids=@null) are what
-// let GDAL resolve this back to EPSG:3857 rather than an anonymous Mercator_1SP.
-constexpr const char *kMRFWebMercatorWkt =
-    "PROJCS[\"WGS 84 / Pseudo-Mercator\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\","
-    "SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],"
-    "AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],"
-    "UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],"
-    "AUTHORITY[\"EPSG\",\"4326\"]],PROJECTION[\"Mercator_1SP\"],"
-    "PARAMETER[\"central_meridian\",0],PARAMETER[\"scale_factor\",1],"
-    "PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],"
-    "UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],"
-    "AXIS[\"Northing\",NORTH],EXTENSION[\"PROJ4\",\"+proj=merc +a=6378137 +b=6378137 "
-    "+lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs\"],"
-    "AUTHORITY[\"EPSG\",\"3857\"]]";
-
-// --- Web mercator tile arithmetic ---------------------------------------------------------
-// Done here rather than through UrlFactory::getTileCount so the geometry is guaranteed to be
-// the standard XYZ mercator scheme the MRF header declares, and so the exporter keeps working
-// for sets whose provider type cannot be resolved. Any disagreement with the downloader's own
-// rounding is absorbed by the probe margin above.
-
-QPoint coordToMrf(double lon, double lat, int zoom) {
-    QPoint result;
-    const double maxIndex = static_cast<double>(quint64(1) << zoom);
-    result.setX(qBound(0.0,std::floor(((qBound(-180.0, lon, 180.0) + 180.0) / 360.0) * maxIndex), maxIndex - 1.0));
-    const double s = std::sin(qDegreesToRadians(qBound(-kMRFMaxLatitude, lat, kMRFMaxLatitude)));
-    result.setY(qBound(0.0,std::floor((0.5 - (std::log((1.0 + s) / (1.0 - s)) / (4.0 * M_PI))) * maxIndex), maxIndex - 1.0));
-    return result;
-}
-
-QGeoCoordinate mrfToCoord(const QPoint& mrfPos) {
-    QGeoCoordinate result;
-    result.setLongitude((mrfPos.x() / kMRFOriginShift) * 180.0);
-    const double phi = (mrfPos.y() / kMRFOriginShift) * 180.0;
-    result.setLatitude(qRadiansToDegrees((2.0 * std::atan(std::exp(qDegreesToRadians(phi)))) - (M_PI / 2.0)));
-    return result;
-}
-
-struct MRFPageFormat
-{
-    QString compression;
-    int channels = 0;
-    // Encoded pixel size of the page. MRF declares one <PageSize> for the entire file and GDAL
-    // trusts it without consulting the pages, so a tile that decodes to any other size has to
-    // be rescaled -- otherwise the raster is laid out on the wrong pixel grid and comes out
-    // stretched. Providers do ship 512px tiles, and a set can mix sizes.
-    int width = 0;
-    int height = 0;
-    // Palette PNGs decode to one band plus a color table, so they sniff identically to
-    // greyscale but cannot be regenerated as one when we build overviews. Kept separate so the
-    // two never end up in the same vote bucket.
-    bool palette = false;
-
-    bool isValid() const
-    {
-        return (channels > 0) && (width > 0) && (height > 0) &&
-               (width <= kMRFMaxPageSize) && (height <= kMRFMaxPageSize) && !compression.isEmpty();
-    }
-    bool operator==(const MRFPageFormat &other) const
-    {
-        return (channels == other.channels) && (compression == other.compression) &&
-               (palette == other.palette) && (width == other.width) && (height == other.height);
-    }
-};
-
-int mrfReadBigEndian32(const QByteArray &b, qsizetype at)
-{
-    return (static_cast<quint8>(b.at(at)) << 24) | (static_cast<quint8>(b.at(at + 1)) << 16) |
-           (static_cast<quint8>(b.at(at + 2)) << 8) | static_cast<quint8>(b.at(at + 3));
-}
-
-// Reads the band count out of the encoded tile header rather than trusting the Tiles.format
-// column or a QImage round-trip. MRF stores the original PNG/JPEG bytes verbatim and GDAL
-// decodes them with libpng/libjpeg, so <Size c=".."> has to match the codec's own channel
-// count -- a palette PNG decodes to one band plus a color table, not to three.
-MRFPageFormat sniffMRFPageFormat(const QByteArray &img)
-{
-    static const QByteArray pngSignature = QByteArrayLiteral("\x89PNG\r\n\x1a\n");
-
-    MRFPageFormat fmt;
-
-            // IHDR is the mandatory first chunk, so its color type byte sits at a fixed offset.
-    if (img.startsWith(pngSignature) && (img.size() > 25)) {
-        switch (static_cast<quint8>(img.at(25))) {
-            case 0: fmt.channels = 1; break; // greyscale
-            case 2: fmt.channels = 3; break; // RGB
-            case 3: fmt.channels = 1; fmt.palette = true; break; // palette
-            case 4: fmt.channels = 2; break; // greyscale + alpha
-            case 6: fmt.channels = 4; break; // RGBA
-            default: return MRFPageFormat();
-        }
-        // IHDR payload: width(4) height(4) then the depth/color bytes read above.
-        fmt.width = mrfReadBigEndian32(img, 16);
-        fmt.height = mrfReadBigEndian32(img, 20);
-        fmt.compression = QStringLiteral("PNG");
-        return fmt.isValid() ? fmt : MRFPageFormat();
-    }
-
-    if ((img.size() < 4) || (static_cast<quint8>(img.at(0)) != 0xFF) || (static_cast<quint8>(img.at(1)) != 0xD8)) {
-        return MRFPageFormat();
-    }
-
-            // Walk the JPEG marker segments to the Start-Of-Frame, whose payload carries the component
-            // count (1 = greyscale, 3 = YCbCr, 4 = MRF's alpha-carrying mode).
-    qsizetype pos = 2;
-    while ((pos + 4) <= img.size()) {
-        if (static_cast<quint8>(img.at(pos)) != 0xFF) {
-            return MRFPageFormat();
-        }
-        const quint8 marker = static_cast<quint8>(img.at(pos + 1));
-        if (marker == 0xFF) {
-            pos++;
-            continue;
-        }
-        if ((marker >= 0xD0) && (marker <= 0xD9)) { // RSTn / SOI / EOI carry no length
-            pos += 2;
-            continue;
-        }
-        if (marker == 0xDA) { // start of scan; no frame header found
-            return MRFPageFormat();
-        }
-
-        const int segLen = (static_cast<quint8>(img.at(pos + 2)) << 8) | static_cast<quint8>(img.at(pos + 3));
-        if (segLen < 2) {
-            return MRFPageFormat();
-        }
-
-        static const QSet<quint8> sofMarkers = {0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7,
-                                                0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF};
-        if (sofMarkers.contains(marker)) {
-            // payload: precision(1) height(2) width(2) componentCount(1)
-            if ((pos + 9) >= img.size()) {
-                return MRFPageFormat();
-            }
-            fmt.channels = static_cast<quint8>(img.at(pos + 9));
-            if ((fmt.channels != 1) && (fmt.channels != 3) && (fmt.channels != 4)) {
-                return MRFPageFormat();
-            }
-            fmt.height = (static_cast<quint8>(img.at(pos + 5)) << 8) | static_cast<quint8>(img.at(pos + 6));
-            fmt.width = (static_cast<quint8>(img.at(pos + 7)) << 8) | static_cast<quint8>(img.at(pos + 8));
-            fmt.compression = QStringLiteral("JPEG");
-            return fmt.isValid() ? fmt : MRFPageFormat();
-        }
-
-        pos += 2 + segLen;
-    }
-
-    return MRFPageFormat();
-}
-
-// Page offset into the data file and encoded page length.
-struct MRFIndexEntry
-{
-    quint64 offset = 0;
-    quint64 size = 0;
-};
-
-// One resolution level of the pyramid, in pages.
-struct MRFLevel
-{
-    quint64 pagesX = 0;
-    quint64 pagesY = 0;
-    QVector<MRFIndexEntry> entries;
-};
-
-QString mrfDataExtension(const QString &compression)
-{
-    if (compression == QLatin1String("PNG")) {
-        return QStringLiteral(".ppg");
-    }
-    if (compression == QLatin1String("JPEG")) {
-        return QStringLiteral(".pjg");
-    }
-    return QStringLiteral(".til");
-}
-
-QImage::Format mrfImageFormat(int channels)
-{
-    switch (channels) {
-        case 1: return QImage::Format_Grayscale8;  // PNG color type 0 / 1-component JPEG
-        case 4: return QImage::Format_ARGB32;      // PNG color type 6
-        default: return QImage::Format_RGB32;      // PNG color type 2 / 3-component JPEG
-    }
-}
-
-QByteArray encodeMRFPage(const QImage &page, const MRFPageFormat &fmt)
-{
-    const QImage converted = (page.format() == mrfImageFormat(fmt.channels))
-    ? page
-    : page.convertToFormat(mrfImageFormat(fmt.channels));
-    if (converted.isNull()) {
-        return QByteArray();
-    }
-
-    QByteArray out;
-    QBuffer buffer(&out);
-    if (!buffer.open(QIODevice::WriteOnly)) {
-        return QByteArray();
-    }
-
-    const bool jpeg = (fmt.compression == QLatin1String("JPEG"));
-    QImageWriter writer(&buffer, jpeg ? QByteArrayLiteral("jpeg") : QByteArrayLiteral("png"));
-    if (jpeg) {
-        writer.setQuality(kMRFJpegQuality);
-    }
-    if (!writer.write(converted)) {
-        return QByteArray();
-    }
-    buffer.close();
-
-    return out;
-}
-
-double mrfRound7(double v)
-{
-    return std::round(v * 1e7) / 1e7;
-}
-
-QJsonObject mrfBoundsObject(const QGeoCoordinate &minCoord, const QGeoCoordinate &maxCoord)
-{
-    QJsonObject o;
-    o[QStringLiteral("min_lat")] = mrfRound7(minCoord.latitude());
-    o[QStringLiteral("min_lon")] = mrfRound7(minCoord.longitude());
-    o[QStringLiteral("max_lat")] = mrfRound7(maxCoord.latitude());
-    o[QStringLiteral("max_lon")] = mrfRound7(maxCoord.longitude());
-    return o;
-}
-
-/// Which provider name, zoom level and tile rectangle the set's cached tiles actually sit at.
-struct MRFTileGrid
-{
-    QString providerType;
-    int zoom = -1;
-    int tileX0 = 0;
-    int tileY0 = 0;
-    int tileX1 = -1;
-    int tileY1 = -1;
-    quint64 tilesFound = 0;
-
-    bool isValid() const { return (zoom >= 0) && (tileX1 >= tileX0) && (tileY1 >= tileY0); }
-};
-
-/// Locates the set's tiles by hash instead of trusting a provider lookup.
-///
-/// `Tiles` has no x/y/z columns -- coordinates live only inside the hash -- so the grid has to
-/// be found by generating candidate hashes and seeing which ones the set actually contains.
-/// That makes the provider name self-validating: whichever candidate matches real rows is the
-/// right one, and a set whose type int no longer resolves still exports fine as long as its
-/// stored `typeStr` does. Zooms are tried finest first, so a set whose maxZoom was never fully
-/// downloaded falls back to the finest zoom that has data rather than exporting an empty
-/// raster.
-MRFTileGrid findMRFTileGrid(const TileSetRecord &set, const QSet<QString> &setHashes,
-                            const QStringList &candidateTypes)
-{
-    const double minLat = qMin(set.topleftLat, set.bottomRightLat);
-    const double maxLat = qMax(set.topleftLat, set.bottomRightLat);
-    const double minLon = qMin(set.topleftLon, set.bottomRightLon);
-    const double maxLon = qMax(set.topleftLon, set.bottomRightLon);
-
-    const int maxZoom = qBound(0, set.maxZoom, 22);
-    const int minZoom = qBound(0, qMin(set.minZoom, maxZoom), maxZoom);
-
-    for (int zoom = maxZoom; zoom >= minZoom; zoom--) {
-        QPoint minCoord = coordToMrf(minLon, minLat, zoom);
-        QPoint maxCoord = coordToMrf(maxLon, maxLat, zoom);
-
-        const int worldMax = static_cast<int>((quint64(1) << zoom) - 1);
-        const int probeX0 = qMax(0, minCoord.x() - kMRFProbeMargin);
-        const int probeX1 = qMin(worldMax, maxCoord.x() + kMRFProbeMargin);
-        const int probeY0 = qMax(0, maxCoord.y() - kMRFProbeMargin);
-        const int probeY1 = qMin(worldMax, minCoord.y() + kMRFProbeMargin);
-
-        MRFTileGrid best;
-        for (const QString &type : candidateTypes) {
-            MRFTileGrid found;
-            found.providerType = type;
-            found.zoom = zoom;
-            found.tileX0 = probeX1;
-            found.tileY0 = probeY1;
-            found.tileX1 = probeX0;
-            found.tileY1 = probeY0;
-
-            for (int y = probeY0; y <= probeY1; y++) {
-                for (int x = probeX0; x <= probeX1; x++) {
-                    if (!setHashes.contains(UrlFactory::getTileHash(type, x, y, zoom))) {
-                        continue;
-                    }
-                    found.tilesFound++;
-                    found.tileX0 = qMin(found.tileX0, x);
-                    found.tileX1 = qMax(found.tileX1, x);
-                    found.tileY0 = qMin(found.tileY0, y);
-                    found.tileY1 = qMax(found.tileY1, y);
-                }
-            }
-
-            if (found.tilesFound > best.tilesFound) {
-                best = found;
-            }
-        }
-
-                // Finest zoom with any coverage wins; the MRF's own overviews supply the rest.
-        if (best.tilesFound > 0) {
-            return best;
-        }
-    }
-
-    return MRFTileGrid();
-}
-
-} // namespace
-
-DatabaseResult QGCTileCacheDatabase::exportSetAsMRF(const TileSetRecord &set, const QString &basePath, ProgressCallback progressCb)
+DatabaseResult QGCTileCacheDatabase::exportSetsAsMRF(const QList<TileSetRecord> &sets, const QString &path, ProgressCallback progressCb)
 {
     DatabaseResult result;
     if (!_ensureConnected()) {
-        result.errorString = QStringLiteral("Database not connected");
+        result.errorString = "Database not connected";
+        return result;
+    }
+    if (QFileInfo(path).canonicalFilePath() == QFileInfo(_databasePath).canonicalFilePath()) {
+        result.errorString = "Export path must differ from the active database";
         return result;
     }
 
-            // Elevation providers use their own flat degree grid (and count y northwards), so the
-            // web-mercator geometry below does not describe them at all.
-    if (UrlFactory::isElevation(set.type)) {
-        result.errorString = QStringLiteral("Elevation tile sets cannot be exported as MRF");
-        return result;
-    }
+    (void) QFile::remove(path);
 
-            // --- Inventory the set's tiles --------------------------------------------------------
-            // Scoped through SetTiles on setID, the same way exportSets() does, so the raster contains
-            // this set's tiles and nothing else. Only the hashes are held; blobs are fetched per page
-            // below so a multi-gigabyte set never has to fit in memory.
-    QSet<QString> setHashes;
-    {
-        QSqlQuery hashQuery(_database());
-        hashQuery.setForwardOnly(true);
-        if (!hashQuery.prepare("SELECT T.hash FROM Tiles T "
-                               "INNER JOIN SetTiles S ON T.tileID = S.tileID WHERE S.setID = ?")) {
-            result.errorString = QStringLiteral("Failed to prepare tile query for MRF export");
-            return result;
-        }
-        hashQuery.addBindValue(set.setID);
-        if (!hashQuery.exec()) {
-            qCWarning(QGCTileCacheDatabaseLog) << "Failed to query tiles for MRF export of" << set.name
-                                               << hashQuery.lastError().text();
-            result.errorString = QStringLiteral("Failed to query tiles for MRF export");
-            return result;
-        }
-        while (hashQuery.next()) {
-            setHashes.insert(hashQuery.value(0).toString());
-        }
-    }
 
-    if (setHashes.isEmpty()) {
-        result.errorString = QStringLiteral("Tile set '%1' contains no tiles").arg(set.name);
-        return result;
-    }
-
-    QStringList candidateTypes;
-    for (const QString &candidate : {set.mapTypeStr, UrlFactory::getProviderTypeFromQtMapId(set.type)}) {
-        if (!candidate.isEmpty() && !candidateTypes.contains(candidate)) {
-            candidateTypes.append(candidate);
-        }
-    }
-    if (candidateTypes.isEmpty()) {
-        result.errorString = QStringLiteral("Tile set '%1' has no usable map provider name").arg(set.name);
-        return result;
-    }
-
-    const MRFTileGrid grid = findMRFTileGrid(set, setHashes, candidateTypes);
-    if (!grid.isValid()) {
-        result.errorString = QStringLiteral("Could not locate the %1 cached tiles of '%2' on the "
-                                 "web mercator grid (tried provider %3, zoom %4-%5)")
-                                 .arg(setHashes.size())
-                                 .arg(set.name, candidateTypes.join(QStringLiteral(", ")))
-                                 .arg(set.minZoom).arg(set.maxZoom);
-        return result;
-    }
-
-    const int zoom = grid.zoom;
-    const QString type = grid.providerType;
-    const quint64 gridWidth = static_cast<quint64>(grid.tileX1 - grid.tileX0 + 1);
-    const quint64 gridHeight = static_cast<quint64>(grid.tileY1 - grid.tileY0 + 1);
-    const quint64 totalPages = gridWidth * gridHeight;
-
-    qCDebug(QGCTileCacheDatabaseLog) << "MRF export: set" << set.name << "resolved to provider" << type
-                                     << "zoom" << zoom << "grid" << gridWidth << "x" << gridHeight
-                                     << "-" << grid.tilesFound << "of" << setHashes.size()
-                                     << "set tiles at this zoom";
-
-    QSqlQuery tileQuery(_database());
-    if (!tileQuery.prepare("SELECT T.tile FROM Tiles T "
-                           "INNER JOIN SetTiles S ON T.tileID = S.tileID "
-                           "WHERE S.setID = ? AND T.hash = ?")) {
-        result.errorString = QStringLiteral("Failed to prepare tile lookup for MRF export");
-        return result;
-    }
-
-    auto fetchTile = [&](int x, int y) -> QByteArray {
-        const QString hash = UrlFactory::getTileHash(type, x, y, zoom);
-        if (!setHashes.contains(hash)) {
-            return QByteArray();
-        }
-        tileQuery.addBindValue(set.setID);
-        tileQuery.addBindValue(hash);
-        if (!tileQuery.exec() || !tileQuery.next()) {
-            return QByteArray();
-        }
-        return tileQuery.value(0).toByteArray();
-    };
-
-    MRFPageFormat pageFormat;
-    {
-        QList<QPair<MRFPageFormat, int>> votes;
-        const quint64 step = qMax<quint64>(1, totalPages / kMRFFormatSampleLimit);
-        int sampled = 0;
-
-        for (quint64 page = 0; (page < totalPages) && (sampled < kMRFFormatSampleLimit); page += step) {
-            const int x = grid.tileX0 + static_cast<int>(page % gridWidth);
-            const int y = grid.tileY0 + static_cast<int>(page / gridWidth);
-
-            const MRFPageFormat fmt = sniffMRFPageFormat(fetchTile(x, y));
-            if (!fmt.isValid()) {
-                continue;
-            }
-            sampled++;
-
-            auto it = std::find_if(votes.begin(), votes.end(),
-                                   [&fmt](const QPair<MRFPageFormat, int> &v) { return v.first == fmt; });
-            if (it != votes.end()) {
-                it->second++;
-            } else {
-                votes.append({fmt, 1});
-            }
-        }
-
-        bool colorAvailable = false;
-        for (const auto &vote : votes) {
-            colorAvailable = colorAvailable || (vote.first.channels >= 3);
-        }
-
-        int best = 0;
-        for (const auto &vote : votes) {
-            if (colorAvailable && (vote.first.channels < 3)) {
-                continue;
-            }
-            if (vote.second > best) {
-                best = vote.second;
-                pageFormat = vote.first;
-            }
-        }
-    }
-
-    if (!pageFormat.isValid()) {
-        result.errorString = QStringLiteral("No decodable PNG or JPEG tiles cached for this set");
-        return result;
-    }
-
-    bool recodeBasePages = false;
-    const bool unwritableShape = pageFormat.palette ||
-                                 ((pageFormat.compression == QLatin1String("PNG")) && (pageFormat.channels == 2)) ||
-                                 ((pageFormat.compression == QLatin1String("JPEG")) && (pageFormat.channels == 4));
-    if (unwritableShape) {
-        qCDebug(QGCTileCacheDatabaseLog) << "MRF export: re-encoding as 4-band PNG;" << pageFormat.compression
-                                         << pageFormat.channels << "band (palette:" << pageFormat.palette
-                                         << ") pages cannot be regenerated for the overview levels";
-        recodeBasePages = true;
-        pageFormat = MRFPageFormat{QStringLiteral("PNG"), 4, pageFormat.width, pageFormat.height, false};
-    }
-
-    const QString mrfPath = basePath + QStringLiteral(".mrf");
-    const QString idxPath = basePath + QStringLiteral(".idx");
-    // <DataFile>/<IndexFile> are omitted from the header, so the names must be exactly the ones
-    // GDAL derives from the basename.
-    const QString datPath = basePath + mrfDataExtension(pageFormat.compression);
-    const QString boundsPath = QFileInfo(basePath).dir().filePath(QStringLiteral("bounds.json"));
-
-    auto discardOutputs = [&]() {
-        (void) QFile::remove(mrfPath);
-        (void) QFile::remove(idxPath);
-        (void) QFile::remove(datPath);
-        (void) QFile::remove(basePath + QStringLiteral(".ppg"));
-        (void) QFile::remove(basePath + QStringLiteral(".pjg"));
-        (void) QFile::remove(boundsPath);
-    };
-    discardOutputs();
-
-            // Levels, finest first. Each level halves the page counts, rounding up, and the pyramid
-            // stops once a level fits in a single page -- the same shape gdaladdo produces.
-    QList<MRFLevel> levels;
-    {
-        MRFLevel base;
-        base.pagesX = gridWidth;
-        base.pagesY = gridHeight;
-        levels.append(base);
-        while ((levels.last().pagesX > 1) || (levels.last().pagesY > 1)) {
-            MRFLevel next;
-            next.pagesX = qMax<quint64>(1, (levels.last().pagesX + 1) / 2);
-            next.pagesY = qMax<quint64>(1, (levels.last().pagesY + 1) / 2);
-            levels.append(next);
-        }
-    }
-
-    quint64 totalWork = 0;
-    for (const MRFLevel &level : levels) {
-        totalWork += level.pagesX * level.pagesY;
-    }
-
-            // Opened ReadWrite because building level N means reading level N-1's pages back out.
-    QFile datFile(datPath);
-    if (!datFile.open(QIODevice::ReadWrite | QIODevice::Truncate)) {
-        result.errorString = QStringLiteral("Failed to create MRF data file");
-        discardOutputs();
-        return result;
-    }
-
-    quint64 dataOffset = 0;
-    quint64 pagesWritten = 0;
-    quint64 rescaledPages = 0;
-    quint64 transcodedPages = 0;
-    quint64 undecodablePages = 0;
-    quint64 workDone = 0;
+    quint64 tileCount = 0;
+    quint64 currentCount = 0;
     int lastProgress = -1;
+    for (const auto &set : sets) {
 
-    auto normalizePage = [&](const QByteArray &src) -> QByteArray {
-        QImage decoded = QImage::fromData(src);
-        if (decoded.isNull()) {
-            return QByteArray();
-        }
-        if ((decoded.width() != pageFormat.width) || (decoded.height() != pageFormat.height)) {
-            decoded = decoded.scaled(pageFormat.width, pageFormat.height,
-                                     Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-        }
-        return encodeMRFPage(decoded, pageFormat);
-    };
+        set.name;
+        set.mapTypeStr;
+        set.topleftLat;
+        set.topleftLon;
+        set.bottomRightLat;
+        set.bottomRightLon;
+        set.minZoom;
+        set.maxZoom;
+        set.type;
+        set.numTiles;
+        set.defaultSet;
+        set.date;
 
-    auto reportProgress = [&]() {
-        workDone++;
-        if (!progressCb) {
-            return;
-        }
-        const int progress = qMin(100, static_cast<int>((static_cast<double>(workDone) / static_cast<double>(totalWork)) * 100.0));
-        if (lastProgress != progress) {
-            lastProgress = progress;
-            progressCb(progress);
-        }
-    };
-
-    auto appendPage = [&](const QByteArray &img, MRFIndexEntry &entry) -> bool {
-        if (img.isEmpty()) { // absent page: (0, 0)
-            entry = MRFIndexEntry();
-            return true;
-        }
-        if (datFile.write(img) != img.size()) {
-            return false;
-        }
-        entry.offset = dataOffset;
-        entry.size = static_cast<quint64>(img.size());
-        dataOffset += entry.size;
-        pagesWritten++;
-        return true;
-    };
-
-    auto fail = [&](const QString &what) {
-        result.errorString = what;
-        discardOutputs();
-    };
-
-            // --- Level 0: the cached tiles themselves, in row-major page order. -------------------
-    {
-        MRFLevel &base = levels[0];
-        base.entries.resize(static_cast<qsizetype>(totalPages));
-
-        for (quint64 page = 0; page < totalPages; page++) {
-            const int x = grid.tileX0 + static_cast<int>(page % gridWidth);
-            const int y = grid.tileY0 + static_cast<int>(page / gridWidth);
-
-            QByteArray img = fetchTile(x, y);
-            if (!img.isEmpty()) {
-                const MRFPageFormat srcFmt = sniffMRFPageFormat(img);
-                if (recodeBasePages || !(srcFmt == pageFormat)) {
-                    const QByteArray normalized = normalizePage(img);
-                    if (normalized.isEmpty()) {
-                        undecodablePages++;
-                        img.clear();
-                    } else {
-                        if (srcFmt.isValid() &&
-                            ((srcFmt.width != pageFormat.width) || (srcFmt.height != pageFormat.height))) {
-                            rescaledPages++;
-                        } else {
-                            transcodedPages++;
-                        }
-                        img = normalized;
-                    }
-                }
-            }
-
-            if (!appendPage(img, base.entries[static_cast<qsizetype>(page)])) {
-                fail(QStringLiteral("Failed to write MRF data file: %1").arg(datFile.errorString()));
-                return result;
-            }
-            reportProgress();
-        }
-
-        if (pagesWritten == 0) {
-            fail(QStringLiteral("No usable tiles found at zoom %1 for this set").arg(zoom));
-            return result;
-        }
-    }
-
-            // --- Overview levels: each page is the 2x2 block above it, downsampled. ---------------
-            // Composited in ARGB32 regardless of the target format so QPainter always has a format it
-            // can paint on; absent parents stay transparent, and collapse to black for formats without
-            // an alpha channel.
-    for (qsizetype levelIdx = 1; levelIdx < levels.size(); levelIdx++) {
-        const MRFLevel &parent = levels.at(levelIdx - 1);
-        MRFLevel &level = levels[levelIdx];
-        level.entries.resize(static_cast<qsizetype>(level.pagesX * level.pagesY));
-
-        for (quint64 py = 0; py < level.pagesY; py++) {
-            for (quint64 px = 0; px < level.pagesX; px++) {
-                QImage canvas(pageFormat.width * 2, pageFormat.height * 2, QImage::Format_ARGB32);
-                canvas.fill(Qt::transparent);
-                bool anyParent = false;
-
-                {
-                    QPainter painter(&canvas);
-                    for (int dy = 0; dy < 2; dy++) {
-                        for (int dx = 0; dx < 2; dx++) {
-                            const quint64 sx = (px * 2) + static_cast<quint64>(dx);
-                            const quint64 sy = (py * 2) + static_cast<quint64>(dy);
-                            if ((sx >= parent.pagesX) || (sy >= parent.pagesY)) {
-                                continue;
-                            }
-                            const MRFIndexEntry &src = parent.entries.at(static_cast<qsizetype>((sy * parent.pagesX) + sx));
-                            if (src.size == 0) {
-                                continue;
-                            }
-                            if (!datFile.seek(static_cast<qint64>(src.offset))) {
-                                continue;
-                            }
-                            const QImage decoded = QImage::fromData(datFile.read(static_cast<qint64>(src.size)));
-                            if (decoded.isNull()) {
-                                continue;
-                            }
-                            painter.drawImage(QPoint(dx * pageFormat.width, dy * pageFormat.height), decoded);
-                            anyParent = true;
-                        }
-                    }
-                }
-
-                QByteArray img;
-                if (anyParent) {
-                    img = encodeMRFPage(canvas.scaled(pageFormat.width, pageFormat.height,
-                                                      Qt::IgnoreAspectRatio, Qt::SmoothTransformation),
-                                        pageFormat);
-                    if (img.isEmpty()) {
-                        fail(QStringLiteral("Failed to encode MRF overview page as %1").arg(pageFormat.compression));
-                        return result;
-                    }
-                }
-
-                        // Appends land at the end of the file, which seek() above moved away from.
-                if (!datFile.seek(static_cast<qint64>(dataOffset))) {
-                    fail(QStringLiteral("Failed to seek MRF data file: %1").arg(datFile.errorString()));
-                    return result;
-                }
-                if (!appendPage(img, level.entries[static_cast<qsizetype>((py * level.pagesX) + px)])) {
-                    fail(QStringLiteral("Failed to write MRF data file: %1").arg(datFile.errorString()));
-                    return result;
-                }
-                reportProgress();
+        QSqlQuery countQuery(_database());
+        quint64 actualCount = 0;
+        if (countQuery.prepare("SELECT COUNT(*) FROM Tiles T INNER JOIN SetTiles S ON T.tileID = S.tileID WHERE S.setID = ?")) {
+            countQuery.addBindValue(set.setID);
+            if (countQuery.exec() && countQuery.next()) {
+                actualCount = countQuery.value(0).toULongLong();
             }
         }
+        tileCount += (actualCount > 0) ? actualCount : set.numTiles;
     }
 
-    if (!datFile.flush()) {
-        fail(QStringLiteral("Failed to flush MRF data file to disk"));
-        return result;
-    }
-    datFile.close();
-
-    if ((rescaledPages > 0) || (transcodedPages > 0) || (undecodablePages > 0)) {
-        qCWarning(QGCTileCacheDatabaseLog) << "MRF export: normalized pages to" << pageFormat.width << "x"
-                  << pageFormat.height << pageFormat.compression
-                  << pageFormat.channels << "band -" << rescaledPages
-                  << "rescaled," << transcodedPages << "transcoded,"
-                  << undecodablePages << "undecodable";
+    if (tileCount == 0) {
+        tileCount = 1;
     }
 
-            // --- Index: every level's records back to back, finest first. ------------------------
-            // 16 bytes per page -- big-endian offset then big-endian length, row-major within a level,
-            // (0, 0) marking an absent page. No header and no padding between levels.
-    {
-        QFile idxFile(idxPath);
-        if (!idxFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            fail(QStringLiteral("Failed to create MRF index file"));
-            return result;
+    for (const auto &set : sets) {
+        QSqlQuery query(_database());
+        query.setForwardOnly(true);
+        if (!query.prepare("SELECT T.hash, T.format, T.tile, T.type, T.date FROM Tiles T "
+                           "INNER JOIN SetTiles S ON T.tileID = S.tileID WHERE S.setID = ?")) {
+            qCWarning(QGCTileCacheDatabaseLog) << "Failed to prepare tile query for export set" << set.name;
+            continue;
+        }
+        query.addBindValue(set.setID);
+        if (!query.exec()) {
+            qCWarning(QGCTileCacheDatabaseLog) << "Failed to query tiles for export set" << set.name;
+            continue;
         }
 
-        QByteArray records;
-        records.reserve(static_cast<qsizetype>(totalWork) * 16);
-        for (const MRFLevel &level : levels) {
-            for (const MRFIndexEntry &entry : level.entries) {
-                const quint64 beOffset = qToBigEndian(entry.offset);
-                const quint64 beSize = qToBigEndian(entry.size);
-                records.append(reinterpret_cast<const char*>(&beOffset), sizeof(beOffset));
-                records.append(reinterpret_cast<const char*>(&beSize), sizeof(beSize));
+        quint64 skippedTiles = 0;
+        while (query.next()) {
+            const QString hash = query.value(0).toString();
+            const QString format = query.value(1).toString();
+            const QByteArray img = query.value(2).toByteArray();
+            const int tileType = query.value(3).toInt();
+            const quint64 tileDate = query.value(4).toULongLong();
+
+            quint64 exportTileID = 0;
+
+            if (exportTileID > 0) {
+            } else {
+                skippedTiles++;
+            }
+            currentCount++;
+
+            if (progressCb) {
+                const int progress = qMin(100, static_cast<int>((static_cast<double>(currentCount) / static_cast<double>(tileCount)) * 100.0));
+                if (lastProgress != progress) {
+                    lastProgress = progress;
+                    progressCb(progress);
+                }
             }
         }
-
-        const bool idxFailed = (idxFile.write(records) != records.size()) || !idxFile.flush();
-        idxFile.close();
-        if (idxFailed) {
-            fail(QStringLiteral("Failed to write MRF index file"));
-            return result;
+        if (skippedTiles > 0) {
+            qCWarning(QGCTileCacheDatabaseLog) << "Skipped" << skippedTiles << "tiles during export of" << set.name;
         }
     }
 
-            // Geographic footprint of the tile grid in EPSG:3857 meters. Web-mercator tile y counts
-            // southwards from the top of the world, hence the inverted y terms.
-    const double tileSizeMeters = (2.0 * kMRFOriginShift) / static_cast<double>(quint64(1) << zoom);
-    const double minX = -kMRFOriginShift + (grid.tileX0 * tileSizeMeters);
-    const double maxX = -kMRFOriginShift + ((grid.tileX1 + 1) * tileSizeMeters);
-    const double maxY = kMRFOriginShift - (grid.tileY0 * tileSizeMeters);
-    const double minY = kMRFOriginShift - ((grid.tileY1 + 1) * tileSizeMeters);
-
-    // --- Header --------------------------------------------------------------------------
-    {
-        QString header;
-        header += QStringLiteral("<MRF_META>\n");
-        header += QStringLiteral("  <Raster>\n");
-        header += QStringLiteral("    <Size x=\"%1\" y=\"%2\" c=\"%3\" />\n")
-                      .arg(gridWidth * static_cast<quint64>(pageFormat.width))
-                      .arg(gridHeight * static_cast<quint64>(pageFormat.height))
-                      .arg(pageFormat.channels);
-        header += QStringLiteral("    <PageSize x=\"%1\" y=\"%2\" c=\"%3\" />\n")
-                      .arg(pageFormat.width)
-                      .arg(pageFormat.height)
-                      .arg(pageFormat.channels);
-        header += QStringLiteral("    <Compression>%1</Compression>\n").arg(pageFormat.compression);
-        if (pageFormat.compression == QLatin1String("JPEG")) {
-            header += QStringLiteral("    <Quality>%1</Quality>\n").arg(kMRFJpegQuality);
-        }
-        header += QStringLiteral("  </Raster>\n");
-
-        header += QStringLiteral("  <GeoTags>\n");
-        header += QStringLiteral("    <BoundingBox minx=\"%1\" miny=\"%2\" maxx=\"%3\" maxy=\"%4\" />\n")
-                      .arg(minX, 0, 'f', 8)
-                      .arg(minY, 0, 'f', 8)
-                      .arg(maxX, 0, 'f', 8)
-                      .arg(maxY, 0, 'f', 8);
-        header += QStringLiteral("    <Projection>%1</Projection>\n").arg(QLatin1String(kMRFWebMercatorWkt));
-        header += QStringLiteral("  </GeoTags>\n");
-
-                // Declares the overview levels written above. Omitted when the raster is a single page.
-        if (levels.size() > 1) {
-            header += QStringLiteral("  <Rsets model=\"uniform\" scale=\"2\" />\n");
-        }
-
-                // <DataFile>/<IndexFile> are intentionally absent: GDAL derives both from the basename.
-
-        header += QStringLiteral("</MRF_META>\n");
-
-        QFile mrfFile(mrfPath);
-        if (!mrfFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            fail(QStringLiteral("Failed to create MRF metadata file"));
-            return result;
-        }
-        const QByteArray headerBytes = header.toUtf8();
-        const bool headerFailed = (mrfFile.write(headerBytes) != headerBytes.size()) || !mrfFile.flush();
-        mrfFile.close();
-        if (headerFailed) {
-            fail(QStringLiteral("Failed to write MRF metadata file"));
-            return result;
-        }
-    }
-
-            // --- bounds.json ---------------------------------------------------------------------
-            // mrf_bounds is the tile-aligned raster footprint reprojected to WGS84; requested_bounds is
-            // what the tile set was defined with. coverage_pct counts only the finest level, since the
-            // overviews are derived from it.
-    {
-        QJsonObject root;
-        root[QStringLiteral("coverage_pct")] = mrfRound7((static_cast<double>(qMin(pagesWritten, totalPages)) /
-                                                          static_cast<double>(totalPages)) * 100.0);
-
-        QJsonObject expansion;
-        for (const char *key : {"east_m", "north_m", "south_m", "west_m"}) {
-            expansion[QLatin1String(key)] = 0.0;
-        }
-        root[QStringLiteral("expansion_m")] = expansion;
-
-        QGeoCoordinate requestMinCoord(qMin(set.topleftLat, set.bottomRightLat),
-                                       qMin(set.topleftLon, set.bottomRightLon));
-        QGeoCoordinate requestMaxCoord(qMax(set.topleftLat, set.bottomRightLat),
-                                       qMax(set.topleftLon, set.bottomRightLon));
-
-        const QJsonObject requested = mrfBoundsObject(requestMinCoord,
-                                                      requestMaxCoord);
-        root[QStringLiteral("mcap_bounds")] = requested;
-        root[QStringLiteral("requested_bounds")] = requested;
-        QGeoCoordinate minCoord = mrfToCoord({qFloor(minX),qFloor(minY)}),
-                       maxCoord = mrfToCoord({qCeil(maxX),qCeil(maxY)});
-        root[QStringLiteral("mrf_bounds")] = mrfBoundsObject(minCoord,
-                                                             maxCoord);
-
-        QFile boundsFile(boundsPath);
-        if (!boundsFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            fail(QStringLiteral("Failed to create bounds.json"));
-            return result;
-        }
-        const QByteArray json = QJsonDocument(root).toJson(QJsonDocument::Indented);
-        const bool jsonFailed = (boundsFile.write(json) != json.size()) || !boundsFile.flush();
-        boundsFile.close();
-        if (jsonFailed) {
-            fail(QStringLiteral("Failed to write bounds.json"));
-            return result;
-        }
-    }
-
-    qCDebug(QGCTileCacheDatabaseLog) << "MRF export:" << mrfPath << gridWidth << "x" << gridHeight
-                                     << "pages at zoom" << zoom << "-" << levels.size() << "levels,"
-                                     << totalWork << "index records," << pagesWritten << "pages written";
-    result.success = true;
+    result.success = result.errorString.isEmpty();
     return result;
 }
-//FoxFour end
 
 bool QGCTileCacheDatabase::_createDB(QSqlDatabase db, bool createDefault)
 {

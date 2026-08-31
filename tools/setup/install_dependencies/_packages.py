@@ -38,6 +38,7 @@ DEBIAN_PACKAGES: dict[str, list[str]] = {
         "valgrind",
         "wget",
         "zsync",
+        "gdal"
     ],
     "qt": [
         "libatspi2.0-dev",
@@ -220,6 +221,7 @@ FEDORA_PACKAGES: dict[str, list[str]] = {
         "valgrind",
         "wget",
         "zsync",
+        "gdal"
     ],
     "qt": [
         "at-spi2-core-devel",
@@ -302,6 +304,7 @@ ARCH_PACKAGES: dict[str, list[str]] = {
         "valgrind",
         "wget",
         "zsync",
+        "gdal"
     ],
     "qt": [
         "at-spi2-core",
@@ -362,6 +365,7 @@ MACOS_PACKAGES: list[str] = [
     "create-dmg",
     "mold",
     "nasm",
+    "gdal"
 ]
 
 PIPX_PACKAGES: list[str] = [

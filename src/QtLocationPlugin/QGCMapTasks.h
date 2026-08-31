@@ -344,17 +344,15 @@ class QGCExportMRFTileTask : public QGCMapTask
     Q_OBJECT
 
 public:
-    /// @param sets Tile sets to export; each becomes its own MRF file trio.
-    /// @param basePath User-chosen path; each set's filename is derived from it plus the set name.
-    explicit QGCExportMRFTileTask(const QList<TileSetRecord> &sets, const QString &basePath, QObject *parent = nullptr)
-        : QGCMapTask(TaskType::taskExportMRF, parent)
-        , m_sets(sets)
-        , m_basePath(basePath)
+    explicit QGCExportMRFTileTask(const QList<TileSetRecord> &sets, const QString &path, QObject *parent = nullptr)
+        : QGCMapTask(TaskType::taskExport, parent)
+          , m_sets(sets)
+          , m_path(path)
     {}
     ~QGCExportMRFTileTask() = default;
 
     const QList<TileSetRecord> &sets() const { return m_sets; }
-    QString basePath() const { return m_basePath; }
+    QString path() const { return m_path; }
 
     void setExportCompleted()
     {
@@ -372,7 +370,7 @@ signals:
 
 private:
     const QList<TileSetRecord> m_sets;
-    const QString m_basePath;
+    const QString m_path;
 };
 
 //-----------------------------------------------------------------------------
