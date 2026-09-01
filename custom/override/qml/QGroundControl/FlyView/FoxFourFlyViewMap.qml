@@ -58,9 +58,9 @@ FlightMap {
     onPipModeChanged: _adjustMapZoomForPipMode()
 
     QGCButton {
-        anchors.horizontalCenter:parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.topMargin: 120
+        anchors.verticalCenter:parent.verticalCenter
+        anchors.left: parent.left
+        anchors.leftMargin: ScreenTools.defaultFontPixelWidth
         text: qsTr("Go to Vehicle")
         visible: _activeVehicle && recenterNeeded() && _disableVehicleTracking
         onClicked: moveMapToVehicle()
