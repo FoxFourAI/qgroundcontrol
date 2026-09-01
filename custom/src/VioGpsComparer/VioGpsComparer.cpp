@@ -11,7 +11,7 @@ VioGpsComparer::VioGpsComparer(Vehicle* vehicle, QObject* parent) : AutoPilotWid
 {
     // we need 2 parameters to fetch data for VIO
     _setRequiredParameters({{"SCR_EKF_SRC", _ekfSrcFact}, {"SCR_USER2", _user2Fact}});
-
+    _notifyOnRefreshFail = false;
     connect(this, &AutoPilotWidget::_requiredFactChanged, this, [this](Fact* fact) {
         if (fact == _ekfSrcFact) {
             emit ekfSrcFactChanged();
