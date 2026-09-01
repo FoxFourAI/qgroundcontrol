@@ -44,6 +44,7 @@ protected:
     FoxFourAutoPilotPlugin* _apm = nullptr;
     ParameterManager* _pm = nullptr;
     OnboardComputersManager* _ocm = nullptr;
+    bool _notifyOnRefreshFail = true;
 
     void _setRequiredParameters(QVector<ParameterInfo> parameters);
     Fact* _getParameter(bool fromVGM, const QString& parameterName);
