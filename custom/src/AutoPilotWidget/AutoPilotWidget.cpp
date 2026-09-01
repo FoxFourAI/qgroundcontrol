@@ -23,7 +23,7 @@ void AutoPilotWidget::refreshParameters()
 {
     for (ParameterInfo& param : _requiredParametrs) {
         int componentId = param.fromVGM ? _ocm->currentComputerComponent() : MAV_COMP_ID_AUTOPILOT1;
-        _pm->refreshParameter(componentId, param.name);
+        _pm->refreshParameter(componentId, param.name, _notifyOnRefreshFail);
     }
 }
 

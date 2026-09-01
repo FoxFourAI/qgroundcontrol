@@ -35,9 +35,11 @@ FlightMap {
     property real   _toolsMargin:               ScreenTools.defaultFontPixelWidth * 0.75
     property var    _flyViewSettings:           QGroundControl.settingsManager.flyViewSettings
     property bool   _keepMapCenteredOnVehicle:  _flyViewSettings.keepMapCenteredOnVehicle.rawValue
-    property bool   _showGPSrawTrajectory:      QGroundControl.settingsManager.foxFourSettings.showGPSTrajectory.rawValue
+    property var    _foxFourSettings:           QGroundControl.settingsManager.foxFourSettings
+    property bool   _disableVehicleTracking:    _foxFourSettings.disableVehicleTracking.rawValue
+    property bool   _showGPSrawTrajectory:      _foxFourSettings.showGPSTrajectory.rawValue
 
-    property bool   _disableVehicleTracking:    false
+    property bool   _vehicleTracking:           true
     property bool   _keepVehicleCentered:       pipMode ? true : false
     property bool   _saveZoomLevelSetting:      true
 
@@ -54,6 +56,15 @@ FlightMap {
     }
 
     onPipModeChanged: _adjustMapZoomForPipMode()
+
+    QGCButton {
+        anchors.verticalCenter:parent.verticalCenter
+        anchors.left: parent.left
+        anchors.leftMargin: ScreenTools.defaultFontPixelWidth
+        text: qsTr("Go to Vehicle")
+        visible: _activeVehicle && recenterNeeded() && _disableVehicleTracking
+        onClicked: moveMapToVehicle()
+    }
 
     onVisibleChanged: {
         if (visible) {
@@ -72,7 +83,7 @@ FlightMap {
     }
 
     // We track whether the user has panned or not to correctly handle automatic map positioning
-    onMapPanStart:  _disableVehicleTracking = true
+    onMapPanStart:  _vehicleTracking = false
     onMapPanStop:   panRecenterTimer.restart()
 
     function pointInRect(point, rect) {
@@ -159,31 +170,35 @@ FlightMap {
         return false
     }
 
-    function updateMapToVehiclePosition() {
+    function moveMapToVehicle() {
         if (animateLat.running || animateLong.running) {
             return
         }
-        // We let FlightMap handle first vehicle position
-        if (!_keepMapCenteredOnVehicle && firstVehiclePositionReceived && _activeVehicleCoordinate.isValid && !_disableVehicleTracking) {
-            if (_keepVehicleCentered) {
-                _root.center = _activeVehicleCoordinate
-            } else {
-                if (firstVehiclePositionReceived && recenterNeeded()) {
-                    // Move the map such that the vehicle is centered within the inset area
-                    var vehiclePoint = _root.fromCoordinate(_activeVehicleCoordinate, false /* clipToViewport */)
-                    var centerInsetRect = _insetCenterRect()
-                    var centerInsetPoint = Qt.point(centerInsetRect.x + centerInsetRect.width / 2, centerInsetRect.y + centerInsetRect.height / 2)
-                    var centerOffset = Qt.point((_root.width / 2) - centerInsetPoint.x, (_root.height / 2) - centerInsetPoint.y)
-                    var vehicleOffsetPoint = Qt.point(vehiclePoint.x + centerOffset.x, vehiclePoint.y + centerOffset.y)
-                    var vehicleOffsetCoord = _root.toCoordinate(vehicleOffsetPoint, false /* clipToViewport */)
-                    animatedMapRecenter(_root.center, vehicleOffsetCoord)
-                }
+        if (_keepVehicleCentered) {
+            _root.center = _activeVehicleCoordinate
+        } else {
+            if (firstVehiclePositionReceived && recenterNeeded()) {
+                // Move the map such that the vehicle is centered within the inset area
+                var vehiclePoint = _root.fromCoordinate(_activeVehicleCoordinate, false /* clipToViewport */)
+                var centerInsetRect = _insetCenterRect()
+                var centerInsetPoint = Qt.point(centerInsetRect.x + centerInsetRect.width / 2, centerInsetRect.y + centerInsetRect.height / 2)
+                var centerOffset = Qt.point((_root.width / 2) - centerInsetPoint.x, (_root.height / 2) - centerInsetPoint.y)
+                var vehicleOffsetPoint = Qt.point(vehiclePoint.x + centerOffset.x, vehiclePoint.y + centerOffset.y)
+                var vehicleOffsetCoord = _root.toCoordinate(vehicleOffsetPoint, false /* clipToViewport */)
+                animatedMapRecenter(_root.center, vehicleOffsetCoord)
             }
         }
     }
 
+    function updateMapToVehiclePosition() {
+        // We let FlightMap handle first vehicle position
+        if (!_keepMapCenteredOnVehicle && firstVehiclePositionReceived && _activeVehicleCoordinate.isValid && _vehicleTracking && !_disableVehicleTracking) {
+            moveMapToVehicle();
+        }
+    }
+
     on_ActiveVehicleCoordinateChanged: {
-        if (_keepMapCenteredOnVehicle && _activeVehicleCoordinate.isValid && !_disableVehicleTracking) {
+        if (_keepMapCenteredOnVehicle && _activeVehicleCoordinate.isValid && _vehicleTracking) {
             _root.center = _activeVehicleCoordinate
         }
     }
@@ -199,7 +214,7 @@ FlightMap {
         interval:   10000
         running:    false
         onTriggered: {
-            _disableVehicleTracking = false
+            _vehicleTracking = true
             updateMapToVehiclePosition()
         }
     }
@@ -374,6 +389,8 @@ FlightMap {
     CustomMapItems {
         map:            _root
         largeMapView:   !pipMode
+
+
     }
 
     GeoFenceMapVisuals {
