@@ -65,7 +65,7 @@ jobs:
             arch: win64_msvc2022_64
             package: QGroundControl-installer-AMD64
             gstreamer: true
-            
+
     defaults:
       run:
         shell: cmd
@@ -88,6 +88,14 @@ jobs:
         with:
           fetch-depth: ${{ github.event_name == 'pull_request' && 1 || 0 }}
           persist-credentials: false
+
+      - name: Install GDAL
+        uses: ./.github/actions/install-dependencies
+        with:
+          gstreamer: 'false'
+          msvc: 'false'
+          msvc-arm64: 'false'
+          nsis: 'false'
 
       - name: Install Visual Studio Build Tools
         if: github.repository_owner == 'mavlink' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && matrix.variant != 'arm64'

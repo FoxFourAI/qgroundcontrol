@@ -38,7 +38,9 @@ DEBIAN_PACKAGES: dict[str, list[str]] = {
         "valgrind",
         "wget",
         "zsync",
-        "gdal"
+        "gdal-bin",
+        "libgdal-dev",
+        "python3-gdal"
     ],
     "qt": [
         "libatspi2.0-dev",
@@ -221,7 +223,9 @@ FEDORA_PACKAGES: dict[str, list[str]] = {
         "valgrind",
         "wget",
         "zsync",
-        "gdal"
+        "gdal",
+        "gdal-devel",
+        "gdal-libs"
     ],
     "qt": [
         "at-spi2-core-devel",
