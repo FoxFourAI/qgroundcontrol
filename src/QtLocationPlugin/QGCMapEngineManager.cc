@@ -438,12 +438,12 @@ bool QGCMapEngineManager::exportSets(const QString &path)
 //FoxFour part
 bool QGCMapEngineManager::exportSetAsMRF(const QString &path)
 {
+
     setImportAction(ImportAction::ActionNone);
 
     if (path.isEmpty()) {
         return false;
     }
-
     QList<TileSetRecord> records;
 
     for (qsizetype i = 0; i < _tileSets->count(); i++) {

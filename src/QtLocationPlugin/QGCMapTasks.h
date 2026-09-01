@@ -345,7 +345,7 @@ class QGCExportMRFTileTask : public QGCMapTask
 
 public:
     explicit QGCExportMRFTileTask(const QList<TileSetRecord> &sets, const QString &path, QObject *parent = nullptr)
-        : QGCMapTask(TaskType::taskExport, parent)
+        : QGCMapTask(TaskType::taskExportMRF, parent)
           , m_sets(sets)
           , m_path(path)
     {}

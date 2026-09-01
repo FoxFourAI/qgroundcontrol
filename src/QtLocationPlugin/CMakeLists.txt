@@ -54,6 +54,9 @@ qt_add_plugin(QGCLocation
     QGeoTiledMapQGC.h
     QGeoTileFetcherQGC.cpp
     QGeoTileFetcherQGC.h
+    #FoxFour part
+    MrfExport/MrfExport.h
+    MrfExport/MrfExport.cpp
 )
 
 if(IOS)

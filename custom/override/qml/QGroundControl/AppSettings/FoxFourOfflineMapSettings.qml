@@ -104,16 +104,15 @@ Item {
     QGCFileDialog {
         id:             fileDialog
         folder:         _appSettings.missionSavePath
-        nameFilters:    [ qsTr("Tile Sets (*.%1)").arg(defaultSuffix), qsTr("MRF tile set (*.mrf)")]
+        nameFilters:    [ qsTr("Tile Sets (*.%1)").arg(_appSettings.tilesetFileExtension), qsTr("MRF tile set (*.mrf)")]
         defaultSuffix:  {
             const ext = selectedNameFilter.extensions
-            return (ext.length > 0 && ext[0] !== "*") ? ext[0] : _appSettings.tilesetFileExtension
+            return ext[0]
         }
 
         onAcceptedForSave: (file) => {
             close()
-            console.log(file)
-            if (file.includes(".mrf")) {
+            if (file.endsWith(".mrf")) {
                 _mapEngineManager.exportSetAsMRF(file)
             } else {
                 _mapEngineManager.exportSets(file)

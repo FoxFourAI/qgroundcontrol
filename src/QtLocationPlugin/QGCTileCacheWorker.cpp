@@ -477,7 +477,7 @@ void QGCCacheWorker::_exportSetAsMRF(QGCMapTask *mtask)
         return;
     }
 
-    QGCExportTileTask *task = static_cast<QGCExportTileTask*>(mtask);
+    QGCExportMRFTileTask *task = static_cast<QGCExportMRFTileTask*>(mtask);
 
     auto progress = [task](int pct) { task->setProgress(pct); };
     DatabaseResult result = _database->exportSetsAsMRF(task->sets(), task->path(), progress);
