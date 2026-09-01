@@ -163,11 +163,6 @@ endif()
 # Custom Build Configuration
 # ============================================================================
 
-#GDAL pacakge
-find_package(GDAL CONFIG REQUIRED)
-
-target_link_libraries(FoxFourModule PUBLIC GDAL::GDAL)
-
 
 # Custom libraries to link
 set(CUSTOM_LIBRARIES

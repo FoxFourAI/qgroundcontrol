@@ -63,6 +63,9 @@ if(IOS)
     target_compile_definitions(QGCLocation PRIVATE QGC_NO_GOOGLE_MAPS)
 endif()
 
+#GDAL pacakge
+find_package(GDAL CONFIG REQUIRED)
+
 target_link_libraries(QGCLocation
     PRIVATE
         Qt6::Positioning
@@ -77,6 +80,7 @@ target_link_libraries(QGCLocation
         Qt6::Location
         Qt6::LocationPrivate
         Qt6::Network
+        GDAL::GDAL
 )
 
 target_include_directories(QGCLocation
