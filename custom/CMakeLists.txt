@@ -186,7 +186,7 @@ set(CUSTOM_INCLUDE_DIRECTORIES
 if(GIT_FOUND)
     # Get the current Git tag
     execute_process(
-        COMMAND ${GIT_EXECUTABLE} tag --sort=-version:refname
+        COMMAND ${GIT_EXECUTABLE} tag --sort=-authordate
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         OUTPUT_VARIABLE GIT_ALL_TAGS
         OUTPUT_STRIP_TRAILING_WHITESPACE
