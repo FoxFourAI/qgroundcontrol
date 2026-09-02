@@ -65,18 +65,18 @@ endif()
 
 #FoxFour part --- Find GDAL cross-platform fallback logic ---
 # First, look for the modern Config mode provided by up-to-date GDAL installations
-find_package(GDAL CONFIG QUIET)
+find_package(GDAL CONFIG REQUIRED)
 
 if(NOT GDAL_FOUND)
     # Fallback to the classic built-in CMake find module (standard on older Linux setups)
-    find_package(GDAL REQUIRED)
+    find_package(GDAL )
 endif()
 
 # Create a unified target wrapper if the modern target 'GDAL::GDAL' isn't explicitly defined
 if(NOT TARGET GDAL::GDAL)
     add_library(GDAL::GDAL INTERFACE IMPORTED)
-    target_include_directories(GDAL::GDAL INTERFACE ${GDAL_INCLUDES})
-    target_link_libraries(GDAL::GDAL INTERFACE ${GDAL_LIBS})
+    target_include_directories(GDAL::GDAL INTERFACE ${GDAL_INCLUDE_DIR})
+    target_link_libraries(GDAL::GDAL INTERFACE ${GDAL_LIBRARY})
 endif()
 
 

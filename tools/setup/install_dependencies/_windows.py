@@ -43,6 +43,7 @@ def install_windows_gdal(dry_run: bool = False) -> bool:
     def _export_env() -> None:
         _c.set_env_var("GDAL_LIBRARY", f"{install_dir}\\lib")
         _c.set_env_var("GDAL_INCLUDE_DIR", f"{install_dir}\\include")
+        _c.set_env_var("OSGEO4W_ROOT", install_dir)
         _c.add_to_path(f"{install_dir}\\bin")
 
     if (root / "bin" / "gdalinfo.exe").exists() and (root / "include" / "gdal.h").exists():
