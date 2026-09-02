@@ -28,7 +28,7 @@ WINDOWS_GDAL_INSTALL_DIR = "C:\\OSGeo4W"
 WINDOWS_GDAL_SETUP_URL = "https://download.osgeo.org/osgeo4w/v2/osgeo4w-setup.exe"
 WINDOWS_GDAL_SITE = "https://download.osgeo.org/osgeo4w/v2/"
 # gdal-dev pulls in the runtime (gdal), headers and .lib; proj/geos come in as deps.
-WINDOWS_GDAL_PACKAGES = "gdal-dev"
+WINDOWS_GDAL_PACKAGES = "gdal-devel"
 
 def install_windows_gdal(dry_run: bool = False) -> bool:
     """Install GDAL on Windows via the OSGeo4W unattended installer."""
@@ -41,10 +41,8 @@ def install_windows_gdal(dry_run: bool = False) -> bool:
     root = Path(install_dir)
 
     def _export_env() -> None:
-        _c.set_env_var("GDAL_ROOT", install_dir)
-        _c.set_env_var("GDAL_DIR", install_dir)
-        _c.set_env_var("GDAL_DATA", f"{install_dir}\\share\\gdal")
-        _c.set_env_var("PROJ_LIB", f"{install_dir}\\share\\proj")
+        _c.set_env_var("GDAL_LIBRARY", f"{install_dir}\\lib")
+        _c.set_env_var("GDAL_INCLUDE_DIR", f"{install_dir}\\include")
         _c.add_to_path(f"{install_dir}\\bin")
 
     if (root / "bin" / "gdalinfo.exe").exists() and (root / "include" / "gdal.h").exists():

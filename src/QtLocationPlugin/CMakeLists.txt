@@ -63,8 +63,22 @@ if(IOS)
     target_compile_definitions(QGCLocation PRIVATE QGC_NO_GOOGLE_MAPS)
 endif()
 
-#GDAL pacakge
-find_package(GDAL CONFIG REQUIRED)
+#FoxFour part --- Find GDAL cross-platform fallback logic ---
+# First, look for the modern Config mode provided by up-to-date GDAL installations
+find_package(GDAL CONFIG QUIET)
+
+if(NOT GDAL_FOUND)
+    # Fallback to the classic built-in CMake find module (standard on older Linux setups)
+    find_package(GDAL REQUIRED)
+endif()
+
+# Create a unified target wrapper if the modern target 'GDAL::GDAL' isn't explicitly defined
+if(NOT TARGET GDAL::GDAL)
+    add_library(GDAL::GDAL INTERFACE IMPORTED)
+    target_include_directories(GDAL::GDAL INTERFACE ${GDAL_INCLUDES})
+    target_link_libraries(GDAL::GDAL INTERFACE ${GDAL_LIBS})
+endif()
+
 
 target_link_libraries(QGCLocation
     PRIVATE
@@ -80,6 +94,7 @@ target_link_libraries(QGCLocation
         Qt6::Location
         Qt6::LocationPrivate
         Qt6::Network
+        #FoxFour part
         GDAL::GDAL
 )
 
