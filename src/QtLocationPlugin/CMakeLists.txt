@@ -79,7 +79,6 @@ if(NOT TARGET GDAL::GDAL)
     target_link_libraries(GDAL::GDAL INTERFACE ${GDAL_LIBRARY})
 endif()
 
-
 target_link_libraries(QGCLocation
     PRIVATE
         Qt6::Positioning
@@ -132,3 +131,45 @@ qt_add_resources(${CMAKE_PROJECT_NAME} qtlocationplugin_resources
     FILES
         "${CMAKE_SOURCE_DIR}/resources/notile.png"
 )
+
+# Copy dependencies for windows
+if(WIN32)
+    if(NOT DEFINED ENV{OSGEO4W_ROOT})
+    message(FATAL_ERROR "OSGEO4W_ROOT environment variable is not set")
+endif()
+
+file(TO_CMAKE_PATH "$ENV{OSGEO4W_ROOT}/bin" OSGEO_BIN_DIR)
+
+file(GLOB OSGEO_DLLS
+    "${OSGEO_BIN_DIR}/*.dll"
+)
+
+if(NOT OSGEO_DLLS)
+    message(WARNING "No OSGeo4W DLLs matched in ${OSGEO_BIN_DIR}")
+endif()
+
+set_property(GLOBAL PROPERTY OSGEO_DLL_LIST "${OSGEO_DLLS}")
+cmake_language(DEFER DIRECTORY "${CMAKE_SOURCE_DIR}" CALL _stage_gdal_dlls)
+# Due to not having the QGroundControl target right now, and we need to override the GStreamers dlls with our own,
+# trigger the code on directory itself
+function(_stage_gdal_dlls)
+    if(NOT TARGET ${CMAKE_PROJECT_NAME})
+        message(WARNING "QGroundControl target not found; skipping GDAL DLL override")
+        return()
+    endif()
+    get_property(dlls GLOBAL PROPERTY OSGEO_DLL_LIST)
+    if(NOT dlls)
+        message(WARNING "OSGEO_DLL_LIST is empty; skipping GDAL DLL override")
+        return()
+    endif()
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${dlls} "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>"
+        COMMENT "Overriding GStreamer DLLs with OSGeo4W versions"
+        VERBATIM)
+endfunction()
+
+install(FILES ${OSGEO_DLLS}
+    DESTINATION "${CMAKE_INSTALL_BINDIR}")
+
+endif()

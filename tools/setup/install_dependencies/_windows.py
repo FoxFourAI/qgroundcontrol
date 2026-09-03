@@ -24,7 +24,7 @@ WINDOWS_NSIS_URL = (
     f"https://downloads.sourceforge.net/project/nsis/NSIS%203/{WINDOWS_NSIS_VERSION}/"
     f"nsis-{WINDOWS_NSIS_VERSION}-setup.exe"
 )
-WINDOWS_GDAL_INSTALL_DIR = "C:\\OSGeo4W"
+WINDOWS_GDAL_INSTALL_DIR = "C:/OSGeo4W"
 WINDOWS_GDAL_SETUP_URL = "https://download.osgeo.org/osgeo4w/v2/osgeo4w-setup.exe"
 WINDOWS_GDAL_SITE = "https://download.osgeo.org/osgeo4w/v2/"
 # gdal-dev pulls in the runtime (gdal), headers and .lib; proj/geos come in as deps.
