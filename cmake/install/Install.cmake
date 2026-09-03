@@ -238,24 +238,24 @@ elseif(MACOS)
     install(CODE "set(QGC_STAGING_BUNDLE_PATH \"${CMAKE_BINARY_DIR}/staging/${CMAKE_PROJECT_NAME}.app\")")
 
     # Code signing
-    option(QGC_MACOS_SIGN_WITH_IDENTITY "Sign macOS bundle with developer identity (requires signing env vars)" OFF)
-    if(QGC_MACOS_SIGN_WITH_IDENTITY)
-        message(STATUS "QGC: macOS bundle will be signed with developer identity")
-        install(SCRIPT "${CMAKE_SOURCE_DIR}/cmake/install/SignMacBundle.cmake")
-    else()
-        message(STATUS "QGC: macOS bundle will be signed with ad-hoc signature")
-        install(CODE "
-            message(STATUS \"QGC: Signing macOS bundle (ad-hoc)\")
-            execute_process(
-                COMMAND codesign --deep --force -s - \"\${QGC_STAGING_BUNDLE_PATH}\"
-                COMMAND_ERROR_IS_FATAL ANY
-            )
-            execute_process(
-                COMMAND codesign --verify --deep --verbose=2 \"\${QGC_STAGING_BUNDLE_PATH}\"
-                COMMAND_ERROR_IS_FATAL ANY
-            )
-        ")
-    endif()
+    # option(QGC_MACOS_SIGN_WITH_IDENTITY "Sign macOS bundle with developer identity (requires signing env vars)" OFF)
+    # if(QGC_MACOS_SIGN_WITH_IDENTITY)
+    #     message(STATUS "QGC: macOS bundle will be signed with developer identity")
+    #     install(SCRIPT "${CMAKE_SOURCE_DIR}/cmake/install/SignMacBundle.cmake")
+    # else()
+    message(STATUS "QGC: macOS bundle will be signed with ad-hoc signature")
+    install(CODE "
+        message(STATUS \"QGC: Signing macOS bundle (ad-hoc)\")
+        execute_process(
+            COMMAND codesign --deep --force -s - \"\${QGC_STAGING_BUNDLE_PATH}\"
+            COMMAND_ERROR_IS_FATAL ANY
+        )
+        execute_process(
+            COMMAND codesign --verify --deep --verbose=2 \"\${QGC_STAGING_BUNDLE_PATH}\"
+            COMMAND_ERROR_IS_FATAL ANY
+        )
+    ")
+    # endif()
 
     find_program(CREATE_DMG_PROGRAM create-dmg)
     if(NOT CREATE_DMG_PROGRAM)
