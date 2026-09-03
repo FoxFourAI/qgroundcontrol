@@ -100,12 +100,12 @@ jobs:
           binary-path: ${{ runner.temp }}/build/${{ matrix.build_type }}/QGroundControl.app/Contents/MacOS/QGroundControl
           build-dir: ${{ runner.temp }}/build
 
-      - name: Import Code Signing Certificate
-        if: github.event_name != 'pull_request'
-        uses: apple-actions/import-codesign-certs@v7
-        with:
-          p12-file-base64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
-          p12-password: ${{ secrets.MACOS_CERT_P12_PASSWORD }}
+      # - name: Import Code Signing Certificate
+      #   if: github.event_name != 'pull_request'
+      #   uses: apple-actions/import-codesign-certs@v7
+      #   with:
+      #     p12-file-base64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+      #     p12-password: ${{ secrets.MACOS_CERT_P12_PASSWORD }}
 
       # PRs configure with QGC_MACOS_SIGN_WITH_IDENTITY=OFF, so the signing env vars are unused there — leaving them resolved-but-empty is harmless and lets us avoid duplicating the install step.
       - name: Create app bundle
