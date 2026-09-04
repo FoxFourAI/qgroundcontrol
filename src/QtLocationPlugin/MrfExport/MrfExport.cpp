@@ -100,12 +100,12 @@ bool MrfGridWriter::SQLParseTileHash(const QString& hash, int& x, int& y, int& z
     return x < span && y < span;
 }
 
-bool MrfGridWriter::begin(const QString& basePath, int zoom, int x0, int y0, int nx, int ny)
+bool MrfGridWriter::begin(const QString& basePath, int zoom, const QRect &area)
 {
-    _x0 = x0;
-    _y0 = y0;
-    _nx = nx;
-    _ny = ny;
+    _x0 = area.topLeft().x();
+    _y0 = area.topLeft().y();
+    _nx = area.width();
+    _ny = area.height();
 
     GDALDriver* drv = GetGDALDriverManager()->GetDriverByName("MRF");
     if (drv == nullptr) {
@@ -120,7 +120,7 @@ bool MrfGridWriter::begin(const QString& basePath, int zoom, int x0, int y0, int
     co = CSLSetNameValue(co, "PHOTOMETRIC", "YCC");
 
     const QByteArray path = (basePath + QStringLiteral(".mrf")).toUtf8();
-    _ds = drv->Create(path.constData(), nx * kTileSize, ny * kTileSize, 3, GDT_Byte, co);
+    _ds = drv->Create(path.constData(), _nx * kTileSize, _ny * kTileSize, 3, GDT_Byte, co);
     CSLDestroy(co);
     if (_ds == nullptr) {
         return false;
@@ -133,7 +133,7 @@ bool MrfGridWriter::begin(const QString& basePath, int zoom, int x0, int y0, int
 
     // North-up, square pixels: the only shape get_tile()'s gt[0],[1],[3],[5] math handles.
     const double res = 2.0 * kHalf / (kTileSize * std::pow(2.0, zoom));
-    double gt[6] = {-kHalf + x0 * res * kTileSize, res, 0.0, kHalf - y0 * res * kTileSize, 0.0, -res};
+    double gt[6] = {-kHalf + _x0 * res * kTileSize, res, 0.0, kHalf - _y0 * res * kTileSize, 0.0, -res};
     return _ds->SetGeoTransform(gt) == CE_None;
 }
 

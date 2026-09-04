@@ -12,7 +12,7 @@
 
 #include <atomic>
 
-//FoxFour part
+// FoxFour part
 #include "MrfExport/MrfExport.h"
 
 #include "QGCCacheTile.h"
@@ -30,6 +30,8 @@ QGCTileCacheDatabase::QGCTileCacheDatabase(const QString &databasePath)
     : _databasePath(databasePath)
     , _connectionName(QStringLiteral("QGCTileCache_%1").arg(s_connectionCounter.fetch_add(1)))
 {
+    //FoxFour part
+    GDALAllRegister();
 }
 
 QGCTileCacheDatabase::~QGCTileCacheDatabase()
@@ -1207,11 +1209,23 @@ DatabaseResult QGCTileCacheDatabase::exportSets(const QList<TileSetRecord> &sets
     return result;
 }
 
-//FoxFour part
+// FoxFour part
 DatabaseResult QGCTileCacheDatabase::exportSetsAsMRF(const QList<TileSetRecord>& sets, const QString& path,
                                                      ProgressCallback progressCb)
 {
-    const int maxFillDepth = 8;
+    /*Export provided datasets as mrf.
+     *QGC stores tiles in the SQLite db in next tables:
+     * - TileSets (setID, name, typeStr, topLeftLat, topLeftLon, bottomRightLat, bottomRightLat, minZoom, maxZoom, type,
+     * numTiles ...)
+     * - Tiles (tileID, hash, format, tile(QByteArray), size(bytes) ...)
+     * - SetTiles (setID, tileID)
+     *So the algorythms of exporting tiles is:
+     *   For each set :
+     *     - get all tiles from Tiles by tileID provided by SetTiles
+     *     - recalculate hashes to the coordinate
+     *     - convert to the RGB format and provide image with coordinates to gdal
+     */
+
     DatabaseResult result;
     if (!_ensureConnected()) {
         result.errorString = "Database not connected";
@@ -1221,218 +1235,69 @@ DatabaseResult QGCTileCacheDatabase::exportSetsAsMRF(const QList<TileSetRecord>&
         result.errorString = "No tile sets selected for export";
         return result;
     }
-
-    GDALAllRegister();
-
-    // Pack (z,x,y) into one key so tiles can be looked up by grid position.
-    const auto gridKey = [](int z, int x, int y) -> quint64 {
-        return (static_cast<quint64>(z) << 58) | (static_cast<quint64>(x) << 29) | static_cast<quint64>(y);
-    };
-
-    quint64 currentCount = 0, totalPages = 0;
-    int lastProgress = -1;
-
-    // ---- pass 1: read the stored hashes, recover the grid, size up the work
-    struct Plan
-    {
-        const TileSetRecord* set = nullptr;
-        QHash<quint64, QString> hashes;  // grid position -> the DB's own hash
-        int z = 0, x0 = 0, y0 = 0, nx = 0, ny = 0;
-    };
-
-    QVector<Plan> plans;
-
+    bool success = false;
+    double progress = 0;
+    double setWeight = 100. / sets.count();
     for (const auto& set : sets) {
-        QSqlQuery hashQuery(_database());
-        hashQuery.setForwardOnly(true);
-        if (!hashQuery.prepare("SELECT T.hash FROM Tiles T "
-                               "INNER JOIN SetTiles S ON T.tileID = S.tileID "
-                               "WHERE S.setID = ?")) {
-            qCWarning(QGCTileCacheDatabaseLog) << "Failed to prepare hash query for" << set.name;
-            continue;
-        }
-        hashQuery.addBindValue(set.setID);
-        if (!hashQuery.exec()) {
-            qCWarning(QGCTileCacheDatabaseLog) << "Failed to query hashes for" << set.name;
-            continue;
-        }
+        double tileWeigth = setWeight / set.numTiles;
 
-        Plan plan;
-        plan.set = &set;
-        quint64 total = 0, unparsed = 0;
-        int maxZoom = -1;
+        // Calcualting tiles area
+        QPoint topLeft(MrfGridWriter::long2tileX(set.topleftLon, set.maxZoom),
+                       MrfGridWriter::lat2tileY(set.topleftLat, set.maxZoom)),
+            bottomRight(MrfGridWriter::long2tileX(set.bottomRightLon, set.maxZoom),
+                        MrfGridWriter::lat2tileY(set.bottomRightLat, set.maxZoom));
+        QRect tilesArea(topLeft, bottomRight);
 
-        while (hashQuery.next()) {
-            const QString hash = hashQuery.value(0).toString();
-            int x = 0, y = 0, z = 0;
-            total++;
-            if (!MrfGridWriter::SQLParseTileHash(hash, x, y, z)) {
-                unparsed++;
-                continue;
-            }
-            plan.hashes.insert(gridKey(z, x, y), hash);
-            maxZoom = qMax(maxZoom, z);
-        }
-
-        if (total == 0) {
-            qCWarning(QGCTileCacheDatabaseLog) << "Tile set" << set.name << "is empty";
-            continue;
-        }
-        // If the hash layout assumption is wrong, almost nothing parses. Fail loudly
-        // rather than writing a raster full of misplaced tiles.
-        if (unparsed * 2 > total) {
-            result.errorString = QStringLiteral(
-                                     "Unrecognized tile hash format (%1 of %2 unparsable) - "
-                                     "check qgcParseTileHash against QGCMapEngine::getTileHash")
-                                     .arg(unparsed)
-                                     .arg(total);
-            return result;
-        }
-        if (unparsed > 0) {
-            qCWarning(QGCTileCacheDatabaseLog) << "Skipped" << unparsed << "unparsable hashes in" << set.name;
-        }
-
-        // Grid extent from the tiles actually cached at the deepest zoom present.
-        plan.z = maxZoom;
-        int minX = std::numeric_limits<int>::max(), minY = std::numeric_limits<int>::max();
-        int maxX = std::numeric_limits<int>::min(), maxY = std::numeric_limits<int>::min();
-        for (auto it = plan.hashes.cbegin(); it != plan.hashes.cend(); ++it) {
-            const quint64 k = it.key();
-            if (static_cast<int>(k >> 58) != plan.z)
-                continue;
-            const int x = static_cast<int>((k >> 29) & 0x1FFFFFFFULL);
-            const int y = static_cast<int>(k & 0x1FFFFFFFULL);
-            minX = qMin(minX, x);
-            maxX = qMax(maxX, x);
-            minY = qMin(minY, y);
-            maxY = qMax(maxY, y);
-        }
-        if (minX > maxX || minY > maxY) {
-            qCWarning(QGCTileCacheDatabaseLog) << "No tiles at zoom" << plan.z << "in" << set.name;
-            continue;
-        }
-        plan.x0 = minX;
-        plan.y0 = minY;
-        plan.nx = maxX - minX + 1;
-        plan.ny = maxY - minY + 1;
-
-        totalPages += static_cast<quint64>(plan.nx) * plan.ny;
-        plans.append(plan);
-    }
-
-    if (plans.isEmpty()) {
-        result.errorString = "Nothing to export";
-        return result;
-    }
-    if (totalPages == 0) {
-        totalPages = 1;
-    }
-
-    // ---- pass 2: fetch each blob by its stored hash and hand it to GDAL
-    for (const auto& plan : plans) {
-        const TileSetRecord& set = *plan.set;
-
-        QString basePath = (plans.size() > 1) ? QStringLiteral("%1_%2").arg(path, set.name) : path;
+        // Prepearing mrf writer
+        MrfGridWriter writer;
+        QString basePath = QStringLiteral("%1_%2").arg(path, set.name);
         basePath = basePath.mid(0, basePath.lastIndexOf('.'));  // trunk the extention of the file
 
-        MrfGridWriter mrf;
-        if (!mrf.begin(basePath, plan.z, plan.x0, plan.y0, plan.nx, plan.ny)) {
+        if (!writer.begin(basePath, set.maxZoom, tilesArea)) {
             result.errorString = "Error creating MRF for " + set.name;
-            break;
-        }
-        qCDebug(QGCTileCacheDatabaseLog) << "MRF export" << basePath << "z" << plan.z
-                                         << QStringLiteral("%1x%2 tiles").arg(plan.nx).arg(plan.ny)
-                                         << QStringLiteral("%1x%2 px")
-                                                .arg(plan.nx * MrfGridWriter::kTileSize)
-                                                .arg(plan.ny * MrfGridWriter::kTileSize);
-
-        QSqlQuery tileQuery(_database());
-        tileQuery.setForwardOnly(true);
-        if (!tileQuery.prepare("SELECT tile FROM Tiles WHERE hash = ?")) {
-            result.errorString = "Error preparing MRF tile query";
-            break;
+            return result;
         }
 
-        const auto fetchBlob = [&](const QString& hash) -> QByteArray {
-            tileQuery.addBindValue(hash);
-            QByteArray img;
-            if (tileQuery.exec() && tileQuery.next()) {
-                img = tileQuery.value(0).toByteArray();
+        // Prepearing the tiles table for each set.
+        QSqlQuery tilesQuery(_database());
+        tilesQuery.setForwardOnly(true);
+        if (!tilesQuery.prepare("SELECT T.hash, T.tile FROM Tiles T "
+                                "INNER JOIN SetTiles S ON T.tileID = S.tileID WHERE S.setID = ?")) {
+            qCWarning(QGCTileCacheDatabaseLog) << "Failed to prepare tile query for export set" << set.name;
+            continue;
+        }
+        tilesQuery.addBindValue(set.setID);
+        if (!tilesQuery.exec()) {
+            qCWarning(QGCTileCacheDatabaseLog) << "Failed to query tiles for export set" << set.name;
+            continue;
+        }
+
+        // Going throungh all tiles that are in a set
+        while (tilesQuery.next()) {
+            QString hash = tilesQuery.value(0).toString();
+            int x, y, z;
+            if (!MrfGridWriter::SQLParseTileHash(hash, x, y, z)) {
+                continue;
             }
-            tileQuery.finish();
-            return img;
-        };
+            // ignoring all zooms except the max one
+            if (z != set.maxZoom) {
+                continue;
+            }
+            QByteArray rgb;
+            if (!MrfGridWriter::SQLTileToRGB(tilesQuery.value(1).toByteArray(), rgb)) {
+                continue;
+            }
+            writer.writeTile(x, y, rgb);
+            progress += tileWeigth;
 
-        quint64 written = 0, backfilled = 0, absent = 0;
-        QByteArray rgb;
-
-        for (int row = 0; row < plan.ny; ++row) {
-            for (int col = 0; col < plan.nx; ++col) {
-                const int x = plan.x0 + col, y = plan.y0 + row;
-                bool done = false;
-
-                const QString hash = plan.hashes.value(gridKey(plan.z, x, y));
-                if (!hash.isEmpty()) {
-                    const QByteArray img = fetchBlob(hash);
-                    if (!img.isEmpty() && MrfGridWriter::SQLTileToRGB(img, rgb) && mrf.writeTile(x, y, rgb)) {
-                        written++;
-                        done = true;
-                    }
-                }
-
-                // Gap at the export zoom: upsample the covering parent tile so the
-                // reader gets blurry imagery instead of a black square.
-                if (!done) {
-                    for (int d = 1; d <= maxFillDepth && plan.z - d >= 0; ++d) {
-                        const QString ph = plan.hashes.value(gridKey(plan.z - d, x >> d, y >> d));
-                        if (ph.isEmpty()) {
-                            continue;
-                        }
-                        const QByteArray parent = fetchBlob(ph);
-                        if (parent.isEmpty()) {
-                            continue;
-                        }
-                        const int sub = MrfGridWriter::kTileSize >> d;  // sub-window size
-                        const int sx = (x & ((1 << d) - 1)) * sub;
-                        const int sy = (y & ((1 << d) - 1)) * sub;
-                        if (MrfGridWriter::SQLTileToRGB(parent, rgb, sx, sy, sub, sub) && mrf.writeTile(x, y, rgb)) {
-                            backfilled++;
-                            done = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (!done) {
-                    absent++;  // page left unwritten -> sparse, reads back as 0,0,0
-                }
-
-                currentCount++;
-                if (progressCb) {
-                    const int progress =
-                        qMin(100, static_cast<int>(
-                                      (static_cast<double>(currentCount) / static_cast<double>(totalPages)) * 100.0));
-                    if (lastProgress != progress) {
-                        lastProgress = progress;
-                        progressCb(progress);
-                    }
-                }
+            if (progressCb) {
+                progressCb(progress);
             }
         }
-
-        if (!mrf.finish()) {
-            result.errorString = "Error finalizing MRF for " + set.name;
-            break;
-        }
-        qCDebug(QGCTileCacheDatabaseLog) << "MRF export" << set.name << ": wrote" << written << "tiles," << backfilled
-                                         << "backfilled," << absent << "absent";
-        if (absent > 0) {
-            qCWarning(QGCTileCacheDatabaseLog)
-                << absent << "tiles missing in" << set.name << "- those areas read black";
-        }
+        writer.finish();
+        success |= true;
     }
-
-    result.success = result.errorString.isEmpty();
+    result.success = success;
     return result;
 }
 
