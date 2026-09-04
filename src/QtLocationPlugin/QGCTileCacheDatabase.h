@@ -63,6 +63,9 @@ public:
     DatabaseResult importSetsMerge(const QString &path, ProgressCallback progressCb);
     DatabaseResult exportSets(const QList<TileSetRecord> &sets, const QString &path, ProgressCallback progressCb);
 
+    // FoxFour part
+    DatabaseResult exportSetsAsMRF(const QList<TileSetRecord> &sets, const QString &path, ProgressCallback progressCb);
+
     // Exposed for unit tests only
     QSqlDatabase database() const;
 

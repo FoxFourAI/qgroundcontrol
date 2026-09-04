@@ -12,6 +12,11 @@
 
 #include <atomic>
 
+// FoxFour part
+#ifndef Q_OS_ANDROID
+#include "MrfExport/MrfExport.h"
+#endif
+
 #include "QGCCacheTile.h"
 #include "QGCLoggingCategory.h"
 #include "QGCMapUrlEngine.h"
@@ -27,6 +32,10 @@ QGCTileCacheDatabase::QGCTileCacheDatabase(const QString &databasePath)
     : _databasePath(databasePath)
     , _connectionName(QStringLiteral("QGCTileCache_%1").arg(s_connectionCounter.fetch_add(1)))
 {
+    //FoxFour part
+#ifndef Q_OS_ANDROID
+    GDALAllRegister();
+#endif
 }
 
 QGCTileCacheDatabase::~QGCTileCacheDatabase()
@@ -1201,6 +1210,100 @@ DatabaseResult QGCTileCacheDatabase::exportSets(const QList<TileSetRecord> &sets
     }
 
     result.success = result.errorString.isEmpty();
+    return result;
+}
+
+// FoxFour part
+DatabaseResult QGCTileCacheDatabase::exportSetsAsMRF(const QList<TileSetRecord>& sets, const QString& path,
+                                                     ProgressCallback progressCb)
+{
+    DatabaseResult result;
+#ifndef Q_OS_ANDROID
+    /*Export provided datasets as mrf.
+     *QGC stores tiles in the SQLite db in next tables:
+     * - TileSets (setID, name, typeStr, topLeftLat, topLeftLon, bottomRightLat, bottomRightLat, minZoom, maxZoom, type,
+     * numTiles ...)
+     * - Tiles (tileID, hash, format, tile(QByteArray), size(bytes) ...)
+     * - SetTiles (setID, tileID)
+     *So the algorythms of exporting tiles is:
+     *   For each set :
+     *     - get all tiles from Tiles by tileID provided by SetTiles
+     *     - recalculate hashes to the coordinate
+     *     - convert to the RGB format and provide image with coordinates to gdal
+     */
+
+    if (!_ensureConnected()) {
+        result.errorString = "Database not connected";
+        return result;
+    }
+    if (sets.isEmpty()) {
+        result.errorString = "No tile sets selected for export";
+        return result;
+    }
+    bool success = false;
+    double progress = 0;
+    double setWeight = 100. / sets.count();
+    for (const auto& set : sets) {
+        double tileWeigth = setWeight / set.numTiles;
+
+        // Calcualting tiles area
+        QPoint topLeft(MrfGridWriter::long2tileX(set.topleftLon, set.maxZoom),
+                       MrfGridWriter::lat2tileY(set.topleftLat, set.maxZoom)),
+            bottomRight(MrfGridWriter::long2tileX(set.bottomRightLon, set.maxZoom),
+                        MrfGridWriter::lat2tileY(set.bottomRightLat, set.maxZoom));
+        QRect tilesArea(topLeft, bottomRight);
+
+        // Prepearing mrf writer
+        MrfGridWriter writer;
+        QString basePath = QStringLiteral("%1_%2").arg(path, set.name);
+        basePath = basePath.mid(0, basePath.lastIndexOf('.'));  // trunk the extention of the file
+
+        if (!writer.begin(basePath, set.maxZoom, tilesArea)) {
+            result.errorString = "Error creating MRF for " + set.name;
+            return result;
+        }
+
+        // Prepearing the tiles table for each set.
+        QSqlQuery tilesQuery(_database());
+        tilesQuery.setForwardOnly(true);
+        if (!tilesQuery.prepare("SELECT T.hash, T.tile FROM Tiles T "
+                                "INNER JOIN SetTiles S ON T.tileID = S.tileID WHERE S.setID = ?")) {
+            qCWarning(QGCTileCacheDatabaseLog) << "Failed to prepare tile query for export set" << set.name;
+            continue;
+        }
+        tilesQuery.addBindValue(set.setID);
+        if (!tilesQuery.exec()) {
+            qCWarning(QGCTileCacheDatabaseLog) << "Failed to query tiles for export set" << set.name;
+            continue;
+        }
+
+        // Going throungh all tiles that are in a set
+        while (tilesQuery.next()) {
+            QString hash = tilesQuery.value(0).toString();
+            int x, y, z;
+            if (!MrfGridWriter::SQLParseTileHash(hash, x, y, z)) {
+                continue;
+            }
+            // ignoring all zooms except the max one
+            if (z != set.maxZoom) {
+                continue;
+            }
+            QByteArray rgb;
+            if (!MrfGridWriter::SQLTileToRGB(tilesQuery.value(1).toByteArray(), rgb)) {
+                continue;
+            }
+            writer.writeTile(x, y, rgb);
+            progress += tileWeigth;
+
+            if (progressCb) {
+                progressCb(progress);
+            }
+        }
+        writer.finish();
+        success |= true;
+    }
+    result.success = success;
+#endif
     return result;
 }
 

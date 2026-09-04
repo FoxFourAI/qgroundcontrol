@@ -24,7 +24,78 @@ WINDOWS_NSIS_URL = (
     f"https://downloads.sourceforge.net/project/nsis/NSIS%203/{WINDOWS_NSIS_VERSION}/"
     f"nsis-{WINDOWS_NSIS_VERSION}-setup.exe"
 )
+WINDOWS_GDAL_INSTALL_DIR = "C:/OSGeo4W"
+WINDOWS_GDAL_SETUP_URL = "https://download.osgeo.org/osgeo4w/v2/osgeo4w-setup.exe"
+WINDOWS_GDAL_SITE = "https://download.osgeo.org/osgeo4w/v2/"
+# gdal-dev pulls in the runtime (gdal), headers and .lib; proj/geos come in as deps.
+WINDOWS_GDAL_PACKAGES = "gdal-devel"
 
+def install_windows_gdal(dry_run: bool = False) -> bool:
+    """Install GDAL on Windows via the OSGeo4W unattended installer."""
+    arch = os.environ.get("PROCESSOR_ARCHITECTURE", "")
+    if arch != "AMD64":
+        _c.log_warn(f"Skipping GDAL: only supported on AMD64 (detected: {arch or 'unknown'})")
+        return True
+
+    install_dir = WINDOWS_GDAL_INSTALL_DIR
+    root = Path(install_dir)
+
+    def _export_env() -> None:
+        _c.set_env_var("GDAL_LIBRARY", f"{install_dir}\\lib")
+        _c.set_env_var("GDAL_INCLUDE_DIR", f"{install_dir}\\include")
+        _c.set_env_var("OSGEO4W_ROOT", install_dir)
+        _c.add_to_path(f"{install_dir}\\bin")
+
+    if (root / "bin" / "gdalinfo.exe").exists() and (root / "include" / "gdal.h").exists():
+        print(f"GDAL already installed at {install_dir}; skipping download+install")
+        _export_env()
+        return True
+
+    print("\nInstalling GDAL (OSGeo4W)...")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        setup = Path(tmpdir) / "osgeo4w-setup.exe"
+        if not _c.download_file(WINDOWS_GDAL_SETUP_URL, setup, dry_run):
+            return False
+
+        # -q unattended, -A advanced (needed for -P), -k/-O pin to the one site,
+        # -n no shortcuts, -r no replace-on-reboot.
+        if not _c.run_command(
+            [
+                str(setup),
+                "-q",
+                "-A",
+                "-k",
+                "-O",
+                "-n",
+                "-r",
+                "-s",
+                WINDOWS_GDAL_SITE,
+                "-P",
+                WINDOWS_GDAL_PACKAGES,
+                "-R",
+                install_dir,
+                "-l",
+                str(Path(tmpdir) / "pkgs"),
+            ],
+            dry_run,
+        ):
+            return False
+
+    if not dry_run:
+        missing = [
+            str(p)
+            for p in (root / "bin" / "gdalinfo.exe", root / "include" / "gdal.h")
+            if not p.exists()
+        ]
+        if missing:
+            _c.log_error(
+                "GDAL installer reported success but these are missing: " + ", ".join(missing)
+            )
+            return False
+
+    _export_env()
+    print(f"GDAL installed to {install_dir}")
+    return True
 
 def install_windows_nsis(dry_run: bool = False) -> bool:
     """Install NSIS (makensis) for the Windows installer build step."""
@@ -219,6 +290,7 @@ def install_windows(
     msvc: bool = False,
     msvc_arm64: bool = False,
     nsis: bool = False,
+    gdal: bool = False
 ) -> bool:
     """Install Windows dependencies."""
     _c.log_info("Installing Windows dependencies...")
@@ -229,6 +301,9 @@ def install_windows(
         return False
 
     if nsis and not install_windows_nsis(dry_run):
+        return False
+
+    if gdal and not install_windows_gdal(dry_run):
         return False
 
     if not skip_gstreamer:

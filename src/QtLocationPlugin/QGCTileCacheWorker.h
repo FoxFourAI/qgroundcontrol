@@ -67,6 +67,7 @@ private:
     void _resetCacheDatabase(QGCMapTask *task);
     void _importSets(QGCMapTask *task);
     void _exportSets(QGCMapTask *task);
+    void _exportSetAsMRF(QGCMapTask *task); //FoxFour part
     bool _testTask(QGCMapTask *task);
     void _emitTotals();
 
