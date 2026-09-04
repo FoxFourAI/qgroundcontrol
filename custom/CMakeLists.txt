@@ -163,7 +163,6 @@ endif()
 # Custom Build Configuration
 # ============================================================================
 
-
 # Custom libraries to link
 set(CUSTOM_LIBRARIES
     FoxFourModule
