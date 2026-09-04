@@ -13,7 +13,9 @@
 #include <atomic>
 
 // FoxFour part
+#ifndef Q_OS_ANDROID
 #include "MrfExport/MrfExport.h"
+#endif
 
 #include "QGCCacheTile.h"
 #include "QGCLoggingCategory.h"
@@ -31,7 +33,9 @@ QGCTileCacheDatabase::QGCTileCacheDatabase(const QString &databasePath)
     , _connectionName(QStringLiteral("QGCTileCache_%1").arg(s_connectionCounter.fetch_add(1)))
 {
     //FoxFour part
+#ifndef Q_OS_ANDROID
     GDALAllRegister();
+#endif
 }
 
 QGCTileCacheDatabase::~QGCTileCacheDatabase()
@@ -1213,6 +1217,8 @@ DatabaseResult QGCTileCacheDatabase::exportSets(const QList<TileSetRecord> &sets
 DatabaseResult QGCTileCacheDatabase::exportSetsAsMRF(const QList<TileSetRecord>& sets, const QString& path,
                                                      ProgressCallback progressCb)
 {
+    DatabaseResult result;
+#ifndef Q_OS_ANDROID
     /*Export provided datasets as mrf.
      *QGC stores tiles in the SQLite db in next tables:
      * - TileSets (setID, name, typeStr, topLeftLat, topLeftLon, bottomRightLat, bottomRightLat, minZoom, maxZoom, type,
@@ -1226,7 +1232,6 @@ DatabaseResult QGCTileCacheDatabase::exportSetsAsMRF(const QList<TileSetRecord>&
      *     - convert to the RGB format and provide image with coordinates to gdal
      */
 
-    DatabaseResult result;
     if (!_ensureConnected()) {
         result.errorString = "Database not connected";
         return result;
@@ -1298,6 +1303,7 @@ DatabaseResult QGCTileCacheDatabase::exportSetsAsMRF(const QList<TileSetRecord>&
         success |= true;
     }
     result.success = success;
+#endif
     return result;
 }
 
