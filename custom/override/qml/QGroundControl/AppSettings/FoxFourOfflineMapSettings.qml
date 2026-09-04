@@ -111,18 +111,18 @@ Item {
         }
 
         onAcceptedForSave: (file) => {
-            close()
-            if (file.endsWith(".mrf")) {
-                _mapEngineManager.exportSetAsMRF(file)
-            } else {
-                _mapEngineManager.exportSets(file)
-            }
-        }
+                               close()
+                               if (file.endsWith(".mrf")) {
+                                   _mapEngineManager.exportSetAsMRF(file)
+                               } else {
+                                   _mapEngineManager.exportSets(file)
+                               }
+                           }
 
         onAcceptedForLoad: (file) => {
-            close()
-            _mapEngineManager.importSets(file)
-        }
+                               close()
+                               _mapEngineManager.importSets(file)
+                           }
     }
 
     QGCPopupDialogFactory {

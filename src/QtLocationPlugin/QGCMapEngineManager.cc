@@ -436,9 +436,8 @@ bool QGCMapEngineManager::exportSets(const QString &path)
 }
 
 //FoxFour part
-bool QGCMapEngineManager::exportSetAsMRF(const QString &path)
+bool QGCMapEngineManager::exportSetAsMRF(const QString& path)
 {
-
     setImportAction(ImportAction::ActionNone);
 
     if (path.isEmpty()) {
@@ -474,7 +473,7 @@ bool QGCMapEngineManager::exportSetAsMRF(const QString &path)
 
     setImportAction(ImportAction::ActionExporting);
 
-    QGCExportMRFTileTask *task = new QGCExportMRFTileTask(records, path);
+    QGCExportMRFTileTask* task = new QGCExportMRFTileTask(records, path);
     (void) connect(task, &QGCExportMRFTileTask::actionCompleted, this, &QGCMapEngineManager::_actionCompleted);
     (void) connect(task, &QGCExportMRFTileTask::actionProgress, this, &QGCMapEngineManager::_actionProgressHandler);
     (void) connect(task, &QGCMapTask::error, this, &QGCMapEngineManager::taskError);

@@ -1,4 +1,5 @@
 #include "MrfExport.h"
+
 #include <cmath>
 #include <cstring>
 
@@ -70,7 +71,8 @@ bool MrfGridWriter::SQLTileToRGB(const QByteArray& blob, QByteArray& rgbOut, int
     return ok;
 }
 
-bool MrfGridWriter::SQLParseTileHash(const QString& hash, int& x, int& y, int& z) {
+bool MrfGridWriter::SQLParseTileHash(const QString& hash, int& x, int& y, int& z)
+{
     const int xSize = 8;
     const int ySize = 8;
     const int zSize = 3;
@@ -83,8 +85,8 @@ bool MrfGridWriter::SQLParseTileHash(const QString& hash, int& x, int& y, int& z
     const int base = hash.length() - hashSuffixLength;
 
     bool okX = false, okY = false, okZ = false;
-    x = hash.mid(base,      xSize).toInt(&okX);
-    y = hash.mid(base + xSize,  ySize).toInt(&okY);
+    x = hash.mid(base, xSize).toInt(&okX);
+    y = hash.mid(base + xSize, ySize).toInt(&okY);
     z = hash.mid(base + xSize + ySize, zSize).toInt(&okZ);
 
     if (!okX || !okY || !okZ) {
@@ -142,8 +144,9 @@ bool MrfGridWriter::writeTile(int x, int y, const QByteArray& rgb)
         return false;
     }
 
-    return _ds->RasterIO(GF_Write, col * kTileSize, row * kTileSize, kTileSize, kTileSize, const_cast<char*>(rgb.constData()), kTileSize,
-                         kTileSize, GDT_Byte, 3, nullptr, 3, 3 * kTileSize, 1, nullptr) == CE_None;
+    return _ds->RasterIO(GF_Write, col * kTileSize, row * kTileSize, kTileSize, kTileSize,
+                         const_cast<char*>(rgb.constData()), kTileSize, kTileSize, GDT_Byte, 3, nullptr, 3,
+                         3 * kTileSize, 1, nullptr) == CE_None;
 }
 
 bool MrfGridWriter::finish()

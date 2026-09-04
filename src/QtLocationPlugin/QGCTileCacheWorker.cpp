@@ -471,13 +471,13 @@ void QGCCacheWorker::_exportSets(QGCMapTask *mtask)
 }
 
 //FoxFour part
-void QGCCacheWorker::_exportSetAsMRF(QGCMapTask *mtask)
+void QGCCacheWorker::_exportSetAsMRF(QGCMapTask* mtask)
 {
     if (!_testTask(mtask)) {
         return;
     }
 
-    QGCExportMRFTileTask *task = static_cast<QGCExportMRFTileTask*>(mtask);
+    QGCExportMRFTileTask* task = static_cast<QGCExportMRFTileTask*>(mtask);
 
     auto progress = [task](int pct) { task->setProgress(pct); };
     DatabaseResult result = _database->exportSetsAsMRF(task->sets(), task->path(), progress);

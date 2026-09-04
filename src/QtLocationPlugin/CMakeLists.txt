@@ -149,9 +149,9 @@ if(NOT OSGEO_DLLS)
 endif()
 
 set_property(GLOBAL PROPERTY OSGEO_DLL_LIST "${OSGEO_DLLS}")
+# Due to not having the QGroundControl target right now, and we need to override the GStreamers dlls with gdal one,
+# so we trigger the code after root cmake is done
 cmake_language(DEFER DIRECTORY "${CMAKE_SOURCE_DIR}" CALL _stage_gdal_dlls)
-# Due to not having the QGroundControl target right now, and we need to override the GStreamers dlls with our own,
-# trigger the code on directory itself
 function(_stage_gdal_dlls)
     if(NOT TARGET ${CMAKE_PROJECT_NAME})
         message(WARNING "QGroundControl target not found; skipping GDAL DLL override")

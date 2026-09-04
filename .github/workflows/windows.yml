@@ -65,7 +65,7 @@ jobs:
             arch: win64_msvc2022_64
             package: QGroundControl-installer-AMD64
             gstreamer: true
-
+            
     defaults:
       run:
         shell: cmd

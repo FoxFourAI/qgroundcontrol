@@ -1211,7 +1211,6 @@ DatabaseResult QGCTileCacheDatabase::exportSets(const QList<TileSetRecord> &sets
 DatabaseResult QGCTileCacheDatabase::exportSetsAsMRF(const QList<TileSetRecord>& sets, const QString& path,
                                                      ProgressCallback progressCb)
 {
-
     const int maxFillDepth = 8;
     DatabaseResult result;
     if (!_ensureConnected()) {
@@ -1334,7 +1333,7 @@ DatabaseResult QGCTileCacheDatabase::exportSetsAsMRF(const QList<TileSetRecord>&
         const TileSetRecord& set = *plan.set;
 
         QString basePath = (plans.size() > 1) ? QStringLiteral("%1_%2").arg(path, set.name) : path;
-        basePath = basePath.mid(0,basePath.lastIndexOf('.')); //trunk the extention of the file
+        basePath = basePath.mid(0, basePath.lastIndexOf('.'));  // trunk the extention of the file
 
         MrfGridWriter mrf;
         if (!mrf.begin(basePath, plan.z, plan.x0, plan.y0, plan.nx, plan.ny)) {
