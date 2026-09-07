@@ -39,8 +39,7 @@ DEBIAN_PACKAGES: dict[str, list[str]] = {
         "wget",
         "zsync",
         "gdal-bin",
-        "libgdal-dev",
-        "python3-gdal"
+        "libgdal-dev"
     ],
     "qt": [
         "libatspi2.0-dev",
