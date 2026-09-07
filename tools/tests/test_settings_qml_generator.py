@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 
 import pytest
+from generators.common.validation import require_qml_safe_string
+from generators.settings_qml import generate_pages as settings_generator
 from generators.settings_qml.page_generator import (
     ControlDef,
     GroupDef,
@@ -968,9 +970,24 @@ class TestGeneratePagesModelQml:
         # Page definition
         page_def = {
             "version": 1,
+            "imports": ["Test.Settings"],
+            "bindings": {
+                "pageVisible": "advancedMode && !unusedBinding",
+                "advancedMode": "QGroundControl.corePlugin.showAdvancedUI",
+                "unusedBinding": "QGroundControl.settingsManager.appSettings.y.userVisible",
+            },
             "groups": [
-                {"heading": "Section A", "controls": [{"setting": "appSettings.x"}]},
+                {
+                    "heading": "Section A",
+                    "showWhen": "pageVisible",
+                    "controls": [{"setting": "appSettings.x"}],
+                },
                 {"heading": "Section B", "controls": [{"setting": "appSettings.y"}]},
+                {
+                    "component": "TestComponent",
+                    "sectionName": "Section C",
+                    "showWhen": "advancedMode",
+                },
             ],
         }
         (pages_dir / "Test.SettingsUI.json").write_text(json.dumps(page_def), encoding="utf-8")
@@ -1023,12 +1040,32 @@ class TestGeneratePagesModelQml:
 
     def test_sections_extracted(self, pages_setup: Path):
         qml = generate_pages_model_qml(pages_setup)
-        assert "Section A" in qml
-        assert "Section B" in qml
+        assert 'name: qsTranslate("Test.SettingsUI.json", "Section A")' in qml
+        assert 'name: qsTranslate("Test.SettingsUI.json", "Section B")' in qml
+
+    def test_section_visibility_generated(self, pages_setup: Path):
+        qml = generate_pages_model_qml(pages_setup)
+        assert "sections: function()" in qml
+        assert "property QtObject _page0SectionState: QtObject" in qml
+        assert "property var advancedMode: QGroundControl.corePlugin.showAdvancedUI" in qml
+        assert "property bool pageVisible: advancedMode && !unusedBinding" in qml
+        assert "property var unusedBinding: QGroundControl.settingsManager.appSettings.y.userVisible" in qml
+        assert "visible: _page0SectionState._sectionVisibility[0]" in qml
+        assert (
+            "(pageVisible) && "
+            "(QGroundControl.settingsManager.appSettings.x.userVisible)" in qml
+        )
+        assert "(QGroundControl.settingsManager.appSettings.y.userVisible)" in qml
+        assert "visible: _page0SectionState._sectionVisibility[2]" in qml
 
     def test_search_terms_present(self, pages_setup: Path):
         qml = generate_pages_model_qml(pages_setup)
-        assert "searchTerms" in qml
+        assert 'searchTerms: ["test page section a"' in qml
+        assert 'qsTranslate("Test.SettingsUI.json", "Section A")' in qml
+
+    def test_page_imports_propagated(self, pages_setup: Path):
+        qml = generate_pages_model_qml(pages_setup)
+        assert "import Test.Settings" in qml
 
     def test_page_visible_default(self, pages_setup: Path):
         qml = generate_pages_model_qml(pages_setup)
@@ -1089,6 +1126,112 @@ class TestGeneratePagesModelQml:
         with pytest.raises(ValueError, match="must be a JSON array"):
             generate_pages_model_qml(pages_path)
 
+
+class TestQmlUnsafeStringRejection:
+    """Strings embedded in generated QML literals must not contain quote/backslash/newline."""
+
+    @pytest.mark.parametrize("bad_value", [["safe"], 123, None, {"a": 1}])
+    def test_non_string_rejected(self, bad_value: object):
+        with pytest.raises(ValueError, match="must be a string"):
+            require_qml_safe_string(bad_value, "test field", "test.json")
+
+    def test_unsafe_section_name_rejected(self, tmp_path: Path):
+        data = {
+            "version": 1,
+            "groups": [
+                {
+                    "heading": "G",
+                    "sectionName": 'Bad "Section"',
+                    "controls": [{"setting": "appSettings.x"}],
+                }
+            ],
+        }
+        with pytest.raises(ValueError, match="group sectionName"):
+            load_page_def(_make_page_json(tmp_path, data))
+
+    def test_unsafe_group_keyword_rejected(self, tmp_path: Path):
+        data = {
+            "version": 1,
+            "groups": [
+                {
+                    "heading": "G",
+                    "keywords": ["map\\layers"],
+                    "controls": [{"setting": "appSettings.x"}],
+                }
+            ],
+        }
+        with pytest.raises(ValueError, match="group keyword"):
+            load_page_def(_make_page_json(tmp_path, data))
+
+    @pytest.mark.parametrize("bad_char", ['"', "\\", "\n"])
+    def test_unsafe_group_heading_rejected(self, tmp_path: Path, bad_char: str):
+        data = {
+            "version": 1,
+            "groups": [{"heading": f"Bad{bad_char}Heading", "controls": [{"setting": "appSettings.x"}]}],
+        }
+        with pytest.raises(ValueError, match="group heading"):
+            load_page_def(_make_page_json(tmp_path, data))
+
+    def test_heading_description_expression_accepted(self, tmp_path: Path):
+        # headingDescription is a QML expression field, emitted raw — quotes allowed
+        data = {
+            "version": 1,
+            "groups": [
+                {
+                    "heading": "G",
+                    "headingDescription": 'qsTr("Has \\"quotes\\"")',
+                    "controls": [{"setting": "appSettings.x"}],
+                }
+            ],
+        }
+        page = load_page_def(_make_page_json(tmp_path, data))
+        assert page.groups[0].headingDescription
+
+    def test_unsafe_control_label_rejected(self, tmp_path: Path):
+        data = {
+            "version": 1,
+            "groups": [
+                {"heading": "G", "controls": [{"setting": "appSettings.x", "label": 'A "label"'}]}
+            ],
+        }
+        with pytest.raises(ValueError, match="control label"):
+            load_page_def(_make_page_json(tmp_path, data))
+
+    def test_unsafe_placeholder_rejected(self, tmp_path: Path):
+        data = {
+            "version": 1,
+            "groups": [
+                {
+                    "heading": "G",
+                    "controls": [{"setting": "appSettings.x", "placeholder": "a\\b"}],
+                }
+            ],
+        }
+        with pytest.raises(ValueError, match="placeholder"):
+            load_page_def(_make_page_json(tmp_path, data))
+
+    @pytest.mark.parametrize("field", ["name", "url", "icon"])
+    def test_unsafe_pages_model_entry_rejected(self, tmp_path: Path, field: str):
+        entry = {"name": "Page", "qml": "P.qml", "icon": "qrc:/i.svg"}
+        entry[field] = f'bad"{field}'
+        pages_json = {"version": 1, "pages": [entry]}
+        p = tmp_path / "SettingsPages.json"
+        p.write_text(json.dumps(pages_json), encoding="utf-8")
+        with pytest.raises(ValueError, match=f"page {field}"):
+            generate_pages_model_qml(p)
+
+    def test_safe_strings_accepted(self, tmp_path: Path):
+        data = {
+            "version": 1,
+            "groups": [
+                {
+                    "heading": "Fly View (What's Shown)",
+                    "controls": [{"setting": "appSettings.x", "label": "UI Scale (%)"}],
+                }
+            ],
+        }
+        page = load_page_def(_make_page_json(tmp_path, data))
+        assert page.groups[0].heading == "Fly View (What's Shown)"
 
 class TestRealPageDefinitions:
     """Test against real QGC page definition files if available."""

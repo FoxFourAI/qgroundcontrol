@@ -34,50 +34,47 @@ Rectangle {
         return !!_expandedPages[pageIndex]
     }
 
+    function _pageSections(entry) {
+        return entry && typeof entry.sections === "function" ? entry.sections() : []
+    }
+
+    function _pageAvailable(entry) {
+        if (!entry || entry.name === "Divider" ||
+                (typeof entry.pageVisible === "function" && !entry.pageVisible())) {
+            return false
+        }
+
+        var sections = _pageSections(entry)
+        return sections.length === 0 || sections.some(function(section) { return section.visible })
+    }
+
+    function _sectionAvailable(sections, sectionIndex) {
+        if (sectionIndex === -1) return true
+        for (var i = 0; i < sections.length; i++) {
+            if (sections[i].index === sectionIndex) return sections[i].visible
+        }
+        return false
+    }
+
     // Search: returns array of matching section indices for a page, or empty if no match
     function _matchingSections(pageIndex) {
         var query = _searchQuery.toLowerCase().trim()
         if (query === "") return []  // empty = no filtering
 
         var entry = settingsPagesModel.get(pageIndex)
-        if (!entry) return []
+        if (!_pageAvailable(entry)) return []
 
-        // Check English search terms
-        var termsStr = entry.searchTerms
+        var sections = _pageSections(entry)
         var matches = []
-        var matched = {}
-        if (termsStr && termsStr !== "") {
-            try {
-                var terms = JSON.parse(termsStr)
-                for (var i = 0; i < terms.length; i++) {
-                    if (terms[i].terms.indexOf(query) !== -1) {
-                        matched[terms[i].section] = true
-                        matches.push(terms[i].section)
-                    }
+        for (var i = 0; i < sections.length; i++) {
+            if (!sections[i].visible) continue
+            for (var j = 0; j < sections[i].searchTerms.length; j++) {
+                if (sections[i].searchTerms[j].indexOf(query) !== -1) {
+                    matches.push(sections[i].index)
+                    break
                 }
-            } catch(e) { console.warn("AppSettings: JSON parse error in searchTerms:", e) }
+            }
         }
-
-        // Check translatable terms (translated at runtime)
-        var trStr = entry.translatableTerms
-        if (trStr && trStr !== "") {
-            try {
-                var trTerms = JSON.parse(trStr)
-                for (var j = 0; j < trTerms.length; j++) {
-                    if (matched[trTerms[j].section]) continue
-                    var ctx = trTerms[j].context
-                    var tList = trTerms[j].terms
-                    for (var k = 0; k < tList.length; k++) {
-                        if (qsTranslate(ctx, tList[k]).toLowerCase().indexOf(query) !== -1) {
-                            matched[trTerms[j].section] = true
-                            matches.push(trTerms[j].section)
-                            break
-                        }
-                    }
-                }
-            } catch(e) { console.warn("AppSettings: JSON parse error in translatableTerms:", e) }
-        }
-
         return matches
     }
 
@@ -90,6 +87,8 @@ Rectangle {
     function _navigateTo(pageIndex, sectionIndex) {
         var entry = settingsPagesModel.get(pageIndex)
         if (!entry || entry.name === "Divider") return
+        if (!_pageAvailable(entry)) return
+        if (!_sectionAvailable(_pageSections(entry), sectionIndex)) return
 
         var url = entry.url
         _selectedSectionIndex = sectionIndex
@@ -105,10 +104,24 @@ Rectangle {
         }
     }
 
+    function _navigateToFirstAvailablePage() {
+        for (var i = 0; i < settingsPagesModel.count; i++) {
+            if (_pageAvailable(settingsPagesModel.get(i))) {
+                _navigateTo(i, -1)
+                return
+            }
+        }
+
+        _selectedPageIndex = -1
+        _selectedSectionIndex = -1
+        rightPanel.source = ""
+    }
+
+    // settingsPage is the untranslated page name from SettingsPages.json
     function showSettingsPage(settingsPage) {
         for (var i = 0; i < settingsPagesModel.count; i++) {
             var entry = settingsPagesModel.get(i)
-            if (entry && entry.name === settingsPage) {
+            if (entry && entry.nameKey === settingsPage) {
                 _navigateTo(i, -1)
                 break
             }
@@ -136,6 +149,10 @@ Rectangle {
                 break
             }
         }
+
+        if (_selectedPageIndex === -1) {
+            _navigateToFirstAvailablePage()
+        }
     }
 
     Connections {
@@ -161,6 +178,7 @@ Rectangle {
 
         QGCTextField {
             id:                 searchField
+            objectName:         "settings_searchField"
             Layout.fillWidth:   true
             placeholderText:    qsTr("Search settings...")
 
@@ -180,6 +198,7 @@ Rectangle {
 
         ColumnLayout {
             id:         buttonColumn
+            width:      buttonList.width
             spacing:    0
 
             Repeater {
@@ -198,32 +217,37 @@ Rectangle {
                     property string pageUrl:     model.url ?? ""
                     property string pageIconUrl: model.iconUrl ?? ""
                     property var    pageVisible: model.pageVisible ?? function() { return true }
-                    property var    pageSections: {
-                        try {
-                            var trStr = model.translatableTerms
-                            if (trStr && trStr !== "") {
-                                var trTerms = JSON.parse(trStr)
-                                return trTerms.map(function(t) {
-                                    if (!t.terms || t.terms.length === 0) return ""
-                                    return qsTranslate(t.context, t.terms[0])
-                                }).filter(function(s) { return s !== "" })
-                            }
-                            var s = model.sections
-                            return (s && s !== "") ? JSON.parse(s) : []
-                        } catch(e) {
-                            console.warn("AppSettings: JSON parse error in pageSections:", e)
-                            return []
+                    property var    pageSections: pageVisible() ? settingsView._pageSections(model) : []
+                    property var    visiblePageSections: pageSections.filter(function(section) {
+                        return section.visible
+                    })
+                    property bool pageAvailable: pageVisible() &&
+                                                 (pageSections.length === 0 || visiblePageSections.length > 0)
+                    property bool isSelected: settingsView._selectedPageIndex === index
+                    property bool hasMultipleSections: visiblePageSections.length > 1
+                    property bool isSearching: settingsView._searchQuery.trim() !== ""
+                    property bool matchesSearch: pageAvailable && settingsView._pageMatchesSearch(index)
+                    property bool isExpanded: hasMultipleSections && (isSearching ? matchesSearch : settingsView._isExpanded(index))
+
+                    onPageSectionsChanged: {
+                        let sections = pageSections ?? []
+                        let visibleCount = sections.filter(function(section) { return section.visible }).length
+                        if (isSelected && pageAvailable && settingsView._selectedSectionIndex !== -1 &&
+                                (visibleCount <= 1 ||
+                                 !settingsView._sectionAvailable(sections, settingsView._selectedSectionIndex))) {
+                            settingsView._navigateTo(index, -1)
                         }
                     }
-                    property bool isSelected: settingsView._selectedPageIndex === index
-                    property bool hasMultipleSections: pageSections.length > 1
-                    property bool isSearching: settingsView._searchQuery.trim() !== ""
-                    property bool matchesSearch: settingsView._pageMatchesSearch(index)
-                    property bool isExpanded: hasMultipleSections && (isSearching ? matchesSearch : settingsView._isExpanded(index))
+
+                    onPageAvailableChanged: {
+                        if (isSelected && !pageAvailable) {
+                            settingsView._navigateToFirstAvailablePage()
+                        }
+                    }
 
                     visible: {
                         if (pageName === "Divider") return !isSearching
-                        if (!pageVisible()) return false
+                        if (!pageAvailable) return false
                         if (isSearching) return matchesSearch
                         return true
                     }
@@ -244,7 +268,7 @@ Rectangle {
                         expandable:    hasMultipleSections
                         expanded:      isExpanded
                         checked:       isSelected && settingsView._selectedSectionIndex === -1
-                        visible:       pageName !== "Divider" && pageVisible()
+                        visible:       pageName !== "Divider" && pageAvailable
 
                         onClicked: {
                             if (mainWindow.allowViewSwitch()) {
@@ -274,7 +298,7 @@ Rectangle {
 
                     // Section sub-items (indented, shown when page is expanded)
                     Repeater {
-                        model: isExpanded ? pageSections : []
+                        model: isExpanded ? visiblePageSections : []
 
                         Button {
                             id:             sectionBtn
@@ -283,21 +307,15 @@ Rectangle {
                             leftPadding:    ScreenTools.defaultFontPixelWidth * 3
                             hoverEnabled:   !ScreenTools.isMobile
 
-                            property int sectionIndex: index
+                            property int sectionIndex: modelData.index
                             property bool sectionChecked: pageColumn.isSelected && settingsView._selectedSectionIndex === sectionIndex
                             property bool sectionMatchesSearch: {
                                 if (!pageColumn.isSearching) return true
                                 var matches = settingsView._matchingSections(pageColumn.index)
                                 return matches.indexOf(sectionIndex) !== -1
                             }
-                            property bool sectionContentVisible: {
-                                if (!pageColumn.isSelected) return true
-                                if (!rightPanel.item) return true
-                                if (typeof rightPanel.item.sectionVisible !== "function") return true
-                                return rightPanel.item.sectionVisible(sectionIndex)
-                            }
                             property color textColor: sectionChecked || pressed ? qgcPal.buttonHighlightText : qgcPal.buttonText
-                            visible: sectionMatchesSearch && sectionContentVisible
+                            visible: sectionMatchesSearch
 
                             background: Rectangle {
                                 color:   qgcPal.buttonHighlight
@@ -306,7 +324,7 @@ Rectangle {
                             }
 
                             contentItem: QGCLabel {
-                                text:  modelData
+                                text:  modelData.name
                                 color: sectionBtn.textColor
                                 font.pointSize: ScreenTools.defaultFontPointSize * 0.9
                                 horizontalAlignment: Text.AlignLeft

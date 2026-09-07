@@ -86,7 +86,7 @@ private slots:
 
 protected:
     GstElement *_makeDecoder();
-    GstElement *_makeFileSink(const QString &videoFile, FILE_FORMAT format);
+    GstElement *_makeFileSink(const QString &videoFile, FILE_FORMAT format,const GstCaps* inputCaps);
 
     void _onNewSourcePad(GstPad *pad);
     void _onNewDecoderPad(GstPad *pad);
