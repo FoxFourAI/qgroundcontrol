@@ -13,7 +13,7 @@
 #include <atomic>
 
 // FoxFour part
-#ifndef GDAL_DISABLE
+#if !GDAL_DISABLE
 #include "MrfExport/MrfExport.h"
 #endif
 
@@ -33,7 +33,7 @@ QGCTileCacheDatabase::QGCTileCacheDatabase(const QString &databasePath)
     , _connectionName(QStringLiteral("QGCTileCache_%1").arg(s_connectionCounter.fetch_add(1)))
 {
     //FoxFour part
-#ifndef GDAL_DISABLE
+#if !GDAL_DISABLE
     GDALAllRegister();
 #endif
 }
@@ -1218,7 +1218,7 @@ DatabaseResult QGCTileCacheDatabase::exportSetsAsMRF(const QList<TileSetRecord>&
                                                      ProgressCallback progressCb)
 {
     DatabaseResult result;
-#ifndef GDAL_DISABLE
+#if !GDAL_DISABLE
     /*Export provided datasets as mrf.
      *QGC stores tiles in the SQLite db in next tables:
      * - TileSets (setID, name, typeStr, topLeftLat, topLeftLon, bottomRightLat, bottomRightLat, minZoom, maxZoom, type,
