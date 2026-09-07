@@ -153,6 +153,7 @@ jobs:
             -DQT_ANDROID_ABIS=${{ env.QT_ANDROID_ABIS }}
             -DQT_HOST_PATH=${{ steps.setup.outputs.host_qt_root_dir }}
             -DQT_ANDROID_SIGN_APK=ON
+            -DGDAL_DISABLE=ON
 
       - name: Build
         id: build
@@ -167,7 +168,6 @@ jobs:
           build-type: ${{ env.BUILD_TYPE }}
           parallel-jobs: ${{ matrix.emulator && '2' || '' }}
           output-file: qgc-build.log
-          disable-gdal: 'true'
 
       - name: Retry Build (emulator JSON truncation recovery)
         id: build-retry

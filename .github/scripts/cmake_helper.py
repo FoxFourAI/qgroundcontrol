@@ -82,9 +82,6 @@ def cmd_build(args: argparse.Namespace) -> None:
         else:
             cmd.append("--parallel")
 
-    if args.disable_gdal:
-        cmd += "-DGDAL_DISABLE=ON"
-
     output_file = args.output_file
     if args.reviewdog and not output_file:
         output_file = os.path.join(os.environ.get("RUNNER_TEMP", "."), "build-output.log")
@@ -241,7 +238,6 @@ def main() -> None:
     p_build.add_argument("--output-file", default="")
     p_build.add_argument("--continue-on-error", action="store_true", default=False)
     p_build.add_argument("--reviewdog", action="store_true", default=False)
-    p_build.add_argument("--disable-gdal", action="store_true", default=False)
 
     # configure
     p_conf = sub.add_parser("configure")
