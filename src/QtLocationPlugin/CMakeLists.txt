@@ -55,10 +55,12 @@ qt_add_plugin(QGCLocation
     QGeoTileFetcherQGC.cpp
     QGeoTileFetcherQGC.h
 )
+option(GDAL_DISABLE "Disable GDAL in the build" OFF)
 #FoxFour part
-if(NOT ANDROID)
+if(NOT GDAL_DISABLE)
     target_sources(QGCLocation PRIVATE MrfExport/MrfExport.h MrfExport/MrfExport.cpp)
 endif()
+target_compile_definitions(QGCLocation PRIVATE GDAL_DISABLE=$<BOOL:${GDAL_DISABLE}>)
 
 if(IOS)
     target_compile_definitions(QGCLocation PRIVATE QGC_NO_GOOGLE_MAPS)
@@ -80,7 +82,7 @@ target_link_libraries(QGCLocation
         Qt6::Network
 )
 
-if(NOT ANDROID)
+if(NOT GDAL_DISABLE)
     #FoxFour part --- Find GDAL cross-platform fallback logic ---
     # First, look for the modern Config mode provided by up-to-date GDAL installations
     find_package(GDAL CONFIG QUIET)
@@ -92,9 +94,13 @@ if(NOT ANDROID)
 
     # Create a unified target wrapper if the modern target 'GDAL::GDAL' isn't explicitly defined
     if(NOT TARGET GDAL::GDAL)
-        add_library(GDAL::GDAL INTERFACE IMPORTED)
-        target_include_directories(GDAL::GDAL INTERFACE ${GDAL_INCLUDE_DIR})
-        target_link_libraries(GDAL::GDAL INTERFACE ${GDAL_LIBRARY})
+        if(NOT DEFINED GDAL_INCLUDE_DIR OR NOT DEFINED GDAL_LIBRARY)
+            target_compile_definitions(QGCLocation GDAL_DISABLE)
+        else()
+            add_library(GDAL::GDAL INTERFACE IMPORTED)
+            target_include_directories(GDAL::GDAL INTERFACE ${GDAL_INCLUDE_DIR})
+            target_link_libraries(GDAL::GDAL INTERFACE ${GDAL_LIBRARY})
+        endif()
     endif()
     target_link_libraries(QGCLocation PRIVATE GDAL::GDAL)
 endif()
@@ -135,7 +141,7 @@ qt_add_resources(${CMAKE_PROJECT_NAME} qtlocationplugin_resources
 )
 
 # Copy dependencies for windows
-if(WIN32)
+if(WIN32 AND NOT GDAL_DISABLE)
     if(NOT DEFINED ENV{OSGEO4W_ROOT})
     message(FATAL_ERROR "OSGEO4W_ROOT environment variable is not set")
 endif()

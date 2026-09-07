@@ -38,6 +38,10 @@ inputs:
     description: 'GitHub token for reviewdog (typically github.token)'
     required: false
     default: ''
+  disable-gdal:
+    description: 'Disable GDAL integration (for export mrf mapset)'
+    required: false
+    default: 'false'
 
 runs:
   using: composite
@@ -53,6 +57,7 @@ runs:
         OUTPUT_FILE: ${{ inputs.output-file }}
         CONTINUE: ${{ inputs.continue-on-error }}
         REVIEWDOG: ${{ inputs.reviewdog }}
+        DISABLE_GDAL: ${{ inputs.disable_gdal }}
       run: |
         ARGS=(build)
         [[ -n "$TARGET" ]] && ARGS+=(--target "$TARGET")
@@ -62,6 +67,7 @@ runs:
         [[ -n "$OUTPUT_FILE" ]] && ARGS+=(--output-file "$OUTPUT_FILE")
         [[ "$CONTINUE" == "true" ]] && ARGS+=(--continue-on-error)
         [[ "$REVIEWDOG" == "true" ]] && ARGS+=(--reviewdog)
+        [[ "DISABLE_GDAL" == "true"]] && ARGS+=(--disable-gdal))
         python3 "${GITHUB_WORKSPACE}/.github/scripts/cmake_helper.py" "${ARGS[@]}"
 
     - name: Setup reviewdog

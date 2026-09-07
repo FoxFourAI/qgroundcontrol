@@ -165,14 +165,18 @@ MrfGridWriter::~MrfGridWriter()
         GDALClose(_ds);
 }
 
-int MrfGridWriter::long2tileX(double lon, int z)
-{
-    return static_cast<int>(std::floor((lon + 180.0) / 360.0 * std::pow(2.0, z)));
-}
-
 int MrfGridWriter::lat2tileY(double lat, int z)
 {
-    const double r = lat * M_PI / 180.0;
-    return static_cast<int>(
-        std::floor((1.0 - std::log(std::tan(r) + 1.0 / std::cos(r)) / M_PI) / 2.0 * std::pow(2.0, z)));
+    const double clamped = std::clamp(lat, -85.0511287798066, 85.0511287798066);
+    const double r = clamped * M_PI / 180.0;
+    const double n = std::pow(2.0, z);
+    const double y = std::floor((1.0 - std::asinh(std::tan(r)) / M_PI) / 2.0 * n);
+    return static_cast<int>(std::clamp(y, 0.0, n - 1.0));
+}
+
+int MrfGridWriter::long2tileX(double lon, int z)
+{
+    const double n = std::pow(2.0, z);
+    const double x = std::floor((std::clamp(lon, -180.0, 180.0) + 180.0) / 360.0 * n);
+    return static_cast<int>(std::clamp(x, 0.0, n - 1.0));
 }
