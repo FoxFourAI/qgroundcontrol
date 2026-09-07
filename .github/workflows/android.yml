@@ -167,7 +167,7 @@ jobs:
           build-type: ${{ env.BUILD_TYPE }}
           parallel-jobs: ${{ matrix.emulator && '2' || '' }}
           output-file: qgc-build.log
-          disable_gdal: 'true'
+          disable-gdal: 'true'
 
       - name: Retry Build (emulator JSON truncation recovery)
         id: build-retry
