@@ -141,21 +141,21 @@ jobs:
         with:
           binary-path: ${{ runner.temp }}/build/Release/QGroundControl
 
-      - name: Analyze binary size
-        if: matrix.arch == 'linux_gcc_64'
-        uses: ./.github/actions/size-analysis
-        with:
-          binary-path: ${{ runner.temp }}/build/Release/QGroundControl
-          output-file: ${{ runner.temp }}/build/metrics.json
+      # - name: Analyze binary size
+      #   if: matrix.arch == 'linux_gcc_64'
+      #   uses: ./.github/actions/size-analysis
+      #   with:
+      #     binary-path: ${{ runner.temp }}/build/Release/QGroundControl
+      #     output-file: ${{ runner.temp }}/build/metrics.json
 
-      - name: Upload metrics artifact
-        if: matrix.arch == 'linux_gcc_64'
-        uses: actions/upload-artifact@v7
-        with:
-          name: size-metrics
-          path: ${{ runner.temp }}/build/metrics.json
-          if-no-files-found: error
-          retention-days: 90
+      # - name: Upload metrics artifact
+      #   if: matrix.arch == 'linux_gcc_64'
+      #   uses: actions/upload-artifact@v7
+      #   with:
+      #     name: size-metrics
+      #     path: ${{ runner.temp }}/build/metrics.json
+      #     if-no-files-found: error
+      #     retention-days: 90
 
       - name: Create AppImage
         uses: ./.github/actions/cmake-install
@@ -173,7 +173,7 @@ jobs:
         uses: ./.github/actions/attest-and-upload
         with:
           artifact-name: ${{ matrix.package }}.AppImage
-          # package-name: ${{ matrix.package }}
+          package-name: ${{ matrix.package }}
           # aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
           # aws-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
