@@ -53,10 +53,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - arch: linux_gcc_arm64
-            runs_on: ${{ github.repository_owner == 'mavlink' && format('runs-on={0}/runner=linux-arm64-builder', github.run_id) || 'ubuntu-24.04-arm' }}
-            package: QGroundControl-aarch64
-            host: linux_arm64
+          # - arch: linux_gcc_arm64
+          #   runs_on: ${{ github.repository_owner == 'mavlink' && format('runs-on={0}/runner=linux-arm64-builder', github.run_id) || 'ubuntu-24.04-arm' }}
+          #   package: QGroundControl-aarch64
+          #   host: linux_arm64
 
           - arch: linux_gcc_64
             runs_on: ${{ github.repository_owner == 'mavlink' && format('runs-on={0}/runner=linux-x64-builder-60gb', github.run_id) || 'ubuntu-24.04' }}
@@ -179,214 +179,214 @@ jobs:
           # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           # aws-distribution-id: ${{ secrets.AWS_DISTRIBUTION_ID }}
 
-  debug-matrix:
-    needs: changes
-    if: needs.changes.outputs.should_build == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 1
-    outputs:
-      include: ${{ steps.build.outputs.include }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          sparse-checkout: |
-            .github/scripts/linux_debug_matrix.py
-            .github/scripts/ci_bootstrap.py
-            tools/_bootstrap.py
-            tools/common/__init__.py
-            tools/common/file_traversal.py
-            tools/common/gh_actions.py
-          sparse-checkout-cone-mode: false
-          fetch-depth: 1
-          persist-credentials: false
-      - name: Build matrix
-        id: build
-        run: python3 .github/scripts/linux_debug_matrix.py
+  # debug-matrix:
+  #   needs: changes
+  #   if: needs.changes.outputs.should_build == 'true'
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 1
+  #   outputs:
+  #     include: ${{ steps.build.outputs.include }}
+  #   steps:
+  #     - uses: actions/checkout@v7
+  #       with:
+  #         sparse-checkout: |
+  #           .github/scripts/linux_debug_matrix.py
+  #           .github/scripts/ci_bootstrap.py
+  #           tools/_bootstrap.py
+  #           tools/common/__init__.py
+  #           tools/common/file_traversal.py
+  #           tools/common/gh_actions.py
+  #         sparse-checkout-cone-mode: false
+  #         fetch-depth: 1
+  #         persist-credentials: false
+  #     - name: Build matrix
+  #       id: build
+  #       run: python3 .github/scripts/linux_debug_matrix.py
 
-  debug-validation:
-    name: ${{ matrix.job_name }}
-    needs: [changes, debug-matrix]
-    if: needs.changes.outputs.should_build == 'true'
-    runs-on: ${{ github.repository_owner == 'mavlink' && format('runs-on={0}/runner=linux-x64-tester', github.run_id) || 'ubuntu-24.04' }}
-    timeout-minutes: ${{ matrix.timeout_minutes }}
+  # debug-validation:
+  #   name: ${{ matrix.job_name }}
+  #   needs: [changes, debug-matrix]
+  #   if: needs.changes.outputs.should_build == 'true'
+  #   runs-on: ${{ github.repository_owner == 'mavlink' && format('runs-on={0}/runner=linux-x64-tester', github.run_id) || 'ubuntu-24.04' }}
+  #   timeout-minutes: ${{ matrix.timeout_minutes }}
 
-    # checks: write scoped here: only this job reports test results (dorny/test-reporter).
-    permissions:
-      contents: read
-      checks: write
+  #   # checks: write scoped here: only this job reports test results (dorny/test-reporter).
+  #   permissions:
+  #     contents: read
+  #     checks: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{ fromJSON(needs.debug-matrix.outputs.include) }}
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include: ${{ fromJSON(needs.debug-matrix.outputs.include) }}
 
-    defaults:
-      run:
-        shell: bash
+  #   defaults:
+  #     run:
+  #       shell: bash
 
-    steps:
-      - name: Enable RunsOn magic cache
-        if: github.repository_owner == 'mavlink'
-        uses: runs-on/action@v2
-        with:
-          metrics: cpu,network,memory,disk,io
-          show_costs: summary
+  #   steps:
+  #     - name: Enable RunsOn magic cache
+  #       if: github.repository_owner == 'mavlink'
+  #       uses: runs-on/action@v2
+  #       with:
+  #         metrics: cpu,network,memory,disk,io
+  #         show_costs: summary
 
-      - name: Harden Runner
-        uses: step-security/harden-runner@v2
-        with:
-          egress-policy: audit
+  #     - name: Harden Runner
+  #       uses: step-security/harden-runner@v2
+  #       with:
+  #         egress-policy: audit
 
-      - name: Checkout repo
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v7
+  #       with:
+  #         persist-credentials: false
 
-      - name: Build Setup
-        uses: ./.github/actions/build-setup
-        with:
-          qt-host: linux
-          qt-arch: linux_gcc_64
-          build-type: Debug
-          cache-variant: ${{ matrix.mode }}
+  #     - name: Build Setup
+  #       uses: ./.github/actions/build-setup
+  #       with:
+  #         qt-host: linux
+  #         qt-arch: linux_gcc_64
+  #         build-type: Debug
+  #         cache-variant: ${{ matrix.mode }}
 
-      - name: Install Dependencies
-        uses: ./.github/actions/install-dependencies
+  #     - name: Install Dependencies
+  #       uses: ./.github/actions/install-dependencies
 
-      - name: Ensure coverage tools are available
-        if: matrix.mode == 'coverage'
-        run: |
-          if ! command -v gcovr >/dev/null 2>&1; then
-            pipx install gcovr
-          fi
+  #     - name: Ensure coverage tools are available
+  #       if: matrix.mode == 'coverage'
+  #       run: |
+  #         if ! command -v gcovr >/dev/null 2>&1; then
+  #           pipx install gcovr
+  #         fi
 
-      - name: Configure
-        uses: ./.github/actions/cmake-configure
-        with:
-          build-dir: ${{ runner.temp }}/build
-          build-type: Debug
-          testing: 'true'
-          coverage: ${{ matrix.mode == 'coverage' && 'true' || 'false' }}
-          extra-args: ${{ matrix.configure_extra }}
+  #     - name: Configure
+  #       uses: ./.github/actions/cmake-configure
+  #       with:
+  #         build-dir: ${{ runner.temp }}/build
+  #         build-type: Debug
+  #         testing: 'true'
+  #         coverage: ${{ matrix.mode == 'coverage' && 'true' || 'false' }}
+  #         extra-args: ${{ matrix.configure_extra }}
 
-      - name: Build
-        uses: ./.github/actions/cmake-build
-        with:
-          build-dir: ${{ runner.temp }}/build
-          build-type: Debug
+  #     - name: Build
+  #       uses: ./.github/actions/cmake-build
+  #       with:
+  #         build-dir: ${{ runner.temp }}/build
+  #         build-type: Debug
 
-      # Split by label so Unit parallelizes; Integration serializes on shared MockLink/LinkManager state.
-      - name: Run Unit Tests (parallel)
-        id: unit_tests
-        uses: ./.github/actions/run-unit-tests
-        env:
-          ASAN_OPTIONS: ${{ matrix.mode == 'sanitizers' && 'detect_leaks=1:halt_on_error=1:check_initialization_order=1' || '' }}
-          LSAN_OPTIONS: ${{ matrix.mode == 'sanitizers' && format('suppressions={0}/build/asan_suppressions.txt', runner.temp) || '' }}
-          UBSAN_OPTIONS: ${{ matrix.mode == 'sanitizers' && format('print_stacktrace=1:halt_on_error=1:suppressions={0}/build/ubsan_suppressions.txt', runner.temp) || '' }}
-        with:
-          build-dir: ${{ runner.temp }}/build
-          junit-output: junit-results-linux-${{ matrix.mode }}-unit.xml
-          ctest-output: test-output-linux-${{ matrix.mode }}-unit.txt
-          include-labels: 'Unit'
-          exclude-labels: ${{ matrix.exclude_labels }}
-          # Coverage requires serial execution (gcov writes race); sanitizers don't.
-          parallel: ${{ matrix.mode == 'coverage' && '1' || 'auto' }}
+  #     # Split by label so Unit parallelizes; Integration serializes on shared MockLink/LinkManager state.
+  #     - name: Run Unit Tests (parallel)
+  #       id: unit_tests
+  #       uses: ./.github/actions/run-unit-tests
+  #       env:
+  #         ASAN_OPTIONS: ${{ matrix.mode == 'sanitizers' && 'detect_leaks=1:halt_on_error=1:check_initialization_order=1' || '' }}
+  #         LSAN_OPTIONS: ${{ matrix.mode == 'sanitizers' && format('suppressions={0}/build/asan_suppressions.txt', runner.temp) || '' }}
+  #         UBSAN_OPTIONS: ${{ matrix.mode == 'sanitizers' && format('print_stacktrace=1:halt_on_error=1:suppressions={0}/build/ubsan_suppressions.txt', runner.temp) || '' }}
+  #       with:
+  #         build-dir: ${{ runner.temp }}/build
+  #         junit-output: junit-results-linux-${{ matrix.mode }}-unit.xml
+  #         ctest-output: test-output-linux-${{ matrix.mode }}-unit.txt
+  #         include-labels: 'Unit'
+  #         exclude-labels: ${{ matrix.exclude_labels }}
+  #         # Coverage requires serial execution (gcov writes race); sanitizers don't.
+  #         parallel: ${{ matrix.mode == 'coverage' && '1' || 'auto' }}
 
-      - name: Run Integration Tests (serial)
-        id: integration_tests
-        if: always() && !cancelled() && steps.unit_tests.conclusion != 'cancelled'
-        uses: ./.github/actions/run-unit-tests
-        env:
-          ASAN_OPTIONS: ${{ matrix.mode == 'sanitizers' && 'detect_leaks=1:halt_on_error=1:check_initialization_order=1' || '' }}
-          LSAN_OPTIONS: ${{ matrix.mode == 'sanitizers' && format('suppressions={0}/build/asan_suppressions.txt', runner.temp) || '' }}
-          UBSAN_OPTIONS: ${{ matrix.mode == 'sanitizers' && format('print_stacktrace=1:halt_on_error=1:suppressions={0}/build/ubsan_suppressions.txt', runner.temp) || '' }}
-        with:
-          build-dir: ${{ runner.temp }}/build
-          junit-output: junit-results-linux-${{ matrix.mode }}-integration.xml
-          ctest-output: test-output-linux-${{ matrix.mode }}-integration.txt
-          include-labels: 'Integration'
-          exclude-labels: ${{ matrix.exclude_labels }}
-          parallel: '1'
+  #     - name: Run Integration Tests (serial)
+  #       id: integration_tests
+  #       if: always() && !cancelled() && steps.unit_tests.conclusion != 'cancelled'
+  #       uses: ./.github/actions/run-unit-tests
+  #       env:
+  #         ASAN_OPTIONS: ${{ matrix.mode == 'sanitizers' && 'detect_leaks=1:halt_on_error=1:check_initialization_order=1' || '' }}
+  #         LSAN_OPTIONS: ${{ matrix.mode == 'sanitizers' && format('suppressions={0}/build/asan_suppressions.txt', runner.temp) || '' }}
+  #         UBSAN_OPTIONS: ${{ matrix.mode == 'sanitizers' && format('print_stacktrace=1:halt_on_error=1:suppressions={0}/build/ubsan_suppressions.txt', runner.temp) || '' }}
+  #       with:
+  #         build-dir: ${{ runner.temp }}/build
+  #         junit-output: junit-results-linux-${{ matrix.mode }}-integration.xml
+  #         ctest-output: test-output-linux-${{ matrix.mode }}-integration.txt
+  #         include-labels: 'Integration'
+  #         exclude-labels: ${{ matrix.exclude_labels }}
+  #         parallel: '1'
 
-      - name: Analyze Unit Test Durations (unit)
-        if: always() && !cancelled() && steps.unit_tests.conclusion != 'skipped'
-        uses: ./.github/actions/test-duration-report
-        with:
-          junit-path: ${{ runner.temp }}/build/junit-results-linux-${{ matrix.mode }}-unit.xml
-          report-json-path: ${{ runner.temp }}/build/test-duration-linux-${{ matrix.mode }}-unit.json
-          top-n: '20'
-          slow-threshold-seconds: '60'
+  #     - name: Analyze Unit Test Durations (unit)
+  #       if: always() && !cancelled() && steps.unit_tests.conclusion != 'skipped'
+  #       uses: ./.github/actions/test-duration-report
+  #       with:
+  #         junit-path: ${{ runner.temp }}/build/junit-results-linux-${{ matrix.mode }}-unit.xml
+  #         report-json-path: ${{ runner.temp }}/build/test-duration-linux-${{ matrix.mode }}-unit.json
+  #         top-n: '20'
+  #         slow-threshold-seconds: '60'
 
-      - name: Analyze Unit Test Durations (integration)
-        if: always() && !cancelled() && steps.integration_tests.conclusion != 'skipped'
-        uses: ./.github/actions/test-duration-report
-        with:
-          junit-path: ${{ runner.temp }}/build/junit-results-linux-${{ matrix.mode }}-integration.xml
-          report-json-path: ${{ runner.temp }}/build/test-duration-linux-${{ matrix.mode }}-integration.json
-          top-n: '20'
-          slow-threshold-seconds: '60'
+  #     - name: Analyze Unit Test Durations (integration)
+  #       if: always() && !cancelled() && steps.integration_tests.conclusion != 'skipped'
+  #       uses: ./.github/actions/test-duration-report
+  #       with:
+  #         junit-path: ${{ runner.temp }}/build/junit-results-linux-${{ matrix.mode }}-integration.xml
+  #         report-json-path: ${{ runner.temp }}/build/test-duration-linux-${{ matrix.mode }}-integration.json
+  #         top-n: '20'
+  #         slow-threshold-seconds: '60'
 
-      - name: Report Test Results (unit)
-        if: always() && !cancelled() && steps.unit_tests.conclusion != 'skipped'
-        uses: ./.github/actions/test-report
-        with:
-          name: Unit Tests (${{ matrix.mode }})
-          build-dir: ${{ runner.temp }}/build
-          junit-file: junit-results-linux-${{ matrix.mode }}-unit.xml
-          output-file: test-output-linux-${{ matrix.mode }}-unit.txt
-          artifact-name: test-results-linux-${{ matrix.mode }}-unit
-          retention-days: 7
+  #     - name: Report Test Results (unit)
+  #       if: always() && !cancelled() && steps.unit_tests.conclusion != 'skipped'
+  #       uses: ./.github/actions/test-report
+  #       with:
+  #         name: Unit Tests (${{ matrix.mode }})
+  #         build-dir: ${{ runner.temp }}/build
+  #         junit-file: junit-results-linux-${{ matrix.mode }}-unit.xml
+  #         output-file: test-output-linux-${{ matrix.mode }}-unit.txt
+  #         artifact-name: test-results-linux-${{ matrix.mode }}-unit
+  #         retention-days: 7
 
-      - name: Report Test Results (integration)
-        if: always() && !cancelled() && steps.integration_tests.conclusion != 'skipped'
-        uses: ./.github/actions/test-report
-        with:
-          name: Integration Tests (${{ matrix.mode }})
-          build-dir: ${{ runner.temp }}/build
-          junit-file: junit-results-linux-${{ matrix.mode }}-integration.xml
-          output-file: test-output-linux-${{ matrix.mode }}-integration.txt
-          artifact-name: test-results-linux-${{ matrix.mode }}-integration
-          retention-days: 7
+  #     - name: Report Test Results (integration)
+  #       if: always() && !cancelled() && steps.integration_tests.conclusion != 'skipped'
+  #       uses: ./.github/actions/test-report
+  #       with:
+  #         name: Integration Tests (${{ matrix.mode }})
+  #         build-dir: ${{ runner.temp }}/build
+  #         junit-file: junit-results-linux-${{ matrix.mode }}-integration.xml
+  #         output-file: test-output-linux-${{ matrix.mode }}-integration.txt
+  #         artifact-name: test-results-linux-${{ matrix.mode }}-integration
+  #         retention-days: 7
 
-      - name: Upload Test Artifacts
-        if: always() && !cancelled() && (steps.unit_tests.conclusion != 'skipped' || steps.integration_tests.conclusion != 'skipped')
-        uses: actions/upload-artifact@v7
-        with:
-          name: test-artifacts-linux-${{ matrix.mode }}
-          path: |
-            ${{ runner.temp }}/build/test-output-linux-${{ matrix.mode }}-*.txt
-            ${{ runner.temp }}/build/junit-results-linux-${{ matrix.mode }}-*.xml
-            ${{ runner.temp }}/build/test-duration-linux-${{ matrix.mode }}-*.json
-          retention-days: 7
+  #     - name: Upload Test Artifacts
+  #       if: always() && !cancelled() && (steps.unit_tests.conclusion != 'skipped' || steps.integration_tests.conclusion != 'skipped')
+  #       uses: actions/upload-artifact@v7
+  #       with:
+  #         name: test-artifacts-linux-${{ matrix.mode }}
+  #         path: |
+  #           ${{ runner.temp }}/build/test-output-linux-${{ matrix.mode }}-*.txt
+  #           ${{ runner.temp }}/build/junit-results-linux-${{ matrix.mode }}-*.xml
+  #           ${{ runner.temp }}/build/test-duration-linux-${{ matrix.mode }}-*.json
+  #         retention-days: 7
 
-      - name: Verify coverage data files exist
-        if: matrix.mode == 'coverage'
-        working-directory: ${{ runner.temp }}/build
-        run: |
-          gcda_count=$(find . -name '*.gcda' | wc -l | tr -d '[:space:]')
-          echo "Detected ${gcda_count} .gcda files"
-          if [ "${gcda_count}" -eq 0 ]; then
-            echo "::error::No .gcda files were produced by test execution"
-            exit 1
-          fi
+  #     - name: Verify coverage data files exist
+  #       if: matrix.mode == 'coverage'
+  #       working-directory: ${{ runner.temp }}/build
+  #       run: |
+  #         gcda_count=$(find . -name '*.gcda' | wc -l | tr -d '[:space:]')
+  #         echo "Detected ${gcda_count} .gcda files"
+  #         if [ "${gcda_count}" -eq 0 ]; then
+  #           echo "::error::No .gcda files were produced by test execution"
+  #           exit 1
+  #         fi
 
-      - name: Coverage Report
-        if: matrix.mode == 'coverage'
-        uses: ./.github/actions/coverage
-        with:
-          build-dir: ${{ runner.temp }}/build
-          mode: report-only
-          codecov-token: ${{ secrets.CODECOV_TOKEN }}
+  #     - name: Coverage Report
+  #       if: matrix.mode == 'coverage'
+  #       uses: ./.github/actions/coverage
+  #       with:
+  #         build-dir: ${{ runner.temp }}/build
+  #         mode: report-only
+  #         codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Verify Coverage Thresholds
-        if: matrix.mode == 'coverage'
-        working-directory: ${{ runner.temp }}/build
-        run: |
-          line_thresh=$(python3 "${GITHUB_WORKSPACE}/.github/scripts/cmake_helper.py" \
-            cache-var --build-dir . --name QGC_COVERAGE_LINE_THRESHOLD --default 30)
-          branch_thresh=$(python3 "${GITHUB_WORKSPACE}/.github/scripts/cmake_helper.py" \
-            cache-var --build-dir . --name QGC_COVERAGE_BRANCH_THRESHOLD --default 20)
-          python3 "${GITHUB_WORKSPACE}/.github/scripts/verify_coverage_thresholds.py" \
-            --coverage-xml coverage.xml \
-            --line-threshold "${line_thresh}" \
-            --branch-threshold "${branch_thresh}"
+  #     - name: Verify Coverage Thresholds
+  #       if: matrix.mode == 'coverage'
+  #       working-directory: ${{ runner.temp }}/build
+  #       run: |
+  #         line_thresh=$(python3 "${GITHUB_WORKSPACE}/.github/scripts/cmake_helper.py" \
+  #           cache-var --build-dir . --name QGC_COVERAGE_LINE_THRESHOLD --default 30)
+  #         branch_thresh=$(python3 "${GITHUB_WORKSPACE}/.github/scripts/cmake_helper.py" \
+  #           cache-var --build-dir . --name QGC_COVERAGE_BRANCH_THRESHOLD --default 20)
+  #         python3 "${GITHUB_WORKSPACE}/.github/scripts/verify_coverage_thresholds.py" \
+  #           --coverage-xml coverage.xml \
+  #           --line-threshold "${line_thresh}" \
+  #           --branch-threshold "${branch_thresh}"

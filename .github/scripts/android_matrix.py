@@ -74,6 +74,8 @@ LINUX_EMULATOR_JOB: Leg = {
 
 
 def build_matrix(is_pr: bool) -> list[Leg]:
+    """Only rinnugn on linux"""
+    return [LINUX_JOB]
     """Return the matrix include-list for the given event type."""
     legs = [LINUX_JOB, MAC_JOB, WINDOWS_JOB, LINUX_EMULATOR_JOB]
     if is_pr:

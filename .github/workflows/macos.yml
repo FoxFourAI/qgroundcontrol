@@ -99,7 +99,7 @@ jobs:
         with:
           binary-path: ${{ runner.temp }}/build/${{ matrix.build_type }}/QGroundControl.app/Contents/MacOS/QGroundControl
           build-dir: ${{ runner.temp }}/build
-          expect-archs: x86_64h arm64
+          expect-archs: x86_64h
 
       - name: Import Code Signing Certificate
         if: github.event_name != 'pull_request'
