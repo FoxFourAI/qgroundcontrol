@@ -58,6 +58,7 @@ FlightMap {
     onPipModeChanged: _adjustMapZoomForPipMode()
 
     QGCButton {
+        id: goToVehicle
         anchors.verticalCenter:parent.verticalCenter
         anchors.left: parent.left
         anchors.leftMargin: ScreenTools.defaultFontPixelWidth
@@ -80,6 +81,9 @@ FlightMap {
     }
     onCenterChanged: {
         QGroundControl.flightMapPosition = _root.center
+        if (_disableVehicleTracking && _activeVehicle) {
+            goToVehicle.visible = recenterNeeded()
+        }
     }
 
     // We track whether the user has panned or not to correctly handle automatic map positioning
