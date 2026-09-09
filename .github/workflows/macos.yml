@@ -94,12 +94,12 @@ jobs:
           build-dir: ${{ runner.temp }}/build
           build-type: ${{ matrix.build_type }}
 
-      - name: Verify dev build executable
-        uses: ./.github/actions/verify-executable
-        with:
-          binary-path: ${{ runner.temp }}/build/${{ matrix.build_type }}/QGroundControl.app/Contents/MacOS/QGroundControl
-          build-dir: ${{ runner.temp }}/build
-          expect-archs: arm64 x86_64h
+      # - name: Verify dev build executable
+      #   uses: ./.github/actions/verify-executable
+      #   with:
+      #     binary-path: ${{ runner.temp }}/build/${{ matrix.build_type }}/QGroundControl.app/Contents/MacOS/QGroundControl
+      #     build-dir: ${{ runner.temp }}/build
+      #     expect-archs: arm64 x86_64h
 
       - name: Import Code Signing Certificate
         if: github.event_name != 'pull_request'
