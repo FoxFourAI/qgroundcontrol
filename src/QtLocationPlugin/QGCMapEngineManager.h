@@ -45,6 +45,10 @@ public:
     Q_ENUM(ImportAction)
 
     Q_INVOKABLE bool exportSets(const QString &path = QString());
+
+    //FoxFour part
+    Q_INVOKABLE bool exportSetAsMRF(const QString &path = QString());
+
     Q_INVOKABLE bool findName(const QString &name) const;
     Q_INVOKABLE bool importSets(const QString &path = QString());
 
