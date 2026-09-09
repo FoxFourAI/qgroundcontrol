@@ -81,7 +81,7 @@ FlightMap {
     }
     onCenterChanged: {
         QGroundControl.flightMapPosition = _root.center
-        if (_disableVehicleTracking && _activeVehicle ) {
+        if (_disableVehicleTracking && _activeVehicle) {
             goToVehicle.visible = recenterNeeded()
         }
     }
