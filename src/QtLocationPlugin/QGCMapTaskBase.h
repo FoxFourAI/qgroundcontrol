@@ -21,7 +21,9 @@ public:
         taskPruneCache,
         taskReset,
         taskExport,
-        taskImport
+        taskImport,
+        //FoxFour part
+        taskExportMRF,
     };
     Q_ENUM(TaskType);
 

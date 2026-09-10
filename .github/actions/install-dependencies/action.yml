@@ -67,6 +67,7 @@ runs:
               args.append('--msvc-arm64')
           if os.environ.get('INPUT_NSIS') == 'true':
               args.append('--nsis')
+          args.append('--gdal')
           sys.exit(subprocess.run(args).returncode)
 
     - name: Get system package list (Linux)

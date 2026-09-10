@@ -56,6 +56,14 @@
             "keywords": "map matching points"
         },
         {
+            "name": "disableVehicleTracking",
+            "shortDesc": "Disable recentering map on vehicle",
+            "type": "bool",
+            "default": false,
+            "label": "Disable recentering map on vehicle",
+            "keywords": "map anchor center"
+        },
+        {
           "name": "enableVGMDialect",
           "shortDesc": "Use custom MAVLink messages to communicate with VGM.",
           "type": "bool",

@@ -55,11 +55,15 @@
         <file alias="QGroundControl/Controls/InstrumentValueLabel.qml">override/qml/QGroundControl/QmlControls/FoxFourInstrumentValueLabel.qml</file>
         <file alias="QGroundControl/Controls/InstrumentValueValue.qml">override/qml/QGroundControl/QmlControls/FoxFourInstrumentValueValue.qml</file>
         <file alias="QGroundControl/Controls/ParameterEditor.qml">override/qml/QGroundControl/QmlControls/FoxFourParamererEditor.qml</file>
+        <file alias="QGroundControl/Controls/QGCFileDialog.qml">override/qml/QGroundControl/QmlControls/FoxFourQGCFileDialog.qml</file>
         <!--Flight Map-->
         <file alias="QGroundControl/FlightMap/Widgets/PhotoVideoControl.qml">override/qml/QGroundControl/FlightMap/Widgets/FoxFourPhotoVideoControl.qml</file>
         <!--App Settings-->
         <file alias="QGroundControl/AppSettings/VideoSettings.qml">override/qml/QGroundControl/AppSettings/FoxFourVideoSettings.qml</file>
+        <file alias="QGroundControl/AppSettings/OfflineMapSettings.qml">override/qml/QGroundControl/AppSettings/FoxFourOfflineMapSettings.qml</file>
         <file alias="QGroundControl/AppSettings/SettingsPage.qml">../src/AppSettings/SettingsPage.qml</file>                                           <!--just to link qml-->
+        <file alias="QGroundControl/AppSettings/OfflineMapInfo.qml">../src/AppSettings/OfflineMapInfo.qml</file>                                           <!--just to link qml-->
+        <file alias="QGroundControl/AppSettings/OfflineMapEditor.qml">../src/AppSettings/OfflineMapEditor.qml</file>                                           <!--just to link qml-->
 
     </qresource>
     <qresource prefix="/json">

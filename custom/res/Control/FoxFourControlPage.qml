@@ -134,6 +134,12 @@ Item {
                     fact: control._settings.showGPSTrajectory
                 }
 
+                FactCheckBoxSlider {
+                    Layout.fillWidth: true
+                    text: fact.label
+                    fact: control._settings.disableVehicleTracking
+                }
+
                 LabelledFactTextField {
                     Layout.fillWidth: true
                     label: fact.label
