@@ -5,6 +5,12 @@
 VGMDialect::VGMDialect(Vehicle* vehicle, AutoPilotPlugin* autopilot, QObject* parent)
     : VehicleComponent(vehicle, autopilot, AutoPilotPlugin::KnownVehicleComponent::UnknownVehicleComponent, parent)
 {
+    for(double i = 0; i < 100.0; i+=0.1) {
+        _detections.append(QVariant::fromValue(QGeoCoordinate(i,0)));
+        _detections.append(QVariant::fromValue(QGeoCoordinate(i,i)));
+        _detections.append(QVariant::fromValue(QGeoCoordinate(0,i)));
+    }
+    emit detectionsListChanged();
 }
 
 QString VGMDialect::name() const

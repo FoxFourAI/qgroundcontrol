@@ -25,7 +25,7 @@ public:
 
     QVariantList detections() const;
 
-    void clearDetections();
+    Q_INVOKABLE void clearDetections();
 signals:
     void companionVersionReceived(QVariantMap);
     void detectionsListChanged();
