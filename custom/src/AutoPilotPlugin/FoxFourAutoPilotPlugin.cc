@@ -33,6 +33,7 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent
     _mapMatching = new MapMatching(vehicle,this);
     _vioTrajectory = new VioTrajectoryPoints(vehicle,this);
     _configurator = new CopterConfigurator(vehicle,this);
+    _dialectHandler = new VGMDialect(vehicle, this, this);
     emit mapMatchingCreated();
     auto cameraMgr = vehicle->cameraManager();
     connect(_vehicle->parameterManager(), &ParameterManager::factAdded, this, &FoxFourAutoPilotPlugin::handleFactAdded);

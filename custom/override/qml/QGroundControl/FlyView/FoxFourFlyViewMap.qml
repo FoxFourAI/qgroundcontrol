@@ -38,6 +38,7 @@ FlightMap {
     property var    _foxFourSettings:           QGroundControl.settingsManager.foxFourSettings
     property bool   _disableVehicleTracking:    _foxFourSettings.disableVehicleTracking.rawValue
     property bool   _showGPSrawTrajectory:      _foxFourSettings.showGPSTrajectory.rawValue
+    property bool   _showDetections:            _foxFourSettings.showDetections.rawValue
 
     property bool   _vehicleTracking:           true
     property bool   _keepVehicleCentered:       pipMode ? true : false
@@ -65,6 +66,7 @@ FlightMap {
         text: qsTr("Go to Vehicle")
         visible: _activeVehicle && recenterNeeded() && _disableVehicleTracking
         onClicked: moveMapToVehicle()
+        z: 100
     }
 
     onVisibleChanged: {
@@ -84,6 +86,7 @@ FlightMap {
         if (_disableVehicleTracking && _activeVehicle) {
             goToVehicle.visible = recenterNeeded()
         }
+        updateCanvases();
     }
 
     // We track whether the user has panned or not to correctly handle automatic map positioning
@@ -322,17 +325,50 @@ FlightMap {
 
             Connections {
                 target: _activeVehicle ? _activeVehicle.autopilotPlugin.mapMatching : null
-                onAnchorsChanged: anchorCanvas.requestPaint()
-            }
-
-            Connections {
-                target: _root
-                onCenterChanged:    anchorCanvas.requestPaint()
-                onZoomLevelChanged: anchorCanvas.requestPaint()
-                onWidthChanged:     anchorCanvas.requestPaint()
-                onHeightChanged:    anchorCanvas.requestPaint()
+                function onAnchorsChanged()   { anchorCanvas.requestPaint()}
             }
         }
+
+    Canvas {
+        id: detectionsCanvas
+        anchors.fill:parent
+        visible: {
+            if(_root._showDetections) {
+                requestPaint();
+                return true;
+            }
+            return false;
+        }
+
+        onPaint: {
+            var ctx = getContext("2d");
+            ctx.clearRect(0, 0, width, height);
+            if (!_activeVehicle) return;
+
+            ctx.fillStyle = "red";
+            var anchors = _activeVehicle.autopilotPlugin.dialectHandler.detections;
+
+            for (var i = 0; i < anchors.length; i++) {
+                var pt = _root.fromCoordinate(anchors[i], false);
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        Connections {
+            target: _activeVehicle ? _activeVehicle.autopilotPlugin.dialectHandler : null
+            function onDetectionsListChanged() { detectionsCanvas.requestPaint(); }
+        }
+    }
+
+    function updateCanvases() {
+        if (_root._showGPSrawTrajectory) {
+            anchorCanvas.requestPaint();
+        }
+        if (_root._showDetections) {
+            detectionsCanvas.requestPaint();
+        }
+    }
 
     // Add the vehicles to the map
     MapItemView {

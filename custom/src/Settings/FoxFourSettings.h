@@ -20,6 +20,7 @@ public:
     DEFINE_SETTINGFACT(autoConfigureStream)
     DEFINE_SETTINGFACT(showGPSTrajectory)
     DEFINE_SETTINGFACT(mapMatchingPointsCnt)
+    DEFINE_SETTINGFACT(showDetections)
     DEFINE_SETTINGFACT(enableVGMDialect)
     DEFINE_SETTINGFACT(videoToolBarOverlap)
     DEFINE_SETTINGFACT(directVGM)

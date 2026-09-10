@@ -146,6 +146,12 @@ Item {
                     fact: control._settings.mapMatchingPointsCnt
                     textField.numericValuesOnly: true
                 }
+
+                FactCheckBoxSlider {
+                    Layout.fillWidth: true
+                    text: fact.label
+                    fact: control._settings.showDetections
+                }
             }
 
             SettingsGroupLayout {
