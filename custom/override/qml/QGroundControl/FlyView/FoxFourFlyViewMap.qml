@@ -331,33 +331,42 @@ FlightMap {
 
     Canvas {
         id: detectionsCanvas
-        anchors.fill:parent
-        visible: {
-            if(_root._showDetections) {
-                requestPaint();
-                return true;
+        anchors.fill: parent
+        visible: _root._showDetections
+
+        readonly property string indicatorSource: "qrc:/custom/img/detection.svg"
+        readonly property real   indicatorSize:   ScreenTools.defaultFontPixelHeight * 3
+        property bool indicatorReady: false
+
+        Component.onCompleted: loadImage(indicatorSource)
+
+        onImageLoaded: {
+            if (isImageLoaded(indicatorSource)) {
+                indicatorReady = true
+                requestPaint()
             }
-            return false;
         }
+
+        onVisibleChanged: if (visible) requestPaint()
 
         onPaint: {
-            var ctx = getContext("2d");
-            ctx.clearRect(0, 0, width, height);
-            if (!_activeVehicle) return;
+            var ctx = getContext("2d")
+            ctx.clearRect(0, 0, width, height)
+            if (!indicatorReady || !_activeVehicle) return
 
-            ctx.fillStyle = "red";
-            var anchors = _activeVehicle.autopilotPlugin.dialectHandler.detections;
-
-            for (var i = 0; i < anchors.length; i++) {
-                var pt = _root.fromCoordinate(anchors[i], false);
-                ctx.beginPath();
-                ctx.arc(pt.x, pt.y, 2, 0, Math.PI * 2);
-                ctx.fill();
+            var detections = _activeVehicle.autopilotPlugin.dialectHandler.detections
+            for (var i = 0; i < detections.length; i++) {
+                var pt = _root.fromCoordinate(detections[i], false)
+                ctx.drawImage(indicatorSource,
+                              pt.x - indicatorSize / 2,
+                              pt.y - indicatorSize / 2,
+                              indicatorSize, indicatorSize)
             }
         }
+
         Connections {
             target: _activeVehicle ? _activeVehicle.autopilotPlugin.dialectHandler : null
-            function onDetectionsListChanged() { detectionsCanvas.requestPaint(); }
+            function onDetectionsListChanged() { detectionsCanvas.requestPaint() }
         }
     }
 
