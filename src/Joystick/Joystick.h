@@ -151,7 +151,7 @@ public:
     };
     static QString axisFunctionToString(AxisFunction_t function);
 
-    /// Standard gamepad hat/D-pad directions
+            /// Standard gamepad hat/D-pad directions
     enum HatDirection : quint8 {
         HatCentered  = 0x00,
         HatUp        = 0x01,
@@ -165,7 +165,7 @@ public:
     };
     Q_ENUM(HatDirection)
 
-    /// Standard gamepad button indices
+            /// Standard gamepad button indices
     enum GamepadButton {
         ButtonA = 0,
         ButtonB = 1,
@@ -185,7 +185,7 @@ public:
     };
     Q_ENUM(GamepadButton)
 
-    /// Standard gamepad axis indices
+            /// Standard gamepad axis indices
     enum GamepadAxis {
         AxisLeftX = 0,
         AxisLeftY = 1,
@@ -234,7 +234,7 @@ public:
     Q_INVOKABLE virtual QString getMapping() const { return QString(); }
     Q_INVOKABLE virtual bool addMapping(const QString &mapping) { Q_UNUSED(mapping); return false; }
 
-    // Sensor support (gyroscope/accelerometer)
+            // Sensor support (gyroscope/accelerometer)
     Q_INVOKABLE virtual bool hasGyroscope() const { return false; }
     Q_INVOKABLE virtual bool hasAccelerometer() const { return false; }
     Q_INVOKABLE virtual bool setGyroscopeEnabled(bool enabled) { Q_UNUSED(enabled); return false; }
@@ -244,34 +244,34 @@ public:
     Q_INVOKABLE virtual float gyroscopeDataRate() const { return 0.0f; }
     Q_INVOKABLE virtual float accelerometerDataRate() const { return 0.0f; }
 
-    // Touchpad support (PS4/PS5 controllers)
+            // Touchpad support (PS4/PS5 controllers)
     Q_INVOKABLE virtual int touchpadCount() const { return 0; }
     Q_INVOKABLE virtual int touchpadFingerCount(int touchpad) const { Q_UNUSED(touchpad); return 0; }
     Q_INVOKABLE virtual QVariantMap getTouchpadFinger(int touchpad, int finger) const {
         Q_UNUSED(touchpad); Q_UNUSED(finger); return QVariantMap();
     }
 
-    // Trackball support
+            // Trackball support
     Q_INVOKABLE virtual QVariantMap getBall(int ball) const { Q_UNUSED(ball); return QVariantMap(); }
 
-    // PS5 adaptive trigger effects
+            // PS5 adaptive trigger effects
     Q_INVOKABLE virtual bool sendEffect(const QByteArray &data) { Q_UNUSED(data); return false; }
 
-    // Binding queries (debug/UI)
+            // Binding queries (debug/UI)
     Q_INVOKABLE virtual QVariantMap getAxisBinding(int axis) const { Q_UNUSED(axis); return QVariantMap(); }
     Q_INVOKABLE virtual QVariantMap getButtonBinding(int button) const { Q_UNUSED(button); return QVariantMap(); }
 
-    // Capability queries
+            // Capability queries
     Q_INVOKABLE virtual bool hasButton(int button) const { Q_UNUSED(button); return false; }
     Q_INVOKABLE virtual bool hasAxis(int axis) const { Q_UNUSED(axis); return false; }
 
-    // Real gamepad type (actual hardware vs mapped type)
+            // Real gamepad type (actual hardware vs mapped type)
     Q_INVOKABLE virtual QString realGamepadType() const { return QString(); }
 
-    // Type-specific button labels (shows correct names for controller type, e.g., "Cross" vs "A")
+            // Type-specific button labels (shows correct names for controller type, e.g., "Cross" vs "A")
     Q_INVOKABLE virtual QString buttonLabelForType(int button) const { Q_UNUSED(button); return QString(); }
 
-    // Haptic/Force Feedback support
+            // Haptic/Force Feedback support
     Q_INVOKABLE virtual bool hasHaptic() const { return false; }
     Q_INVOKABLE virtual int hapticEffectsCount() const { return 0; }
     Q_INVOKABLE virtual bool hapticRumbleSupported() const { return false; }
@@ -279,10 +279,10 @@ public:
     Q_INVOKABLE virtual bool hapticRumblePlay(float strength, quint32 durationMs) { Q_UNUSED(strength); Q_UNUSED(durationMs); return false; }
     Q_INVOKABLE virtual void hapticRumbleStop() {}
 
-    // Mapping for GUID (static in implementation)
+            // Mapping for GUID (static in implementation)
     Q_INVOKABLE virtual QString getMappingForGUID(const QString &guid) const { Q_UNUSED(guid); return QString(); }
 
-    // Virtual joystick control (for software-based joystick input)
+            // Virtual joystick control (for software-based joystick input)
     Q_INVOKABLE virtual bool setVirtualAxis(int axis, int value) { Q_UNUSED(axis); Q_UNUSED(value); return false; }
     Q_INVOKABLE virtual bool setVirtualButton(int button, bool down) { Q_UNUSED(button); Q_UNUSED(down); return false; }
     Q_INVOKABLE virtual bool setVirtualHat(int hat, quint8 value) { Q_UNUSED(hat); Q_UNUSED(value); return false; }
@@ -294,18 +294,18 @@ public:
         Q_UNUSED(sensorType); Q_UNUSED(x); Q_UNUSED(y); Q_UNUSED(z); return false;
     }
 
-    // Properties/Capability detection
+            // Properties/Capability detection
     Q_INVOKABLE virtual bool hasMonoLED() const { return false; }
     Q_INVOKABLE virtual bool hasRGBLED() const { return false; }
     Q_INVOKABLE virtual bool hasPlayerLED() const { return false; }
 
-    // Connection state
+            // Connection state
     Q_INVOKABLE virtual QString connectionState() const { return QString(); }
 
-    // Initial axis state (for drift detection) - returns {valid, value}
+            // Initial axis state (for drift detection) - returns {valid, value}
     Q_INVOKABLE virtual QVariantMap getAxisInitialState(int axis) const { Q_UNUSED(axis); return QVariantMap(); }
 
-    // Per-device custom mapping
+            // Per-device custom mapping
     Q_INVOKABLE virtual bool setMapping(const QString &mapping) { Q_UNUSED(mapping); return false; }
 
     QStringList buttonActions() const;
@@ -314,7 +314,7 @@ public:
     const QmlObjectListModel *assignableActions() const { return _availableButtonActions; }
     QStringList assignableActionTitles() const { return _availableActionTitles; }
 
-    /// HOTAS/Multi-device linking (devices with same groupId act as single joystick)
+            /// HOTAS/Multi-device linking (devices with same groupId act as single joystick)
     QString linkedGroupId() const { return _linkedGroupId; }
     void setLinkedGroupId(const QString &groupId);
     QString linkedGroupRole() const { return _linkedGroupRole; }
@@ -373,12 +373,12 @@ signals:
     void rawChannelValuesChanged(QVector<int> channelValues); ///< Signalled during PollingForConfiguration
     void rawButtonPressedChanged(int index, bool pressed); ///< Signalled during PollingForConfiguration
 
-    // Sensor event signals (for event-driven updates)
+            // Sensor event signals (for event-driven updates)
     void gyroscopeDataUpdated(const QVector3D &data);
     void accelerometerDataUpdated(const QVector3D &data);
     void touchpadEvent(int touchpad, int finger, bool down, float x, float y, float pressure);
 
-    // Additional event signals
+            // Additional event signals
     void mappingRemapped();
     void updateComplete();
 
@@ -439,14 +439,17 @@ private:
     void _clearAxisSettings();
     void _clearButtonSettings();
 
-    /// Adjust the raw axis value to the -1:1 range given calibration information
+            /// Adjust the raw axis value to the -1:1 range given calibration information
     float _adjustRange(int reversedAxisValue, const AxisCalibration_t &calibration, bool withDeadbands);
     uint16_t _adjustRangeToRcOverridePwm(int value, const AxisCalibration_t &calibration, bool withDeadbands);
 
     void _executeButtonAction(const QString &action, const ButtonEvent_t buttonEvent);
     int  _findAvailableButtonActionIndex(const QString &action);
+    void _addAvailableButtonActionIfMissing(const QString &action);
     bool _validAxis(int axis) const;
     bool _validButton(int button) const;
+
+    static constexpr bool _axisUpdateDue(qint64 elapsed, int delay) { return elapsed >= delay; }
     void _handleAxis();
     void _handleButtons();
     void _buildAvailableButtonsActionList(Vehicle *vehicle);
@@ -456,7 +459,7 @@ private:
     void _updateButtonEventState(int buttonIndex, const bool buttonPressed, ButtonEvent_t &buttonEventState);
     void _updateButtonEventStates(QVector<ButtonEvent_t> &buttonEventStates);
 
-    /// Remap current axis functions from current TX mode to new TX mode
+            /// Remap current axis functions from current TX mode to new TX mode
     void _remapFunctionsInFunctionMapToNewTransmittedMode(int fromMode, int toMode);
 
     int _hatButtonCount = 0;
@@ -477,7 +480,7 @@ private:
     QStringList _availableActionTitles;
     std::atomic<bool> _exitPollingThread = false;    ///< true: signal thread to exit
 
-    // HOTAS/Multi-device linking
+            // HOTAS/Multi-device linking
     QString _linkedGroupId;
     QString _linkedGroupRole;
 

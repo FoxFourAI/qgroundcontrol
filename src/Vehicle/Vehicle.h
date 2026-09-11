@@ -545,9 +545,6 @@ public:
     void startCalibration   (QGCMAVLink::CalibrationType calType);
     void stopCalibration    (bool showError);
 
-    void startUAVCANBusConfig(void);
-    void stopUAVCANBusConfig(void);
-
     FactGroup* vehicleFactGroup             () { return _vehicleFactGroup; }
     FactGroup* gpsFactGroup                 ();
     FactGroup* gps2FactGroup                ();
@@ -879,9 +876,7 @@ private:
     void _handleFenceStatus             (const mavlink_message_t& message);
 
     // ArduPilot dialect messages
-#if !defined(QGC_NO_ARDUPILOT_DIALECT)
     void _handleCameraFeedback          (const mavlink_message_t& message);
-#endif
     void _handleCameraImageCaptured     (const mavlink_message_t& message);
     void _handleCommandLong             (const mavlink_message_t& message);
     void _missionManagerError           (int errorCode, const QString& errorMsg);

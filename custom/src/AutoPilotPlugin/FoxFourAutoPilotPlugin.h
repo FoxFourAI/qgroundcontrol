@@ -38,7 +38,6 @@ public:
     OnboardComputersManager* onboardComputersManager();
     CopterConfigurator* configurator() {return _configurator;}
     bool exposureAvailable() {return _exposureAvailable;}
-    void parametersReadyPreChecks();
 signals:
     void exposureAvailableChanged();
     void storageCapacityChanged();

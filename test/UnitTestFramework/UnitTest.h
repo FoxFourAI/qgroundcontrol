@@ -208,6 +208,8 @@ Q_DECLARE_LOGGING_CATEGORY(UnitTestLog)
 class Fact;
 class MissionItem;
 class QSignalSpy;
+class Vehicle;
+class VehicleComponent;
 
 // ============================================================================
 // Test Context - Improved failure diagnostics
@@ -364,6 +366,10 @@ public:
     /// If waitMs < 0, CI-aware defaults are used. If waitMs == 0, no sleep between iterations.
     static void settleEventLoopForCleanup(int iterations = 0, int waitMs = 0);
 
+    /// Find a vehicle setup component (e.g. "Frame", "Sensors", "Radio") by display name.
+    /// Returns nullptr if not found.
+    static VehicleComponent *findVehicleComponent(Vehicle *vehicle, const QString &name);
+
     // ========================================================================
     // Test Properties
     // ========================================================================
@@ -448,6 +454,10 @@ protected slots:
     virtual void cleanup();
 
 protected:
+    /// True when an ArduPilot firmware plugin factory is registered. Single-firmware
+    /// builds (e.g. custom) don't register one; APM-specific tests should QSKIP.
+    static bool apmFirmwareSupported();
+
     /// Emits a one-time failure context dump for the currently running test function.
     void dumpFailureContextIfTestFailed(QStringView reason = {});
 

@@ -1,13 +1,19 @@
 #include "PlanViewUITest.h"
 
 #include <QtCore/QFile>
+#include <QtCore/QScopeGuard>
 #include <QtCore/QTemporaryDir>
 #include <QtPositioning/QGeoCoordinate>
 #include <QtQuick/QQuickItem>
 #include <QtQuick/QQuickWindow>
 #include <QtTest/QTest>
 
+#include "AppSettings.h"
+#include "Fact.h"
+#include "PlanViewSettings.h"
 #include "QGCFileDialogController.h"
+#include "QGCMAVLink.h"
+#include "SettingsManager.h"
 
 UT_REGISTER_TEST(PlanViewUITest, TestLabel::Integration, TestLabel::MissionManager)
 
@@ -30,6 +36,118 @@ int PlanViewUITest::_missionItemCount()
         return -1;
     }
     return visualItems->property("count").toInt();
+}
+
+QGeoCoordinate PlanViewUITest::_plannedHomePosition()
+{
+    QQuickItem *planView = findVisibleItem(_rootItem, QStringLiteral("mainView_plan"));
+    if (!planView) {
+        return QGeoCoordinate();
+    }
+    QObject *missionController = planView->property("_missionController").value<QObject*>();
+    if (!missionController) {
+        return QGeoCoordinate();
+    }
+    return missionController->property("plannedHomePosition").value<QGeoCoordinate>();
+}
+
+void PlanViewUITest::_navigateToPlanAndCenterMap()
+{
+    QVERIFY2(clickToolSelectDropdownButton(QStringLiteral("toolbar_viewPlan")), "Failed to navigate to Plan view");
+    QVERIFY2(findVisibleItem(_rootItem, QStringLiteral("mainView_plan"), 2000), "Plan view did not appear");
+    QTest::qWait(_viewDelay);
+
+    // Position the map at a known location and reasonable zoom so map clicks
+    // are deterministic and offset clicks produce nearby waypoints.
+    QQuickItem *map = findVisibleItem(_rootItem, QStringLiteral("planView_map"));
+    QVERIFY2(map, "planView_map not found");
+    const QGeoCoordinate mapCenter(47.397742, 8.545594); // Zurich
+    map->setProperty("center", QVariant::fromValue(mapCenter));
+    map->setProperty("zoomLevel", 15.0);
+    QVERIFY2(waitForCondition(
+                 [&] {
+                     const QGeoCoordinate c = map->property("center").value<QGeoCoordinate>();
+                     return c.isValid() && (c.distanceTo(mapCenter) < 1.0)
+                         && qFuzzyCompare(map->property("zoomLevel").toReal(), 15.0);
+                 },
+                 1000),
+             "Map did not settle on the requested center/zoom");
+}
+
+void PlanViewUITest::_verifyWaypointToolAddsWaypointOnEmptyPlan(bool expectTakeoffButtonVisible)
+{
+    startUI();
+    if (QTest::currentTestFailed()) return;
+
+    _navigateToPlanAndCenterMap();
+    if (QTest::currentTestFailed()) return;
+
+    const QString takeoffBtn  = QStringLiteral("planToolStrip_takeoffButton");
+    const QString waypointBtn = QStringLiteral("planToolStrip_waypointButton");
+    const QString context     = QStringLiteral("waypoint on empty plan");
+
+    verifyVisibility(takeoffBtn, expectTakeoffButtonVisible, context);
+    if (QTest::currentTestFailed()) return;
+
+    // Home-position gate: Waypoint tool must be disabled until home is set
+    verifyEnabled(waypointBtn, false, context);
+    if (QTest::currentTestFailed()) return;
+
+    // Click map to set home position: plan stays empty
+    _clickMap(0.5, 0.5);
+    if (QTest::currentTestFailed()) return;
+
+    QVERIFY2(waitForCondition([&] { return _plannedHomePosition().isValid(); }, 2000,
+                              QStringLiteral("home position set")),
+             "Map click did not set home position");
+    QCOMPARE(_missionItemCount(), 1);
+
+    // Precondition that distinguishes this path from the takeoff-first flow:
+    // the Waypoint tool is enabled while the plan is still empty.
+    verifyEnabled(waypointBtn, true, context);
+    if (QTest::currentTestFailed()) return;
+
+    const QGeoCoordinate homePosition = _plannedHomePosition();
+
+    // Arm the Waypoint tool and click the map: must insert a waypoint, not move home
+    QVERIFY2(clickButton(waypointBtn), "Failed to click Waypoint button");
+    verifyChecked(waypointBtn, true, context);
+    if (QTest::currentTestFailed()) return;
+
+    _clickMap(0.35, 0.4);
+    if (QTest::currentTestFailed()) return;
+
+    QVERIFY2(waitForCondition([&] { return _missionItemCount() == 2; }, 2000,
+                              QStringLiteral("waypoint inserted")),
+             qPrintable(QStringLiteral("Map click with Waypoint tool armed did not insert a waypoint (item count %1)")
+                            .arg(_missionItemCount())));
+    QVERIFY2(_plannedHomePosition().distanceTo(homePosition) < 1.0,
+             "Map click with Waypoint tool armed moved the home position");
+}
+
+void PlanViewUITest::_testRoverWaypointOnEmptyPlan()
+{
+    // Rover has no takeoff item, so the Waypoint tool is the first insert tool
+    // available on an empty plan.
+    SettingsManager::instance()->appSettings()->offlineEditingVehicleClass()->setRawValue(QGCMAVLink::VehicleClassRoverBoat);
+
+    _verifyWaypointToolAddsWaypointOnEmptyPlan(false /* expectTakeoffButtonVisible */);
+    if (QTest::currentTestFailed()) return;
+
+    // Rover Land tool inserts RTL, so the label must read Return (issue #14957)
+    verifyText(QStringLiteral("planToolStrip_landButton"), QStringLiteral("Return"), QStringLiteral("rover land tool"));
+}
+
+void PlanViewUITest::_testTakeoffNotRequiredWaypointOnEmptyPlan()
+{
+    // Multi-rotor with "takeoff item not required": the Waypoint tool is
+    // enabled on an empty plan just like the rover case.
+    Fact* const takeoffItemNotRequired = SettingsManager::instance()->planViewSettings()->takeoffItemNotRequired();
+    const QVariant savedValue = takeoffItemNotRequired->rawValue();
+    const auto restoreGuard = qScopeGuard([takeoffItemNotRequired, savedValue] { takeoffItemNotRequired->setRawValue(savedValue); });
+    takeoffItemNotRequired->setRawValue(true);
+
+    _verifyWaypointToolAddsWaypointOnEmptyPlan(true /* expectTakeoffButtonVisible */);
 }
 
 void PlanViewUITest::_verifyFullState(const PlanUIState &state, const QString &context)
@@ -92,26 +210,8 @@ void PlanViewUITest::_testPlanViewStates()
     startUI();
     if (QTest::currentTestFailed()) return;
 
-    // Navigate to Plan view
-    QVERIFY2(clickToolSelectDropdownButton(QStringLiteral("toolbar_viewPlan")), "Failed to navigate to Plan view");
-    QVERIFY2(findVisibleItem(_rootItem, QStringLiteral("mainView_plan"), 2000), "Plan view did not appear");
-    QTest::qWait(_viewDelay);
-
-    // Position the map at a known location and reasonable zoom so map clicks
-    // are deterministic and offset clicks produce nearby waypoints.
-    QQuickItem *map = findVisibleItem(_rootItem, QStringLiteral("planView_map"));
-    QVERIFY2(map, "planView_map not found");
-    const QGeoCoordinate mapCenter(47.397742, 8.545594); // Zurich
-    map->setProperty("center", QVariant::fromValue(mapCenter));
-    map->setProperty("zoomLevel", 15.0);
-    QVERIFY2(waitForCondition(
-                 [&] {
-                     const QGeoCoordinate c = map->property("center").value<QGeoCoordinate>();
-                     return c.isValid() && (c.distanceTo(mapCenter) < 1.0)
-                         && qFuzzyCompare(map->property("zoomLevel").toReal(), 15.0);
-                 },
-                 1000),
-             "Map did not settle on the requested center/zoom");
+    _navigateToPlanAndCenterMap();
+    if (QTest::currentTestFailed()) return;
 
     const QString takeoffBtn  = QStringLiteral("planToolStrip_takeoffButton");
     const QString waypointBtn = QStringLiteral("planToolStrip_waypointButton");
@@ -465,6 +565,91 @@ void PlanViewUITest::_testPlanViewStates()
         .savePrimary      = false,  // Freshly loaded plan is not dirty
         .itemCount        = 3,      // Settings + takeoff + waypoint
     }, QStringLiteral("1.10 open round trip"));
+
+    stopUI();
+}
+
+// Save as... lives in the hamburger drop panel.
+void PlanViewUITest::_testSaveAsMenu()
+{
+    startUI();
+    if (QTest::currentTestFailed()) return;
+
+    _navigateToPlanAndCenterMap();
+    if (QTest::currentTestFailed()) return;
+
+    const QString hamburgerBtn = QStringLiteral("planToolbar_hamburgerButton");
+    const QString saveAsBtn    = QStringLiteral("planToolbar_saveAsButton");
+
+    // ------------------------------------------------------------------
+    // 2.1 Empty plan: Save as... visible but disabled
+    // ------------------------------------------------------------------
+    QVERIFY2(clickButton(hamburgerBtn), "Failed to click hamburger button");
+    QVERIFY2(findVisibleItem(_rootItem, saveAsBtn, 2000), "2.1: Save as... did not appear in drop panel");
+    verifyEnabled(saveAsBtn, false, QStringLiteral("2.1 save as on empty plan"));
+    if (QTest::currentTestFailed()) return;
+
+    // Dismiss the drop panel (CloseOnPressOutside)
+    _clickMap(0.5, 0.5);
+    if (QTest::currentTestFailed()) return;
+    QVERIFY2(waitForCondition([&] { return findVisibleItem(_rootItem, saveAsBtn, 0) == nullptr; }, 2000,
+                              QStringLiteral("drop panel closed")),
+             "2.1: drop panel did not close");
+
+    // ------------------------------------------------------------------
+    // 2.2 Build a savable plan: home position + takeoff item
+    // ------------------------------------------------------------------
+    if (!_plannedHomePosition().isValid()) {
+        // The dismiss press may have been consumed by the popup overlay
+        _clickMap(0.5, 0.5);
+        if (QTest::currentTestFailed()) return;
+    }
+    QVERIFY2(waitForCondition([&] { return _plannedHomePosition().isValid(); }, 2000,
+                              QStringLiteral("home position set")),
+             "2.2: map click did not set home position");
+
+    QVERIFY2(clickButton(QStringLiteral("planToolStrip_takeoffButton")), "Failed to click Takeoff button");
+    QVERIFY2(waitForCondition([&] { return _missionItemCount() == 2; }, 2000,
+                              QStringLiteral("takeoff item inserted")),
+             "2.2: takeoff item was not inserted");
+
+    // ------------------------------------------------------------------
+    // 2.3 Cancelled Save as...: nothing written, plan stays dirty
+    // ------------------------------------------------------------------
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString planFile = tempDir.filePath(QStringLiteral("PlanViewUITestSaveAs.plan"));
+
+    QVERIFY2(clickButton(hamburgerBtn), "Failed to click hamburger button (cancelled save as)");
+    QVERIFY2(findVisibleItem(_rootItem, saveAsBtn, 2000), "2.3: Save as... did not appear in drop panel");
+    verifyEnabled(saveAsBtn, true, QStringLiteral("2.3 save as with plan items"));
+    if (QTest::currentTestFailed()) return;
+
+    QGCFileDialogController::setTestRejectNext();
+    QVERIFY2(clickButton(saveAsBtn), "Failed to click Save as... button (cancelled save as)");
+
+    QVERIFY2(waitForCondition([] { return !QGCFileDialogController::testHookArmed(); }, 5000,
+                              QStringLiteral("file dialog shim consumed")),
+             "2.3 cancelled save as: file dialog shim was not consumed");
+    QVERIFY2(!QFile::exists(planFile), "2.3 cancelled save as: plan file was unexpectedly written");
+    verifyPrimary(QStringLiteral("planToolbar_saveButton"), true, QStringLiteral("2.3 cancelled save as"));
+    if (QTest::currentTestFailed()) return;
+
+    // ------------------------------------------------------------------
+    // 2.4 Accepted Save as...: file written, dirty-for-save cleared
+    // ------------------------------------------------------------------
+    QVERIFY2(clickButton(hamburgerBtn), "Failed to click hamburger button (save as)");
+    QVERIFY2(findVisibleItem(_rootItem, saveAsBtn, 2000), "2.4: Save as... did not appear in drop panel");
+
+    QGCFileDialogController::setTestNextFileForAccept(planFile);
+    QVERIFY2(clickButton(saveAsBtn), "Failed to click Save as... button");
+
+    QVERIFY2(waitForCondition([&] { return QFile::exists(planFile); }, 5000,
+                              QStringLiteral("plan file written")),
+             "2.4 save as: plan file was not written");
+    QVERIFY2(!QGCFileDialogController::testHookArmed(), "2.4 save as: file dialog shim was not consumed");
+    verifyPrimary(QStringLiteral("planToolbar_saveButton"), false, QStringLiteral("2.4 save as"));
+    if (QTest::currentTestFailed()) return;
 
     stopUI();
 }

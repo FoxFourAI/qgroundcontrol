@@ -42,6 +42,8 @@ private:
 
 typedef struct _GstElement GstElement;
 
+class GStreamerTest;
+
 class GstVideoReceiver : public VideoReceiver
 {
     Q_OBJECT
@@ -84,9 +86,11 @@ private slots:
     void _watchdog();
     void _handleEOS();
 
-protected:
+private:
+    friend class GStreamerTest;
+
     GstElement *_makeDecoder();
-    GstElement *_makeFileSink(const QString &videoFile, FILE_FORMAT format);
+    static GstElement* _makeFileSink(const QString& videoFile, FILE_FORMAT format, const GstCaps* inputCaps);
 
     void _onNewSourcePad(GstPad *pad);
     void _onNewDecoderPad(GstPad *pad);
