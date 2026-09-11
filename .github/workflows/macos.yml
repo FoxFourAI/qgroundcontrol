@@ -133,7 +133,7 @@ jobs:
         uses: ./.github/actions/verify-executable
         with:
           binary-path: /Volumes/QGroundControl/QGroundControl.app/Contents/MacOS/QGroundControl
-          expect-archs: x86_64h arm64
+          expect-archs: arm64
 
       - name: Attest and Upload
         if: matrix.build_type == 'Release'
