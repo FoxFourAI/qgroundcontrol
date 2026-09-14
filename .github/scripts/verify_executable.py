@@ -147,7 +147,12 @@ def main() -> None:
     if headless:
         cmd.append("--headless")
 
-    result = subprocess.run(cmd, cwd=str(work_dir), check=False)
+    result = subprocess.run(cmd, cwd=str(work_dir), check=False, debug=False, capture_output=True, text=True, env=os.environ)
+
+    print("Exit Code:", result.returncode)
+    print("STDERR:", result.stderr) # <-- This will likely show why it failed
+    print("STDOUT:", result.stdout)
+
     sys.exit(result.returncode)
 
 
