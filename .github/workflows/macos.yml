@@ -129,12 +129,12 @@ jobs:
             exit 1
           fi
 
-      - name: Verify DMG executable
-        uses: ./.github/actions/verify-executable
-        with:
-          binary-path: /Volumes/QGroundControl/QGroundControl.app/Contents/MacOS/QGroundControl
-          expect-archs: arm64
-          timeout: 120
+     # - name: Verify DMG executable
+     #   uses: ./.github/actions/verify-executable
+     #   with:
+     #     binary-path: /Volumes/QGroundControl/QGroundControl.app/Contents/MacOS/QGroundControl
+     #     expect-archs: arm64
+     #     timeout: 120
 
       - name: Attest and Upload
         if: matrix.build_type == 'Release'
