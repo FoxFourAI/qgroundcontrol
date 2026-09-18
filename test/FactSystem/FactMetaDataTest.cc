@@ -1,5 +1,6 @@
 #include "FactMetaDataTest.h"
 
+#include <QtCore/QJsonArray>
 #include <QtCore/QJsonObject>
 #include <QtCore/QRegularExpression>
 #include <QtCore/QScopeGuard>
@@ -250,6 +251,33 @@ void FactMetaDataTest::_bitmaskOperations_test()
     QCOMPARE(meta.bitmaskValues()[2].toInt(), 4);
 }
 
+void FactMetaDataTest::_bitmaskIndexOutOfRangeRejected_test()
+{
+    // Real-world parameter metadata (e.g. PX4 Vertiq params) can carry a bitmask
+    // index of -1. Shifting by a negative (or too large) index is undefined
+    // behavior, so out-of-range entries must be skipped instead of feeding the shift.
+    const QJsonArray bitmaskArray = {
+        QJsonObject{ { "description", "Invalid negative" }, { "index", -1 } },
+        QJsonObject{ { "description", "Bit 0" },            { "index", 0 } },
+        QJsonObject{ { "description", "Bit 3" },            { "index", 3 } },
+        QJsonObject{ { "description", "Invalid too large" }, { "index", 32 } },
+    };
+
+    QJsonObject json;
+    json.insert("name", "testBitmask");
+    json.insert("type", "Uint32");
+    json.insert("bitmask", bitmaskArray);
+
+    FactMetaData *const parsedMeta = FactMetaData::createFromJsonObject(json, {}, nullptr);
+
+    QCOMPARE(parsedMeta->bitmaskStrings().count(), 2);
+    QCOMPARE(parsedMeta->bitmaskStrings()[0], QStringLiteral("Bit 0"));
+    QCOMPARE(parsedMeta->bitmaskValues()[0].toUInt(), 1u);
+    QCOMPARE(parsedMeta->bitmaskStrings()[1], QStringLiteral("Bit 3"));
+    QCOMPARE(parsedMeta->bitmaskValues()[1].toUInt(), 8u);
+    delete parsedMeta;
+}
+
 void FactMetaDataTest::_defaultValue_test()
 {
     FactMetaData meta(FactMetaData::valueTypeInt32);
@@ -330,6 +358,11 @@ void FactMetaDataTest::_verticalMetersUnitsFeetTranslation_test()
     const auto restoreUnits = qScopeGuard([vertUnitsFact, savedUnits] {
         vertUnitsFact->setRawValue(savedUnits);
     });
+    // Changing units is a qgcRebootRequired setting, so the restart-app message
+    // fires — but only when the locale-dependent default isn't already feet, so
+    // it cannot be asserted deterministically with expectAppMessage()
+    ignoreLogMessage("API.QGCApplication.AppMessage", QtDebugMsg,
+                     QRegularExpression(QStringLiteral("Restart application for changes to take effect")));
     vertUnitsFact->setRawValue(UnitsSettings::VerticalDistanceUnitsFeet);
 
     FactMetaData meta(FactMetaData::valueTypeDouble);

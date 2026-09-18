@@ -1,8 +1,6 @@
 # 다운로드 및 설치
 
-:::tip
-These are **daily build** download links with the latest features. If you are looking for the last stable release, see the [stable docs](https://docs.qgroundcontrol.com/Stable_V5.0/en/qgc-user-guide/getting_started/download_and_install.html).
-:::
+The sections below can be used to download the [current stable release](https://github.com/mavlink/qgroundcontrol/releases) of _QGroundControl_ for each platform.
 
 :::tip
 설치 후 QGroundControl이 정상적으로 실행되지 않으면, [QGC 설정 문제 해결](../troubleshooting/qgc_setup.md)편을 참고하여 문제를 해결할 수 있습니다.
@@ -21,8 +19,8 @@ More capable hardware will provide a better experience.
 Supported versions: Windows 10 (1809 or later), Windows 11:
 
 1. Download the installer:
-   - [x86_64](https://d176tv9ibo4jno.cloudfront.net/builds/master/QGroundControl-installer-AMD64.exe)
-   - [Arm64](https://d176tv9ibo4jno.cloudfront.net/builds/master/QGroundControl-installer-ARM64.exe)
+   - [x86_64](https://d176tv9ibo4jno.cloudfront.net/latest/QGroundControl-installer-AMD64.exe)
+   - [Arm64](https://d176tv9ibo4jno.cloudfront.net/latest/QGroundControl-installer-ARM64.exe)
 2. 다운로드한 설치 파일을 더블 클릭하여 프로그램을 실행합니다.
 
 :::info
@@ -39,7 +37,7 @@ Supported versions: macOS 13 (Ventura) or later:
 
 <!-- usually based on Qt macOS dependency -->
 
-1. Download [QGroundControl.dmg](https://d176tv9ibo4jno.cloudfront.net/builds/master/QGroundControl.dmg).
+1. Download [QGroundControl.dmg](https://d176tv9ibo4jno.cloudfront.net/latest/QGroundControl.dmg).
 2. 다운로드한 dmg 파일을 더블 클릭하여 마운트하여, _QGroundControl_ 애플리케이션을 _Application_ 폴더로 드래그합니다.
 
 :::info
@@ -48,11 +46,14 @@ QGroundControl continues to not be signed. You will not to allow permission for 
 
 ## 우분투 리눅스 {#ubuntu}
 
-Supported versions: Ubuntu 22.04, 24.04:
+Supported versions: Ubuntu 24.04 LTS, 26.04 LTS:
+
+:::info
+The AppImage downloads below run on Ubuntu 24.04 LTS and 26.04 LTS. If you need a version of _QGroundControl_ that runs on Ubuntu 22.04, it is possible, but you have to [build it yourself](../../qgc-dev-guide/getting_started/index.md).
+:::
 
 Ubuntu comes with a serial modem manager that interferes with any robotics related use of a serial port (or USB serial).
 _QGroundControl_을 설치 전에 모뎀 관리자를 제거하고, 직렬 포트 접근 권한을 부여합니다.
-동영상 스트리밍을 지원하려면 _GStreamer_을 설치합니다.
 
 **Before installing _QGroundControl_ for the first time:**
 
@@ -81,17 +82,14 @@ sudo apt remove --purge modemmanager
 1. On the command prompt, enter:
 
 ```sh
-sudo apt install gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-gl -y
-sudo apt install python3-gi python3-gst-1.0 -y
-sudo apt install libfuse2 -y
-sudo apt install libxcb-xinerama0 libxkbcommon-x11-0 libxcb-cursor-dev -y
+sudo apt install -y libfuse2 libxcb-xinerama0 libxkbcommon-x11-0 libxcb-cursor0
 ```
 
 **To install _QGroundControl_:**
 
 1. Download the AppImage for your architecture:
-   - [Linux x86_64](https://d176tv9ibo4jno.cloudfront.net/builds/master/QGroundControl-x86_64.AppImage)
-   - [Linux aarch64](https://d176tv9ibo4jno.cloudfront.net/builds/master/QGroundControl-aarch64.AppImage)
+   - [Linux x86_64](https://d176tv9ibo4jno.cloudfront.net/latest/QGroundControl-x86_64.AppImage)
+   - [Linux aarch64](https://d176tv9ibo4jno.cloudfront.net/latest/QGroundControl-aarch64.AppImage)
 
 2. Make the AppImage executable
 
@@ -110,7 +108,7 @@ chmod +x QGroundControl-<arch>.AppImage
 
 Supported versions: Android 9 (API 28) or later (arm 32/64):
 
-- [Android APK](https://d176tv9ibo4jno.cloudfront.net/builds/master/QGroundControl.apk)
+- [Android APK](https://d176tv9ibo4jno.cloudfront.net/latest/QGroundControl.apk)
 
 :::important
 The version of Qt used by QGroundControl requires Android 9 (API 28) as the minimum supported version. It is not possible to support older Android releases. This means that some integrated controllers running older versions of Android are no longer compatible with current builds of QGroundControl. QGroundControl 5.0 stable is the last release that supports these older devices. Note that 5.0 may not fully support firmware versions released after it, so users on older controllers may experience limited compatibility with newer autopilot firmware.
