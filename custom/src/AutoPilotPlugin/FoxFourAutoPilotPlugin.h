@@ -8,7 +8,7 @@
 #include "MapMatching/MapMatching.h"
 #include "VioTrajectory/VioTrajectoryPoints.h"
 #include "CopterConfigurator/CopterConfigurator.h"
-
+#include "Dialect/VGMDialect.h"
 class Vehicle;
 class FoxFourCameraControl;
 class FoxFourAutoPilotPlugin : public APMAutoPilotPlugin {
@@ -23,6 +23,7 @@ class FoxFourAutoPilotPlugin : public APMAutoPilotPlugin {
     Q_PROPERTY(bool isDropper READ isDropper NOTIFY isDropperChanged)
     Q_PROPERTY(bool exposureAvailable READ exposureAvailable NOTIFY exposureAvailableChanged)
     Q_PROPERTY(CopterConfigurator* configurator MEMBER _configurator)
+    Q_PROPERTY(VGMDialect* dialectHandler MEMBER _dialectHandler)
 public:
     explicit FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent = nullptr);
     ~FoxFourAutoPilotPlugin();
@@ -64,5 +65,6 @@ private:
     QString _storageCapacityStr = "0 / 0 MB";
     CopterConfigurator* _configurator = nullptr;
     QMetaObject::Connection _cameraConnection;
+    VGMDialect* _dialectHandler = nullptr;
 
 };
