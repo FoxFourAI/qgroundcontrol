@@ -337,7 +337,7 @@ FlightMap {
 
         delegate: MapQuickItem {
             id: maker
-            readonly property real indicatorSize : ScreenTools.defaultFontPixelHeight * 2
+            readonly property real indicatorSize : ScreenTools.defaultFontPixelHeight * 2.5
             required property var modelData
 
             coordinate:  modelData.coord
