@@ -92,10 +92,10 @@ void VGMDialect::_handleCompanionVersion(const mavlink_companion_version_t& msg)
 
 void VGMDialect::_handleF4Detector(const mavlink_f4_detector_t& msg)
 {
-    QGeoCoordinate coords;
-    coords.setLatitude(msg.latitude);
-    coords.setLongitude(msg.longitude);
-    _detections.append(QVariant::fromValue(coords));
+    QVariantMap detection;
+    detection["coord"] = QVariant::fromValue(QGeoCoordinate(msg.latitude,msg.longitude));
+    detection["type"] = _type2string[(VehicleType)msg.class_type];
+    _detections.append(detection);
     emit detectionsListChanged();
 }
 

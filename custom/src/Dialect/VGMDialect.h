@@ -36,6 +36,19 @@ private slots:
     void _handleF4Detector(const mavlink_f4_detector_t& msg);
 
 private:
+    enum VehicleType
+    {
+        UnknownVehicleCivilian = 1,
+        EnemyAircraft,
+        EnemyVehicleArmored,
+    };
+
+    const QMap<VehicleType, QString> _type2string{
+        {VehicleType::EnemyAircraft, "emy_air"},
+        {VehicleType::EnemyVehicleArmored,"emy_veh_arm"},
+        {VehicleType::UnknownVehicleCivilian,"unk_veh_civ"}
+    };
+
     const QString _name = "VGM Information", _description = "Infromation from VGM received by dialect.",
                   _icon = QStringLiteral("custom/img/vgm.svg");
     QVariantList _detections;

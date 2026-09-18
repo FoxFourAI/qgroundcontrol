@@ -329,46 +329,68 @@ FlightMap {
             }
         }
 
-    Canvas {
-        id: detectionsCanvas
-        anchors.fill: parent
-        visible: _root._showDetections
 
-        readonly property string indicatorSource: "qrc:/custom/img/detection.svg"
-        readonly property real   indicatorSize:   ScreenTools.defaultFontPixelHeight * 3
-        property bool indicatorReady: false
 
-        Component.onCompleted: loadImage(indicatorSource)
+    MapItemView {
+        id: detectionsView
+        model: _activeVehicle ? _activeVehicle.autopilotPlugin.dialectHandler.detections : []
 
-        onImageLoaded: {
-            if (isImageLoaded(indicatorSource)) {
-                indicatorReady = true
-                requestPaint()
+        delegate: MapQuickItem {
+            id: maker
+            readonly property real indicatorSize : ScreenTools.defaultFontPixelHeight * 2
+            required property var modelData
+
+            coordinate:  modelData.coord
+            anchorPoint: Qt.point(indicatorSize / 2, indicatorSize / 2)
+            visible:     modelData.coord !== undefined
+
+            sourceItem: Image {
+                source:     "qrc:/custom/map/" + maker.modelData.type + ".svg"
+                sourceSize: Qt.size(maker.indicatorSize, maker.indicatorSize)
+                width:      maker.indicatorSize
+                height:     maker.indicatorSize
             }
-        }
-
-        onVisibleChanged: if (visible) requestPaint()
-
-        onPaint: {
-            var ctx = getContext("2d")
-            ctx.clearRect(0, 0, width, height)
-            if (!indicatorReady || !_activeVehicle) return
-
-            var detections = _activeVehicle.autopilotPlugin.dialectHandler.detections
-            for (var i = 0; i < detections.length; i++) {
-                var pt = _root.fromCoordinate(detections[i], false)
-                ctx.drawImage(indicatorSource,
-                              pt.x - indicatorSize / 2,
-                              pt.y - indicatorSize / 2,
-                              indicatorSize, indicatorSize)
-            }
-        }
-
-        Connections {
-            target: _activeVehicle ? _activeVehicle.autopilotPlugin.dialectHandler : null
-            function onDetectionsListChanged() { detectionsCanvas.requestPaint() }
         }
     }
+
+
+
+    // Canvas {
+
+    //     id: detectionsCanvas
+    //     anchors.fill: parent
+    //     visible: _root._showDetections
+    //     readonly property var indicatorSource: ["emy_veh_arm.svg","emy_air.svg","unk_veh_civ.svg"]
+    //     readonly property real   indicatorSize:   ScreenTools.defaultFontPixelHeight * 3
+
+    //     Component.onCompleted: {
+    //         for (var i = 0; i < indicatorSource.length; i++) {
+    //                 loadImage("qrc:/custom/map/" + indicatorSource[i])
+    //             }
+    //     }
+
+    //     onVisibleChanged: if (visible) requestPaint()
+
+    //     onPaint: {
+    //         var ctx = getContext("2d")
+    //         ctx.clearRect(0, 0, width, height)
+    //         if (!_activeVehicle) return
+
+    //         var detections = _activeVehicle.autopilotPlugin.dialectHandler.detections
+    //         for (var i = 0; i < detections.length; i++) {
+    //             var pt = _root.fromCoordinate(detections[i].coord, false)
+    //             ctx.drawImage("qrc:/custom/map/"+indicatorSource[detections[i].type],
+    //                           pt.x - indicatorSize / 2,
+    //                           pt.y - indicatorSize / 2,
+    //                           indicatorSize, indicatorSize)
+    //         }
+    //     }
+    //
+    //     Connections {
+    //         target: _activeVehicle ? _activeVehicle.autopilotPlugin.dialectHandler : null
+    //         function onDetectionsListChanged() { detectionsCanvas.requestPaint() }
+    //     }
+    // }
 
     function updateCanvases() {
         if (_root._showGPSrawTrajectory) {
