@@ -3,6 +3,8 @@ import QtQuick
 import QGroundControl
 import QGroundControl.Controls
 
+import FoxFour.Widgets 1.0
+
 Item {
     id: _root
 
@@ -112,6 +114,10 @@ Item {
         }
     }
 
+    OnScreenDisplay{
+        id: osd
+        anchors.fill: parent
+    }
 
     QGCLabel {
         text: qsTr("Double-click to exit full screen")
@@ -137,6 +143,7 @@ Item {
     OnScreenGimbalController {
         id:                      onScreenGimbalController
         anchors.fill:            parent
+        visible: pipState.state === pipState.fullState
         cameraTrackingEnabled:   !!(videoStreaming._camera && videoStreaming._camera.trackingEnabled)
     }
 
