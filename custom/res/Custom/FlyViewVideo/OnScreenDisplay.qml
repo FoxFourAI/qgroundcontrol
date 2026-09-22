@@ -228,4 +228,35 @@ Item {
             ctx.fillText(heading,cx - textMeasure.width * 0.5, height - root.textPadding * 2)
         }
     }
+
+    Canvas {
+        id: center
+        anchors.centerIn: parent
+        height: 15
+        width: 120
+
+        Component.onCompleted: requestPaint()
+
+        onPaint: {
+            let ctx = getContext("2d")
+            ctx.lineWidth = root.majorLineWidth
+            ctx.strokeStyle = root.lineColor
+            ctx.fillStyle = root.shadowColor
+            ctx.shadowColor   = root.shadowColor
+            ctx.shadowBlur    = root.shadowBlur
+            ctx.shadowOffsetX = root.shadowOffsetX
+            ctx.shadowOffsetY = root.shadowOffsetY
+
+            ctx.beginPath()
+            ctx.arc(width * 0.5, height * 0.5, height * 0.5 - root.majorLineWidth, 0, 2 * Math.PI)
+            ctx.stroke()
+
+            ctx.beginPath()
+            ctx.moveTo(0,height * 0.5)
+            ctx.lineTo(width * 0.5 - height * 0.5 - root.majorLineWidth - root.textPadding, height * 0.5)
+            ctx.moveTo(width * 0.5 + height * 0.5 + root.majorLineWidth + root.textPadding, height * 0.5)
+            ctx.lineTo(width, height * 0.5)
+            ctx.stroke()
+        }
+    }
 }
