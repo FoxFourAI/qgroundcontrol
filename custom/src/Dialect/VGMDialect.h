@@ -38,12 +38,10 @@ private slots:
     void _handleF4Detector(const mavlink_f4_detector_t& msg);
 
 private:
-
     const QMap<F4_AUTONOMY_DETECTION_CLASS, QString> _type2string{
         {F4_AUTONOMY_DETECTION_CLASS_PLANE, "emy_air"},
-        {F4_AUTONOMY_DETECTION_CLASS_ARMORED_VEHICLE,"emy_veh_arm"},
-        {F4_AUTONOMY_DETECTION_CLASS_CAR,"unk_veh_civ"}
-    };
+        {F4_AUTONOMY_DETECTION_CLASS_ARMORED_VEHICLE, "emy_veh_arm"},
+        {F4_AUTONOMY_DETECTION_CLASS_CAR, "unk_veh_civ"}};
 
     const QString _name = "VGM Information", _description = "Infromation from VGM received by dialect.",
                   _icon = QStringLiteral("custom/img/vgm.svg");

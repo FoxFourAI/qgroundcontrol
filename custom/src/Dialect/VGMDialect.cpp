@@ -98,8 +98,9 @@ void VGMDialect::_handleF4Detector(const mavlink_f4_detector_t& msg)
         qCDebug(VGMDialectLog) << "F4_DETECTOR message has bad coordinates. Ignoring";
         return;
     }
-    F4_AUTONOMY_DETECTION_CLASS classType =
-        msg.class_type >= F4_AUTONOMY_DETECTION_CLASS_ENUM_END ? F4_AUTONOMY_DETECTION_CLASS_CAR : F4_AUTONOMY_DETECTION_CLASS(msg.class_type);
+    F4_AUTONOMY_DETECTION_CLASS classType = msg.class_type >= F4_AUTONOMY_DETECTION_CLASS_ENUM_END
+                                                ? F4_AUTONOMY_DETECTION_CLASS_CAR
+                                                : F4_AUTONOMY_DETECTION_CLASS(msg.class_type);
     if (!_type2string.contains(classType)) {
         qCDebug(VGMDialectLog) << "Unknown class_type fallback to Unknow Civialian";
         classType = F4_AUTONOMY_DETECTION_CLASS_CAR;
