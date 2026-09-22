@@ -2,10 +2,12 @@
 
 #include "Vehicle.h"
 #include "f4_autonomy/f4_autonomy.h"
+
+Q_LOGGING_CATEGORY(VGMDialectLog, "VGMDialectLog")
+
 VGMDialect::VGMDialect(Vehicle* vehicle, AutoPilotPlugin* autopilot, QObject* parent)
     : VehicleComponent(vehicle, autopilot, AutoPilotPlugin::KnownVehicleComponent::UnknownVehicleComponent, parent)
-{
-}
+{}
 
 QString VGMDialect::name() const
 {
@@ -92,9 +94,18 @@ void VGMDialect::_handleCompanionVersion(const mavlink_companion_version_t& msg)
 
 void VGMDialect::_handleF4Detector(const mavlink_f4_detector_t& msg)
 {
+    if (msg.longitude == INT32_MAX || msg.latitude == INT32_MAX) {
+        qCDebug(VGMDialectLog) << "F4_DETECTOR message has bad coordinates. Ignoring";
+        return;
+    }
+    VehicleType classType = (VehicleType) msg.class_type;
+    if (!_type2string.contains(classType)) {
+        qCDebug(VGMDialectLog) << "Unknown class_type fallback to Unknow Civialian";
+        classType = VehicleType::UnknownVehicleCivilian;
+    }
     QVariantMap detection;
-    detection["coord"] = QVariant::fromValue(QGeoCoordinate(msg.latitude,msg.longitude));
-    detection["type"] = _type2string[(VehicleType)msg.class_type];
+    detection["coord"] = QVariant::fromValue(QGeoCoordinate(msg.latitude * 1e-7, msg.longitude * 1e-7));
+    detection["type"] = _type2string[classType];
     _detections.append(detection);
     emit detectionsListChanged();
 }

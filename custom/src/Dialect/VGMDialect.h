@@ -4,6 +4,8 @@
 
 #include "VehicleComponent.h"
 
+Q_DECLARE_LOGGING_CATEGORY(VGMDialectLog)
+
 class VGMDialect : public VehicleComponent
 {
     Q_OBJECT
