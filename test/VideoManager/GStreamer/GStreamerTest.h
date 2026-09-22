@@ -24,6 +24,9 @@ private slots:
     void _testWritePipelineDotReturnsEmptyOnWriteFailure();
     void _testCompleteInit();
     void _testCreateVideoReceiver();
+    void _testRecordingSinkAcceptsElementaryStreams_data();
+    void _testRecordingSinkAcceptsElementaryStreams();
+    void _testRecordingSinkFinalizesMidStreamH265Mp4();
     void _testBindDebugLevelFactRejectsNullContext();
     void _testRuntimeVersionCheck();
     void _testAppsinkFrameDelivery();
@@ -45,6 +48,8 @@ private slots:
     void _testVulkanDispatchDemotesToCpu();
     void _testCapsCacheInvalidation();
     void _testGpuZeroCopyFallback();
+    void _testWindowsGpuSinkPreservesSoftwarePixels();
+    void _testWindowsGpuSinkPreservesDirectD3D11Memory();
     void _testAppsinkTeardownUnderLoad();
     void _testBridgeDispatcherFanout();
     void _testHwBufferMapTexturesGuard();

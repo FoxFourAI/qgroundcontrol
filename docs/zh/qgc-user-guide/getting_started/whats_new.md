@@ -1,6 +1,6 @@
 # What's New
 
-This page highlights user-facing changes since the last stable release (V5.0).
+This page highlights user-facing changes since the last stable release (V5.1).
 
 ## Fly View
 
@@ -113,6 +113,11 @@ Settings are organized into collapsible sections with consistent layout.
 ### MAVLink Actions
 
 New and updated MAVLink Actions support in Fly View settings.
+
+### Settings Override Files
+
+Application settings can now be overridden using [Settings Override Files](../../qgc-dev-guide/file_formats/settings_override.md) placed in the `Settings` subdirectory of the [Application Load/Save Path](../settings_view/general.md#load_save_path).
+These JSON files can change setting defaults, force settings to fixed values, hide settings from the UI, and adjust metadata such as min/max ranges — without requiring a custom build.
 
 ### Virtual Joystick
 

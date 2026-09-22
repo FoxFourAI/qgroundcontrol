@@ -24,7 +24,19 @@ set(GSTREAMER_PLUGIN_ALTERNATES
 # multifile (splitmuxsink), isomp4 (qtmux/mp4mux), and matroska (matroskamux)
 # are load-bearing for video recording (GstVideoReceiver _kFileMux).
 set(GSTREAMER_RUNTIME_REQUIRED_PLUGINS
-    coreelements isomp4 matroska multifile opengl playback rtsp rtp rtpmanager tcp udp videoconvertscale
+    coreelements
+    isomp4
+    matroska
+    multifile
+    opengl
+    playback
+    rtsp
+    rtp
+    rtpmanager
+    tcp
+    udp
+    videoparsersbad
+    videoconvertscale
 )
 
 # iOS xcframework: plugins whose dependent static libs aren't bundled in the
@@ -32,6 +44,14 @@ set(GSTREAMER_RUNTIME_REQUIRED_PLUGINS
 # x265: gstreamer-ios 1.28.2 ships libgstx265.a but not libx265.a.
 set(GSTREAMER_XCFRAMEWORK_SKIP_PLUGINS
     x265
+)
+
+# Encode-side plugins needed only by the Debug-only MockLink test video stream
+# server (MockVideoStreamServer). Statically registered on Android Debug builds
+# only — desktop builds find them via the full SDK plugin scan, and release
+# builds must not ship them (APK size; x264/x265 are GPL).
+set(GSTREAMER_MOCK_SERVER_DEBUG_PLUGINS
+    mpegtsmux videotestsrc x264 x265
 )
 
 # Invariant: no plugin may be both runtime-required and xcframework-skipped.
