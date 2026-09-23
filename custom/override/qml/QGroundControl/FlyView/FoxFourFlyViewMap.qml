@@ -38,6 +38,7 @@ FlightMap {
     property var    _foxFourSettings:           QGroundControl.settingsManager.foxFourSettings
     property bool   _disableVehicleTracking:    _foxFourSettings.disableVehicleTracking.rawValue
     property bool   _showGPSrawTrajectory:      _foxFourSettings.showGPSTrajectory.rawValue
+    property bool   _showDetections:            _foxFourSettings.showDetections.rawValue
 
     property bool   _vehicleTracking:           true
     property bool   _keepVehicleCentered:       pipMode ? true : false
@@ -65,6 +66,7 @@ FlightMap {
         text: qsTr("Go to Vehicle")
         visible: _activeVehicle && recenterNeeded() && _disableVehicleTracking
         onClicked: moveMapToVehicle()
+        z: 100
     }
 
     onVisibleChanged: {
@@ -84,6 +86,7 @@ FlightMap {
         if (_disableVehicleTracking && _activeVehicle) {
             goToVehicle.visible = recenterNeeded()
         }
+        updateCanvases();
     }
 
     // We track whether the user has panned or not to correctly handle automatic map positioning
@@ -322,22 +325,79 @@ FlightMap {
 
             Connections {
                 target: _activeVehicle ? _activeVehicle.autopilotPlugin.mapMatching : null
-                onAnchorsChanged: anchorCanvas.requestPaint()
-            }
-
-            Connections {
-                target: _root
-                onCenterChanged:    anchorCanvas.requestPaint()
-                onZoomLevelChanged: anchorCanvas.requestPaint()
-                onWidthChanged:     anchorCanvas.requestPaint()
-                onHeightChanged:    anchorCanvas.requestPaint()
+                function onAnchorsChanged()   { anchorCanvas.requestPaint()}
             }
         }
+
+
+
+    MapItemView {
+        id: detectionsView
+        model: _activeVehicle ? _activeVehicle.autopilotPlugin.dialectHandler.detections : []
+        visible : _root._showDetections
+        delegate: MapQuickItem {
+            id: maker
+            readonly property real indicatorSize : ScreenTools.defaultFontPixelHeight * 2.5
+            required property var modelData
+
+            coordinate:  modelData.coord
+            anchorPoint: Qt.point(indicatorSize / 2, indicatorSize / 2)
+            visible:     modelData.coord !== undefined
+
+            sourceItem: Item{
+                width:      maker.indicatorSize
+                height:     maker.indicatorSize
+                Image {
+                    source:     "qrc:/custom/map/" + maker.modelData.type + ".svg"
+                    sourceSize: Qt.size(maker.indicatorSize, maker.indicatorSize)
+                    anchors.fill: parent
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        let pos = _root.fromCoordinate(maker.modelData.coord)
+                        let dropPanel = coordsDropPanelComponent.createObject(mainWindow, {coordinates: maker.modelData.coord, clickRect: Qt.rect(pos.x, pos.y, 0, 0)})
+                        dropPanel.open()
+                    }
+                }
+
+                Component {
+                    id: coordsDropPanelComponent
+                    DropPanel {
+
+                        property var coordinates
+                        sourceComponent:  Component {
+                            ColumnLayout {
+                                id: layout
+                                spacing: ScreenTools.defaultFontPixelWidth / 2
+                                QGCLabel {
+                                    text: qsTr("Detection Position")
+                                    Layout.alignment: Qt.AlignHCenter
+                                }
+                                QGCTextField {
+                                    implicitWidth: ScreenTools.defaultFontPixelWidth * 25
+                                    text: coordinates.latitude.toFixed(6) + ", " + coordinates.longitude.toFixed(6)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function updateCanvases() {
+        if (_root._showGPSrawTrajectory) {
+            anchorCanvas.requestPaint();
+        }
+    }
 
     // Add the vehicles to the map
     MapItemView {
         model: QGroundControl.multiVehicleManager.vehicles
         delegate: VehicleMapItem {
+
             vehicle:        object
             coordinate:     object.coordinate
             map:            _root
@@ -833,9 +893,14 @@ FlightMap {
                     }
 
                     ColumnLayout {
+                        Layout.alignment: Qt.AlignHCenter
                         spacing: 0
-                        QGCLabel { text: qsTr("Lat: %1").arg(mapClickCoord.latitude.toFixed(6)) }
-                        QGCLabel { text: qsTr("Lon: %1").arg(mapClickCoord.longitude.toFixed(6)) }
+                        QGCLabel { text: qsTr("Position"); Layout.alignment: Qt.AlignHCenter}
+                        QGCTextField {
+                            text: qsTr("%1, %2").arg(mapClickCoord.latitude.toFixed(6)).arg(mapClickCoord.longitude.toFixed(6))
+                            Layout.alignment: Qt.AlignHCenter
+                            implicitWidth: ScreenTools.defaultFontPixelWidth * text.length * 1.2
+                        }
                     }
                 }
             }

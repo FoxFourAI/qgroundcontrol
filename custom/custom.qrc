@@ -12,6 +12,11 @@
         <file alias="arrowcc.svg">res/Images/arrowcc.svg</file>
         <file alias="drop.svg">res/Images/drop.svg</file>
     </qresource>
+    <qresource prefix="/custom/map/">
+        <file alias="emy_air.svg">res/Images/map_icons/emy_air.svg</file>
+        <file alias="emy_veh_arm.svg">res/Images/map_icons/emy_veh_arm.svg</file>
+        <file alias="unk_veh_civ.svg">res/Images/map_icons/unk_veh_civ.svg</file>
+    </qresource>
     <qresource prefix="/Custom/res">
         <file alias="TrashDelete.svg">res/Images/TrashDelete.svg</file>
         <file alias="QGCLogoFull.svg">res/Custom/Logo.svg</file>
