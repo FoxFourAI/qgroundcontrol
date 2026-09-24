@@ -3,8 +3,9 @@
         <file alias="FoxFourTextLogo_light.svg">res/Images/FoxFourTextLogo_light.svg</file>
         <file alias="FoxFourTextLogo_dark.svg">res/Images/FoxFourTextLogo_dark.svg</file>
         <file alias="keyboard.svg">res/Images/keyboard.svg</file>
-        <file alias="eye-1.svg">res/Images/eye-opened.svg</file>
-        <file alias="eye-0.svg">res/Images/eye-closed.svg</file>
+        <file alias="eye_1.svg">res/Images/eye-opened.svg</file>
+        <file alias="eye_0.svg">res/Images/eye-closed.svg</file>
+        <file alias="eye_invalid.svg">res/Images/eye-crossed.svg</file>
         <file alias="drone.svg">res/Images/drone.svg</file>
         <file alias="drone_fov.svg">res/Images/drone_fov.svg</file>
         <file alias="arrowc.svg">res/Images/arrowc.svg</file>
@@ -23,12 +24,12 @@
         <file alias="QGroundControl/MainWindow.qml">override/qml/FoxFourMainWindow.qml</file>
         <!--Tool Bar-->
         <file alias="QGroundControl/Toolbar/FlyViewToolBar.qml">override/qml/QGroundControl/Toolbar/FoxFourFlyViewToolBar.qml</file>
-        <file alias="QGroundControl/Toolbar/FlyViewToolBarIndicators.qml">override/qml/QGroundControl/Toolbar/FlyViewToolBarIndicators.qml</file>                           <!--just to link qml-->
-        <file alias="QGroundControl/Toolbar/FlightModeIndicator.qml">override/qml/QGroundControl/Toolbar/FlightModeIndicator.qml</file>                                     <!--just to link qml-->
-        <file alias="QGroundControl/Toolbar/ParameterDownloadProgress.qml">override/qml/QGroundControl/Toolbar/ParameterDownloadProgress.qml</file>                         <!--just to link qml-->
+        <file alias="QGroundControl/Toolbar/FlyViewToolBarIndicators.qml">../src/Toolbar/FlyViewToolBarIndicators.qml</file>                           <!--just to link qml-->
+        <file alias="QGroundControl/Toolbar/FlightModeIndicator.qml">../src/Toolbar/FlightModeIndicator.qml</file>                                     <!--just to link qml-->
+        <file alias="QGroundControl/Toolbar/ParameterDownloadProgress.qml">../src/Toolbar/ParameterDownloadProgress.qml</file>                         <!--just to link qml-->
         <file alias="QGroundControl/Toolbar/VehicleMessageList.qml">override/qml/QGroundControl/Toolbar/FoxFourVehicleMessageList.qml</file>
         <file alias="QGroundControl/Toolbar/MainStatusIndicator.qml">override/qml/QGroundControl/Toolbar/FoxFourMainStatusIndicator.qml</file>
-        <file alias="QGroundControl/Toolbar/MainStatusIndicatorOfflinePage.qml">override/qml/QGroundControl/Toolbar/MainStatusIndicatorOfflinePage.qml</file>               <!--just to link qml-->
+        <file alias="QGroundControl/Toolbar/MainStatusIndicatorOfflinePage.qml">../src/Toolbar/MainStatusIndicatorOfflinePage.qml</file>               <!--just to link qml-->
         <file alias="QGroundControl/Toolbar/SelectViewDropdown.qml">override/qml/QGroundControl/Toolbar/FoxFourSelectViewDropdown.qml</file>
         <file alias="Toolbar/VioIndicator.qml">res/Toolbar/VioIndicator.qml</file>
         <file alias="Toolbar/EK3Sources.qml">res/Toolbar/EK3Sources.qml</file>
@@ -39,26 +40,34 @@
         <file alias="QGroundControl/FlyView/FlyViewMap.qml">override/qml/QGroundControl/FlyView/FoxFourFlyViewMap.qml</file>
         <file alias="QGroundControl/FlyView/FlyViewCustomLayer.qml">override/qml/QGroundControl/FlyView/FoxFourFlyViewCustomLayer.qml</file>
         <file alias="QGroundControl/FlyView/FlyViewWidgetLayer.qml">override/qml/QGroundControl/FlyView/FoxFourFlyViewWidgetLayer.qml</file>
-        <file alias="QGroundControl/FlyView/FlightDisplayViewVideo.qml">override/qml/QGroundControl/FlyView/FlightDisplayViewVideo.qml</file>                               <!--just to link qml-->
-        <file alias="QGroundControl/FlyView/ProximityRadarVideoView.qml">override/qml/QGroundControl/FlyView/ProximityRadarVideoView.qml</file>                             <!--just to link qml-->
+        <file alias="QGroundControl/FlyView/FlightDisplayViewVideo.qml">../src/FlyView/FlightDisplayViewVideo.qml</file>                               <!--just to link qml-->
+        <file alias="QGroundControl/FlyView/ProximityRadarVideoView.qml">../src/FlyView/ProximityRadarVideoView.qml</file>                             <!--just to link qml-->
         <file alias="QGroundControl/FlyView/FlyViewBottomRightRowLayout.qml">override/qml/QGroundControl/FlyView/FoxFourFlyViewBottomRightRowLayout.qml</file>
-        <file alias="QGroundControl/FlyView/ObstacleDistanceOverlay.qml">override/qml/QGroundControl/FlyView/ObstacleDistanceOverlay.qml</file>                             <!--just to link qml-->
-        <file alias="QGroundControl/FlyView/ObstacleDistanceOverlayVideo.qml">override/qml/QGroundControl/FlyView/ObstacleDistanceOverlayVideo.qml</file>                   <!--just to link qml-->
+        <file alias="QGroundControl/FlyView/ObstacleDistanceOverlay.qml">../src/FlyView/ObstacleDistanceOverlay.qml</file>                             <!--just to link qml-->
+        <file alias="QGroundControl/FlyView/ObstacleDistanceOverlayVideo.qml">../src/FlyView/ObstacleDistanceOverlayVideo.qml</file>                   <!--just to link qml-->
         <file alias="QGroundControl/FlyView/OnScreenCameraTrackingController.qml">override/qml/QGroundControl/FlyView/FoxFourOnScreenCameraTrackingController.qml</file>
-        <file alias="QGroundControl/FlyView/OnScreenGimbalController.qml">override/qml/QGroundControl/FlyView/OnScreenGimbalController.qml</file>                           <!--just to link qml-->
+        <file alias="QGroundControl/FlyView/OnScreenGimbalController.qml">../src/FlyView/OnScreenGimbalController.qml</file>                           <!--just to link qml-->
         <file alias="QGroundControl/FlyView/GuidedActionsController.qml">override/qml/QGroundControl/FlyView/FoxFourGuidedActionsController.qml</file>
-        <file alias="QGroundControl/FlyView/CustomGuidedActionsController.qml">override/qml/QGroundControl/FlyView/CustomGuidedActionsController.qml</file>                 <!--just to link qml-->
+        <file alias="QGroundControl/FlyView/CustomGuidedActionsController.qml">../src/FlyView/CustomGuidedActionsController.qml</file>                 <!--just to link qml-->
+        <!-- PreFlight check -->
+        <file alias="QGroundControl/FlyView/MultiRotorChecklist.qml">override/qml/QGroundControl/FlyView/FoxFourMultiRotorChecklist.qml</file>
         <!--Controls-->
         <file alias="QGroundControl/Controls/InstrumentValueLabel.qml">override/qml/QGroundControl/QmlControls/FoxFourInstrumentValueLabel.qml</file>
         <file alias="QGroundControl/Controls/InstrumentValueValue.qml">override/qml/QGroundControl/QmlControls/FoxFourInstrumentValueValue.qml</file>
         <file alias="QGroundControl/Controls/ParameterEditor.qml">override/qml/QGroundControl/QmlControls/FoxFourParamererEditor.qml</file>
+        <file alias="QGroundControl/Controls/QGCFileDialog.qml">override/qml/QGroundControl/QmlControls/FoxFourQGCFileDialog.qml</file>
         <!--Flight Map-->
         <file alias="QGroundControl/FlightMap/Widgets/PhotoVideoControl.qml">override/qml/QGroundControl/FlightMap/Widgets/FoxFourPhotoVideoControl.qml</file>
         <!--App Settings-->
         <file alias="QGroundControl/AppSettings/VideoSettings.qml">override/qml/QGroundControl/AppSettings/FoxFourVideoSettings.qml</file>
-        <file alias="QGroundControl/AppSettings/SettingsPage.qml">override/qml/QGroundControl/AppSettings/SettingsPage.qml</file>                                           <!--just to link qml-->
+        <file alias="QGroundControl/AppSettings/OfflineMapSettings.qml">override/qml/QGroundControl/AppSettings/FoxFourOfflineMapSettings.qml</file>
+        <file alias="QGroundControl/AppSettings/SettingsPage.qml">../src/AppSettings/SettingsPage.qml</file>                                           <!--just to link qml-->
+        <file alias="QGroundControl/AppSettings/OfflineMapInfo.qml">../src/AppSettings/OfflineMapInfo.qml</file>                                           <!--just to link qml-->
+        <file alias="QGroundControl/AppSettings/OfflineMapEditor.qml">../src/AppSettings/OfflineMapEditor.qml</file>                                           <!--just to link qml-->
+
     </qresource>
     <qresource prefix="/json">
         <file alias="FoxFour.SettingsGroup.json">src/Settings/FoxFour.SettingsGroup.json</file>
+        <file alias="parameters.metadata.json">res/parameters.metadata.json</file>
     </qresource>
 </RCC>

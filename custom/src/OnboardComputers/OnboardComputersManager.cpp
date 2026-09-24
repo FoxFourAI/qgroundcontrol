@@ -150,7 +150,7 @@ QVariantMap OnboardComputersManager::computerInfo(uint8_t compId)
 
 }
 
-void OnboardComputersManager::_vehicleMessageReceived(int /*sysid*/, int componentid, int /*severity*/, QString text, QString /*description*/)
+void OnboardComputersManager::_vehicleMessageReceived([[maybe_unused]] int sysid, int componentid,[[maybe_unused]] int severity, QString text,[[maybe_unused]] QString description)
 {
     // While we do not have osVersion or trying to request it, we reading logs, in case we get version from it.
     if(!_onboardComputers.contains(componentid) ||
@@ -314,7 +314,7 @@ void OnboardComputersManager::sendExternalPositionEstimate(const QGeoCoordinate&
                                         coord.longitude(), coord.altitude());
 }
 
-bool OnboardComputersManager::checkVersion(QString /*desctiption*/, int major, int minor, int patch)
+bool OnboardComputersManager::checkVersion([[maybe_unused]] QString desctiption, int major, int minor, int patch)
 {
     OnboardComputerStruct::OsVersion version{static_cast<uint8_t>(major),
                                              static_cast<uint8_t>(minor),

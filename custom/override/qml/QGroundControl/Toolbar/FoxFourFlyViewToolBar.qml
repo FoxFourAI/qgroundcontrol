@@ -6,7 +6,7 @@ import QtQuick.Dialogs
 import QGroundControl
 import QGroundControl.Controls
 import QGroundControl.FlyView
-import Custom.Widgets
+import FoxFour.Widgets
 
 Item {
     required property var guidedValueSlider

@@ -11,8 +11,7 @@
 #include "FoxFourAutoPilotPlugin.h"
 #include "Vehicle.h"
 #include "Camera/FoxFourCameraControl.h"
-#include "FoxFourSettings.h"
-#include "SettingsManager.h"
+#include "ParameterMetaData/FoxFourParameterMetaData.h"
 AutoPilotPlugin* FoxFourFirmwarePlugin::autopilotPlugin(Vehicle *vehicle) const
 {
     return new FoxFourAutoPilotPlugin(vehicle, vehicle);
@@ -29,7 +28,16 @@ const QVariantList &FoxFourFirmwarePlugin::toolIndicators(const Vehicle *vehicle
         _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/CopterIndicator.qml")));
         _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/VioIndicator.qml")));
         _toolIndicatorList.append(ArduCopterFirmwarePlugin::toolIndicators(vehicle));
+#ifdef SNS_ENABLE
+        _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Sine/qml/Toolbar/EK3Sources.qml")));
+#else
         _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/EK3Sources.qml")));
+#endif
     }
     return _toolIndicatorList;
+}
+
+ParameterMetaData* FoxFourFirmwarePlugin::_createParameterMetaData() {
+    //returning custom parameters metadata
+    return new FoxFourParameterMetaData(this);
 }

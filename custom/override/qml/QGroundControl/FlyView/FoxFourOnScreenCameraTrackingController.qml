@@ -100,8 +100,9 @@ Item {
             return
         }
 
-        // Drag = rectangle tracking
-        camera.startTracking(Qt.rect(x0, y0, w, h), true)
+        // Drag = rectangle zooming
+        // camera.startTracking(Qt.rect(x0, y0, w, h), true)
+        camera.zoomToRegion(Qt.rect(x0,y0,w,h),"0")
     }
 
 
@@ -153,9 +154,6 @@ Item {
         var h = y1 - y0
 
         // Ignore degenerate rectangles (e.g. mostly-horizontal/vertical drags)
-        if (w < 0.01 || h < 0.01) {
-            return
-        }
 
         // Drag = rectangle tracking
         camera.startTracking(Qt.rect(x0, y0, w, h), false)
@@ -179,8 +177,8 @@ Item {
         id: trackRect
         visible: _trackingEnabled && !_zooming
         color: "transparent"
-        border.color: "green"
-        border.width: 2
+        border.color: "#0bfc03"
+        border.width: 4
         width:_trackSize
         height: _trackSize
         x: _currentX - width / 2

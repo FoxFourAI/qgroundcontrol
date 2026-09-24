@@ -21,6 +21,7 @@ class FoxFourAutoPilotPlugin : public APMAutoPilotPlugin {
     Q_PROPERTY(MapMatching* mapMatching READ mapMatching NOTIFY mapMatchingCreated)
     Q_PROPERTY(QString storageCapacity READ storageCapacity NOTIFY storageCapacityChanged)
     Q_PROPERTY(bool isDropper READ isDropper NOTIFY isDropperChanged)
+    Q_PROPERTY(bool exposureAvailable READ exposureAvailable NOTIFY exposureAvailableChanged)
     Q_PROPERTY(CopterConfigurator* configurator MEMBER _configurator)
 public:
     explicit FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent = nullptr);
@@ -35,17 +36,24 @@ public:
     MapMatching* mapMatching() {return _mapMatching;}
     bool isDropper() { return _isDropper; }
     OnboardComputersManager* onboardComputersManager();
+    CopterConfigurator* configurator() {return _configurator;}
+    bool exposureAvailable() {return _exposureAvailable;}
+    void parametersReadyPreChecks();
 signals:
+    void exposureAvailableChanged();
     void storageCapacityChanged();
     void isDropperChanged();
     void buttonListChanged();
     void mapMatchingCreated();
 private slots:
+    void _recalcSetupComplete();
     void setIsDropper(int type);
     void handleStorageCapacityChanged(uint32_t total, uint32_t free);
+    void handleFactAdded(int compinentId, Fact* fact);
 
 private:
     bool _isDropper = false;
+    bool _exposureAvailable = false;
     EKSources* _ekSources = nullptr;
     ButtonList* _buttonList = nullptr;
     MapMatching* _mapMatching = nullptr;
@@ -56,4 +64,5 @@ private:
     QString _storageCapacityStr = "0 / 0 MB";
     CopterConfigurator* _configurator = nullptr;
     QMetaObject::Connection _cameraConnection;
+
 };

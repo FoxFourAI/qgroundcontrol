@@ -22,6 +22,7 @@ public:
     // Q_INVOKABLE virtual void zoom                   (QRectF rec);
     Q_INVOKABLE void zoomToRegion(QRectF rec,QString timestamp);
     void setZoomLevel(qreal level) override;
+    void handleCameraCaptureStatus(const mavlink_camera_capture_status_t& cameraCaptureStatus) override;
 
     virtual void handleSettings(const mavlink_camera_settings_t& settings);
     void handleStorageInfo(const mavlink_storage_information_t& st);
@@ -44,6 +45,7 @@ public:
         return _cameraIndex;
     }
 
+    bool toggleVideoRecording() override;
 signals:
     void zoomEnabledChanged();
     void minZoomLevelChanged();

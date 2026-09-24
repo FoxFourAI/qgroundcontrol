@@ -10,10 +10,10 @@ import QGroundControl.FactControls
 Item {
     id:         _root
 
-    property Fact   _editorDialogFact: Fact { }
+    property Fact   _editorDialogFact:  Fact { }
     property int    _rowHeight:         ScreenTools.defaultFontPixelHeight * 2
     property int    _rowWidth:          10 // Dynamic adjusted at runtime
-    property bool   _searchFilter:      searchText.text.trim() != "" || controller.showModifiedOnly || controller.showFavoritesOnly  ///< true: showing results of search
+    property bool   _searchFilter:      searchText.text.trim() != "" || controller.showModifiedOnly || controller.showFavoritesOnly || _mandatoryController.showList  ///< true: showing results of search
     property var    _searchResults      ///< List of parameter names from search results
     property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
     property bool   _showRCToParam:     _activeVehicle.px4Firmware
@@ -21,6 +21,7 @@ Item {
     property var    _controller:        controller
     property var    _favorites:         controller.favoriteParameterNames
     property real   _margins:           ScreenTools.defaultFontPixelHeight / 2
+    property var    _mandatoryController: QGroundControl.corePlugin.mandatoryParameters
 
     ParameterEditorController {
         id: controller
@@ -52,6 +53,10 @@ Item {
             onTriggered:	controller.refresh()
         }
         QGCMenuItem {
+            text:           qsTr("Pull all parameters")
+            onTriggered:    _mandatoryController.pullAllParameters()
+        }
+        QGCMenuItem {
             text:           qsTr("Reset all to firmware's defaults")
             onTriggered:    QGroundControl.showMessageDialog(_root, qsTr("Reset All"),
                                                          qsTr("Select Reset to reset all parameters to their defaults.\n\nNote that this will also completely reset everything, including UAVCAN nodes, all vehicle settings, setup and calibrations."),
@@ -66,6 +71,15 @@ Item {
                                                          Dialog.Cancel | Dialog.Reset,
                                                          function() { controller.resetAllToVehicleConfiguration() })
         }
+
+        QGCMenuItem {
+            text:           qsTr("Reset mandatory default parameters")
+            onTriggered:    QGroundControl.showMessageDialog(_root, qsTr("Reset mandatory parameters?"),
+                                                             qsTr("This will remove all existing mandatory parameters and reset them to default one."),
+                                                             Dialog.Cancel | Dialog.Reset,
+                                                             function() {_mandatoryController.loadDefaultParameters()})
+        }
+
         QGCMenuSeparator { }
         QGCMenuItem {
             text:           qsTr("Load from file for review...")
@@ -80,11 +94,6 @@ Item {
                 fileDialog.title =          qsTr("Save Parameters")
                 fileDialog.openForSave()
             }
-        }
-        QGCMenuSeparator { }
-        QGCMenuItem {
-            text:           qsTr("Clear all favorites")
-            onTriggered:    controller.clearAllFavorites()
         }
         QGCMenuSeparator { visible: _showRCToParam }
         QGCMenuItem {
@@ -102,6 +111,7 @@ Item {
         }
         QGCMenuItem {
             text:           qsTr("Reboot VGM")
+            visible:        _vehicle.autopilotPlugin.onboardComputersManager.currentComputerComponent !== 0
             onTriggered:    QGroundControl.showMessageDialog(_root,qsTr("Reboot VGM?"),
                                                          qsTr("Select Ok to reboot VGM."),
                                                          Dialog.Cancel | Dialog.Ok,
@@ -206,11 +216,11 @@ Item {
 
         QGCTabButton { text: qsTr("Full List") }
         QGCTabButton { text: qsTr("Modified") }
-        QGCTabButton { text: qsTr("Favorites") }
+        QGCTabButton { text: qsTr("Mandatory") }
 
         onCurrentIndexChanged: {
             controller.showModifiedOnly  = (currentIndex === 1)
-            controller.showFavoritesOnly = (currentIndex === 2)
+            _mandatoryController.showList  = (currentIndex === 2)
         }
     }
 
@@ -284,11 +294,11 @@ Item {
         anchors.top:        tabBar.bottom
         anchors.topMargin:  _margins
         syncView:           tableView
+        visible:            tableView.visible
         clip:               true
 
         delegate: Rectangle {
-            implicitWidth:  column === 0 ? ScreenTools.implicitCheckBoxHeight + ScreenTools.defaultFontPixelWidth
-                                         : headerLabel.contentWidth + ScreenTools.defaultFontPixelWidth
+            implicitWidth: column === 0 ? headerLabel.contentWidth + ScreenTools.defaultFontPixelWidth : headerLabel.contentWidth + headerLabel.contentWidth + ScreenTools.defaultFontPixelWidth
             implicitHeight: headerLabel.contentHeight + ScreenTools.defaultFontPixelHeight * 0.5
             color:          qgcPal.windowShade
 
@@ -297,7 +307,7 @@ Item {
                 anchors.left:           parent.left
                 anchors.leftMargin:     ScreenTools.defaultFontPixelWidth / 2
                 anchors.verticalCenter: parent.verticalCenter
-                text:                   display
+                text:                   column === 0 ? qsTr("Mnd") : display
                 font.bold:              true
             }
 
@@ -347,6 +357,7 @@ Item {
         rowSpacing:         0
         model:              controller.parameters
         contentWidth:       width
+        visible:            !_mandatoryController.showList
         clip:               true
 
         // Qt is supposed to adjust column widths automatically when larger widths come into view.
@@ -401,9 +412,9 @@ Item {
             QGCCheckBox {
                 visible:                column === 0
                 anchors.centerIn:       parent
-                checked:                _root._favorites.indexOf(fact.name) >= 0
+                checked:                _mandatoryController.isMandatory(fact.name)
                 z:                      1
-                onClicked:              controller.toggleFavorite(fact.name)
+                onClicked:              _mandatoryController.toggleParameter(fact.name,fact.componentId)
             }
 
             Row {
@@ -461,6 +472,51 @@ Item {
                 onClicked: mouse => {
                     _editorDialogFact = fact
                     editorDialogFactory.open()
+                }
+            }
+        }
+    }
+
+    QGCFlickable {
+        anchors.top:    tabBar.bottom
+        anchors.bottom: parent.bottom
+        anchors.left:   parent.left
+        anchors.right:  parent.right
+        contentWidth:   width
+        contentHeight:  columnLayout.height
+        clip:           true
+        visible:        _mandatoryController.showList
+
+        ColumnLayout {
+            id:     columnLayout
+            width:  parent.width
+            property var entries: Object.keys(_mandatoryController.parameters).map(function(key) {
+                return { key: key, value: _mandatoryController.parameters[key] }
+            })
+
+            Repeater {
+                model: columnLayout.entries
+                delegate: ColumnLayout{
+                    Layout.fillWidth: true
+                    QGCLabel {
+                        text: modelData.key
+                        font.bold: true
+                        font.pointSize: ScreenTools.largeFontPointSize
+                    }
+                    Repeater {
+                        model: modelData.value
+                        delegate: RowLayout {
+                            Layout.fillWidth: true
+                            spacing: ScreenTools.defaultFontPixelWidth
+                            QGCCheckBox {
+                                checked: true
+                                onClicked: _mandatoryController.removeParameter(modelData)
+                            }
+                            QGCLabel {
+                                text: modelData
+                            }
+                        }
+                    }
                 }
             }
         }

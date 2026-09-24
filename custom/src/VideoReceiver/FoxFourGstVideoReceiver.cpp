@@ -35,7 +35,7 @@ constexpr GstClockTime kEosTimeoutNs = 3 * GST_SECOND;
 
 // Refs the element's first src pad into *userData and stops iterating. Resync is handled
 // internally by gst_element_foreach_src_pad (unlike a bare gst_iterator_next loop).
-gboolean grabFirstSrcPad(GstElement * /*element*/, GstPad *pad, gpointer userData)
+gboolean grabFirstSrcPad([[maybe_unused]] GstElement * element, GstPad *pad, gpointer userData)
 {
     *static_cast<GstPad **>(userData) = GST_PAD(gst_object_ref(pad));
     return FALSE;
@@ -1315,7 +1315,7 @@ GstElement *FoxFourGstVideoReceiver::_acquirePipelineRef() const
     return GST_ELEMENT(gst_object_ref(_pipeline));
 }
 
-gboolean FoxFourGstVideoReceiver::_onBusMessage(GstBus * /* bus */, GstMessage *msg, gpointer data)
+gboolean FoxFourGstVideoReceiver::_onBusMessage([[maybe_unused]] GstBus * bus, GstMessage *msg, gpointer data)
 {
     if (!msg || !data) {
         qCCritical(FoxFourGstVideoReceiverLog) << "Invalid parameters in _onBusMessage: msg=" << msg << "data=" << data;
@@ -1366,13 +1366,6 @@ gboolean FoxFourGstVideoReceiver::_onBusMessage(GstBus * /* bus */, GstMessage *
             }
             gst_object_unref(pipelineRef);
         }
-
-        // GPU-side ERROR handling (cached-device drop) runs in HwBuffers::dispatchBusMessage above.
-        // _scheduleReconnect calls stop() then queues a backoff retry if autoReconnect is on.
-        pThis->_worker->dispatch([pThis]() {
-            qCDebug(FoxFourGstVideoReceiverLog) << "Stopping because of error";
-            pThis->_scheduleReconnect("pipeline error");
-        });
         break;
     }
     case GST_MESSAGE_WARNING: {

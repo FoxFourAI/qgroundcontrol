@@ -3,7 +3,7 @@ import QtQuick
 import QGroundControl
 import QGroundControl.Controls
 
-import Custom.Widgets 1.0
+import FoxFour.Widgets 1.0
 
 RadioButton {
     id: statusButton

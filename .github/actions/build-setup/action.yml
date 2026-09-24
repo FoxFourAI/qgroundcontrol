@@ -41,7 +41,7 @@ inputs:
   abis:
     description: "Android ABIs (e.g., 'arm64-v8a;armeabi-v7a'). android mode only."
     required: false
-    default: "arm64-v8a;armeabi-v7a"
+    default: "arm64-v8a"
   ios-modules:
     description: Qt modules for iOS target (defaults to build-config qt_modules_ios)
     required: false

@@ -1,0 +1,1665 @@
+{
+  "LOG_": {
+    "LOG_COMP_BITMASK": {
+      "DisplayName": "Enables Debug mode for the VGM, which saves logs on the SD Card <br/> <br/> 0: do not save any logs; <br/> 1: textual logs of the algorithm onboard; <br/> 2: MavLink messages as well as control reference values; <br/> 4: record video from frontal camera; <br/> 8: record video from navigation camera. <br/> <br/> Parameter is configured as bitmask to allow multiple choices, [more information here](initial-setup/vgm-configuration#log_bitmask)",
+      "User": "F4 Computer",
+      "Description": "Enables Debug mode for the VGM, which saves logs on the SD Card <br/> <br/> 0: do not save any logs; <br/> 1: textual logs of the algorithm onboard; <br/> 2: MavLink messages as well as control reference values; <br/> 4: record video from frontal camera; <br/> 8: record video from navigation camera. <br/> <br/> Parameter is configured as bitmask to allow multiple choices, [more information here](initial-setup/vgm-configuration#log_bitmask)",
+      "Bitmask": {
+        "0": "Textual logs of the algorithm onboard",
+        "1": "MavLink messages as well as control reference values",
+        "2": "Record video from frontal camera",
+        "3": "Record video from navigation camera."
+      },
+      "RebootRequired": "True"
+    },
+    "LOG_CLEAN": {
+      "DisplayName": "Triggers logs clean-up on the next boot when set to 1. <br/> <br/> After logs clean-up is done it's reset to 0 automatically. <br/> <br/> [More information here](initial-setup/vgm-configuration#clean-up)",
+      "User": "F4 Computer",
+      "Description": "Triggers logs clean-up on the next boot when set to 1. <br/> <br/> After logs clean-up is done it's reset to 0 automatically. <br/> <br/> [More information here](initial-setup/vgm-configuration#clean-up)",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      },
+      "RebootRequired": "True"
+    },
+    "LOG_SEC_BITMASK": {
+      "DisplayName": "Enables Encrypted logging mode for the VGM, which saves all the logs into the `log.sec` on the SD Card <br/> <br/> 0: do not save any logs encrypted (use plain logs insead of encrypted ones); <br/> 1: save all the logs encrypted into `log.sec`; <br/> 2: use source of high entropy when creating `log.sec` for storing logs; <br/> 4: initialize `log.sec` w/ integrity check. <br/> <br/> Parameter is configured as bitmask to allow multiple choices. <br/> <br/> [More information here](initial-setup/vgm-configuration#log_sec_bitmask)",
+      "User": "F4 Computer",
+      "Description": "Enables Encrypted logging mode for the VGM, which saves all the logs into the `log.sec` on the SD Card <br/> <br/> 0: do not save any logs encrypted (use plain logs insead of encrypted ones); <br/> 1: save all the logs encrypted into `log.sec`; <br/> 2: use source of high entropy when creating `log.sec` for storing logs; <br/> 4: initialize `log.sec` w/ integrity check. <br/> <br/> Parameter is configured as bitmask to allow multiple choices. <br/> <br/> [More information here](initial-setup/vgm-configuration#log_sec_bitmask)",
+      "Bitmask": {
+        "0": "Save all the logs encrypted into `log.sec`",
+        "1": "Use source of high entropy when creating `log.sec` for storing logs",
+        "2": "Initialize `log.sec` w/ integrity check."
+      },
+      "RebootRequired": "True"
+    },
+    "LOG_SEC_SZ": {
+      "DisplayName": "Determines total size (in MB) of logs that can be stored in `log.sec`. <br/> <br/> Parameter is only used when `log.sec` is being created",
+      "User": "F4 Computer",
+      "Description": "Determines total size (in MB) of logs that can be stored in `log.sec`. <br/> <br/> Parameter is only used when `log.sec` is being created",
+      "Units": "MB",
+      "Range": {
+        "low": "0",
+        "high": "65535"
+      },
+      "RebootRequired": "True"
+    }
+  },
+  "DET_": {
+    "DET_CLASS": {
+      "DisplayName": "Detector class. Available classes: <br/> <br/> 0: disable; <br/> 1: car; <br/> 2: plane; <br/> 4: armored vehicle; <br/> 16: TSIROT detector, available upon request",
+      "User": "F4 Computer",
+      "Description": "Detector class. Available classes: <br/> <br/> 0: disable; <br/> 1: car; <br/> 2: plane; <br/> 4: armored vehicle; <br/> 16: TSIROT detector, available upon request",
+      "Values": {
+        "0": "Disable",
+        "1": "Car",
+        "2": "Plane",
+        "4": "Armored vehicle",
+        "16": "TSIROT detector, available upon request"
+      }
+    },
+    "DET_CONF_TH": {
+      "DisplayName": "Detector confidence threshold; to reduce the number of false-positives",
+      "User": "F4 Computer",
+      "Description": "Detector confidence threshold; to reduce the number of false-positives",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    }
+  },
+  "MNT_": {
+    "MNT_CAM_PITCH": {
+      "DisplayName": "Pitch angle of camera mount. Affects tracker and control performance. <br/> <br/> -90 degrees = downwards; <br/> 90 degrees = upwards;",
+      "User": "F4 Computer",
+      "Description": "Pitch angle of camera mount. Affects tracker and control performance. <br/> <br/> -90 degrees = downwards; <br/> 90 degrees = upwards;",
+      "Units": "deg",
+      "Range": {
+        "low": "-180",
+        "high": "180"
+      },
+      "RebootRequired": "True"
+    },
+    "MNT_TYPE": {
+      "DisplayName": "Mount type: <br/> <br/> 0: pitch_only",
+      "User": "F4 Computer",
+      "Description": "Mount type: <br/> <br/> 0: pitch_only",
+      "Values": {
+        "0": "Pitch_only"
+      }
+    }
+  },
+  "COMP_": {
+    "COMP_INSTANCE": {
+      "DisplayName": "Instance of onboard computer for component id in MavLink",
+      "User": "F4 Computer",
+      "Description": "Instance of onboard computer for component id in MavLink"
+    },
+    "COMP_SYSID": {
+      "DisplayName": "Sets system ID for VGM and FCU. If set to **-1**, the ID will be calculated from VGM serail number.",
+      "User": "F4 Computer",
+      "Description": "Sets system ID for VGM and FCU. If set to **-1**, the ID will be calculated from VGM serail number.",
+      "Range": {
+        "low": "-1",
+        "high": "255"
+      },
+      "RebootRequired": "True"
+    },
+    "COMP_ADDR1": {
+      "DisplayName": "First octet of the VGM IP address",
+      "User": "F4 Computer",
+      "Description": "First octet of the VGM IP address",
+      "Range": {
+        "low": "-1",
+        "high": "255"
+      },
+      "RebootRequired": "True"
+    },
+    "COMP_ADDR2": {
+      "DisplayName": "Second octet of the VGM IP address",
+      "User": "F4 Computer",
+      "Description": "Second octet of the VGM IP address",
+      "Range": {
+        "low": "-1",
+        "high": "255"
+      },
+      "RebootRequired": "True"
+    },
+    "COMP_ADDR3": {
+      "DisplayName": "Third octet of the VGM IP address",
+      "User": "F4 Computer",
+      "Description": "Third octet of the VGM IP address",
+      "Range": {
+        "low": "-1",
+        "high": "255"
+      },
+      "RebootRequired": "True"
+    },
+    "COMP_ADDR4": {
+      "DisplayName": "Fourth octet of the VGM IP address",
+      "User": "F4 Computer",
+      "Description": "Fourth octet of the VGM IP address",
+      "Range": {
+        "low": "-1",
+        "high": "255"
+      },
+      "RebootRequired": "True"
+    },
+    "COMP_NET_MSK": {
+      "DisplayName": "Subnet mask in CIDR notation",
+      "User": "F4 Computer",
+      "Description": "Subnet mask in CIDR notation",
+      "Range": {
+        "low": "0",
+        "high": "32"
+      },
+      "RebootRequired": "True"
+    },
+    "COMP_GTW_ADDR1": {
+      "DisplayName": "First octet of the gateway IP address",
+      "User": "F4 Computer",
+      "Description": "First octet of the gateway IP address",
+      "Range": {
+        "low": "-1",
+        "high": "255"
+      },
+      "RebootRequired": "True"
+    },
+    "COMP_GTW_ADDR2": {
+      "DisplayName": "Second octet of the gateway IP address",
+      "User": "F4 Computer",
+      "Description": "Second octet of the gateway IP address",
+      "Range": {
+        "low": "-1",
+        "high": "255"
+      },
+      "RebootRequired": "True"
+    },
+    "COMP_GTW_ADDR3": {
+      "DisplayName": "Third octet of the gateway IP address",
+      "User": "F4 Computer",
+      "Description": "Third octet of the gateway IP address",
+      "Range": {
+        "low": "-1",
+        "high": "255"
+      },
+      "RebootRequired": "True"
+    },
+    "COMP_GTW_ADDR4": {
+      "DisplayName": "Fourth octet of the gateway IP address",
+      "User": "F4 Computer",
+      "Description": "Fourth octet of the gateway IP address",
+      "Range": {
+        "low": "-1",
+        "high": "255"
+      },
+      "RebootRequired": "True"
+    },
+    "COMP_NET_NUM": {
+      "DisplayName": "Network device number; <br/>JST: 0<br/>USB-C: 1",
+      "User": "F4 Computer",
+      "Description": "Network device number; <br/>JST: 0<br/>USB-C: 1",
+      "Range": {
+        "low": "-1",
+        "high": "3"
+      },
+      "RebootRequired": "True"
+    }
+  },
+  "MISSN_": {
+    "MISSN_PREFL_CHK": {
+      "DisplayName": "Enable preflight check",
+      "User": "F4 Computer",
+      "Description": "Enable preflight check",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "MISSN_GUID_TYPE": {
+      "DisplayName": "Which mission will be triggered upon enabling offboard mode. This parameter changes its value depending on the **GUID_FRAME_TYPE** value. This parameter changes its value depending on the **GUID_FRAME_TYPE** value <br/> <br/> -1: Control disabled <br/> <br/> <br/> GUID_FRAME_TYPE=0 (Copter kamikaze): <br/> 0: hover <br/> 1: terminal attack <br/> 2: tuning <br /> 3: cruise (keep current heading and fly forward with `MISSN_CRUISE_VEL` velocity) <br/> <br/> GUID_FRAME_TYPE=1 (Plane kamikaze): <br/> Not supported in the current version <br/> <br/> GUID_FRAME_TYPE=2 (Copter bomber): <br/> 0: hover <br/> 1: bombing (experimental) <br/> 2: tuning <br/> 3: cruise <br/> 4: supply delivery",
+      "User": "F4 Computer",
+      "Description": "Which mission will be triggered upon enabling offboard mode. This parameter changes its value depending on the **GUID_FRAME_TYPE** value. This parameter changes its value depending on the **GUID_FRAME_TYPE** value <br/> <br/> -1: Control disabled <br/> <br/> <br/> GUID_FRAME_TYPE=0 (Copter kamikaze): <br/> 0: hover <br/> 1: terminal attack <br/> 2: tuning <br /> 3: cruise (keep current heading and fly forward with `MISSN_CRUISE_VEL` velocity) <br/> <br/> GUID_FRAME_TYPE=1 (Plane kamikaze): <br/> Not supported in the current version <br/> <br/> GUID_FRAME_TYPE=2 (Copter bomber): <br/> 0: hover <br/> 1: bombing (experimental) <br/> 2: tuning <br/> 3: cruise <br/> 4: supply delivery",
+      "Range": {
+        "low": "0",
+        "high": "4"
+      }
+    },
+    "MISSN_TERM_VEL": {
+      "DisplayName": "Velocity of the drone during terminal attack",
+      "User": "F4 Computer",
+      "Description": "Velocity of the drone during terminal attack",
+      "Units": "m/s",
+      "Range": {
+        "low": "0",
+        "high": "100"
+      }
+    },
+    "MISSN_CRUISE_VEL": {
+      "DisplayName": "Velocity of the drone in cruise mission",
+      "User": "F4 Computer",
+      "Description": "Velocity of the drone in cruise mission",
+      "Units": "m/s",
+      "Range": {
+        "low": "0",
+        "high": "100"
+      }
+    },
+    "MISSN_ATTCK_PTCH": {
+      "DisplayName": "The angle between LOS vector to the target and the ground plane, at which the plane starts the descent to attack. If the angle is smaller, the plane stays levelled",
+      "User": "F4 Computer",
+      "Description": "The angle between LOS vector to the target and the ground plane, at which the plane starts the descent to attack. If the angle is smaller, the plane stays levelled",
+      "Units": "deg",
+      "Range": {
+        "low": "0",
+        "high": "90"
+      }
+    },
+    "MISSN_AUTONOMY": {
+      "DisplayName": "VGM autonomy level.<br/>0: manual<br/>1: AutoDesignation <br/>2: RcToggle <br/>[More information here](./inflight-vgm-interaction-kamikaze#switching-between-operation-modes)",
+      "User": "F4 Computer",
+      "Description": "VGM autonomy level.<br/>0: manual<br/>1: AutoDesignation <br/>2: RcToggle <br/>[More information here](./inflight-vgm-interaction-kamikaze#switching-between-operation-modes)",
+      "Values": {
+        "0": "Manual",
+        "1": "AutoDesignation",
+        "2": "RcToggle"
+      }
+    },
+    "MISSN_MODE_CH": {
+      "DisplayName": "Channel number for changing the VGM mode: Navigation, Assistant, Hunt. [More information here](./inflight-vgm-interaction-kamikaze#operation-modes) OR Detector/Tracker model (depends on `MISSN_AUTONOMY`)",
+      "User": "F4 Computer",
+      "Description": "Channel number for changing the VGM mode: Navigation, Assistant, Hunt. [More information here](./inflight-vgm-interaction-kamikaze#operation-modes) OR Detector/Tracker model (depends on `MISSN_AUTONOMY`)",
+      "Range": {
+        "low": "-1",
+        "high": "16"
+      }
+    },
+    "MISSN_MODE_TRM1": {
+      "DisplayName": "PWM value of **MISSN_MODE_CH,** on which the mode is switched",
+      "User": "F4 Computer",
+      "Description": "PWM value of **MISSN_MODE_CH,** on which the mode is switched",
+      "Units": "\u03bcs",
+      "Range": {
+        "low": "900",
+        "high": "2100"
+      }
+    },
+    "MISSN_MODE_TRM2": {
+      "DisplayName": "PWM value of **MISSN_MODE_CH,** on which the mode is switched",
+      "User": "F4 Computer",
+      "Description": "PWM value of **MISSN_MODE_CH,** on which the mode is switched",
+      "Units": "\u03bcs",
+      "Range": {
+        "low": "900",
+        "high": "2100"
+      }
+    },
+    "MISSN_ONE_WAY": {
+      "DisplayName": "If it is the last usage of VGM, we want to ensure that nothing sensitive will remain on the device. Contact info@foxfour.ai for more information.",
+      "User": "F4 Computer",
+      "Description": "If it is the last usage of VGM, we want to ensure that nothing sensitive will remain on the device. Contact info@foxfour.ai for more information.",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      },
+      "RebootRequired": "True"
+    },
+    "MISSN_DRP_ALT": {
+      "DisplayName": "Altitude to which the copter descends to drop the package during package delivery missions",
+      "User": "F4 Computer",
+      "Description": "Altitude to which the copter descends to drop the package during package delivery missions",
+      "Units": "m",
+      "Range": {
+        "low": "0",
+        "high": "1000"
+      }
+    },
+    "MISSN_BOMB_ALT": {
+      "DisplayName": "Terminal bombing altitude above ground at which the payload is released. Note that this parameter shall be less than the max working range of the UAV's range finder.",
+      "User": "F4 Computer",
+      "Description": "Terminal bombing altitude above ground at which the payload is released. Note that this parameter shall be less than the max working range of the UAV's range finder.",
+      "Units": "m",
+      "Range": {
+        "low": "1",
+        "high": "1000"
+      }
+    },
+    "MISSN_ASCEND_ALT": {
+      "DisplayName": "Terminal bombing altitude above ground to which the copter autonomously ascends after payload release",
+      "User": "F4 Computer",
+      "Description": "Terminal bombing altitude above ground to which the copter autonomously ascends after payload release",
+      "Units": "m",
+      "Range": {
+        "low": "0",
+        "high": "1000"
+      }
+    },
+    "MISSN_BOMB_BIAS": {
+      "DisplayName": "Terminal bombing longitudinal offset (negative value releases the payload sooner, positive later)",
+      "User": "F4 Computer",
+      "Description": "Terminal bombing longitudinal offset (negative value releases the payload sooner, positive later)",
+      "Units": "m",
+      "Range": {
+        "low": "-100",
+        "high": "100"
+      }
+    },
+    "MISSN_DRP_SPD_DN": {
+      "DisplayName": "Vertical descend speed during package delivery missions",
+      "User": "F4 Computer",
+      "Description": "Vertical descend speed during package delivery missions",
+      "Units": "m/s",
+      "Range": {
+        "low": "0",
+        "high": "4"
+      }
+    },
+    "MISSN_DRP_SPD_UP": {
+      "DisplayName": "Vertical ascend speed during package delivery missions",
+      "User": "F4 Computer",
+      "Description": "Vertical ascend speed during package delivery missions",
+      "Units": "m/s",
+      "Range": {
+        "low": "0",
+        "high": "10"
+      }
+    },
+    "MISSN_DRP_SRV_N": {
+      "DisplayName": "Servo number that triggers the package drop during package delivery missions",
+      "User": "F4 Computer",
+      "Description": "Servo number that triggers the package drop during package delivery missions",
+      "Range": {
+        "low": "-1",
+        "high": "32"
+      }
+    },
+    "MISSN_DRP_SRV_PW": {
+      "DisplayName": "Servo PWM output that triggers the package drop during package delivery missions",
+      "User": "F4 Computer",
+      "Description": "Servo PWM output that triggers the package drop during package delivery missions",
+      "Units": "us",
+      "Range": {
+        "low": "800",
+        "high": "2200"
+      }
+    }
+  },
+  "GUID_": {
+    "GUID_ADVANCED": {
+      "DisplayName": "Allows VGM to do more advanced control by utilizing position and velocity estimates from the autopilot",
+      "User": "F4 Computer",
+      "Description": "Allows VGM to do more advanced control by utilizing position and velocity estimates from the autopilot",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      },
+      "RebootRequired": "True"
+    },
+    "GUID_FRAME_TYPE": {
+      "DisplayName": "0: Copter Kamikaze <br/> 1: Plane Kamikaze <br/> 2: Copter Bomber <br/> 3: Photolit",
+      "User": "F4 Computer",
+      "Description": "0: Copter Kamikaze <br/> 1: Plane Kamikaze <br/> 2: Copter Bomber <br/> 3: Photolit",
+      "Values": {
+        "0": "Copter Kamikaze",
+        "1": "Plane Kamikaze",
+        "2": "Copter Bomber",
+        "3": "Photolit"
+      },
+      "RebootRequired": "True"
+    },
+    "GUID_PTCH": {
+      "DisplayName": "Drone pitch angle during Copter NonGPS attack",
+      "User": "F4 Computer",
+      "Description": "Drone pitch angle during Copter NonGPS attack",
+      "Range": {
+        "low": "10",
+        "high": "30"
+      }
+    },
+    "GUID_UAV_MASS": {
+      "DisplayName": "Mass of the copter. Set to -1 for automatic estimation from the ardupilot",
+      "User": "F4 Computer",
+      "Description": "Mass of the copter. Set to -1 for automatic estimation from the ardupilot",
+      "Units": "kg",
+      "Range": {
+        "low": "-1",
+        "high": "10"
+      }
+    },
+    "GUID_GAIN_MASS": {
+      "DisplayName": "Gain for mass estimation",
+      "User": "F4 Computer",
+      "Description": "Gain for mass estimation",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "GUID_MOTOR_CNST": {
+      "DisplayName": "See [Motor parameter estimation](control-configuration)",
+      "User": "F4 Computer",
+      "Description": "See [Motor parameter estimation](control-configuration)",
+      "Range": {
+        "low": "-1",
+        "high": "1"
+      }
+    },
+    "GUID_MOTOR_OFST": {
+      "DisplayName": "See [Motor parameter estimation](control-configuration)",
+      "User": "F4 Computer",
+      "Description": "See [Motor parameter estimation](control-configuration)",
+      "Range": {
+        "low": "-1",
+        "high": "1"
+      }
+    },
+    "GUID_MOTOR_NUM": {
+      "DisplayName": "Number of motors on the drone",
+      "User": "F4 Computer",
+      "Description": "Number of motors on the drone",
+      "Range": {
+        "low": "2",
+        "high": "8"
+      }
+    },
+    "GUID_FS_ALT_THR": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "-1",
+        "high": "100"
+      }
+    },
+    "GUID_FS_ALT": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "10",
+        "high": "100"
+      }
+    },
+    "GUID_FS_VEL": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "-1",
+        "high": "100"
+      }
+    },
+    "GUID_FS_PTCH": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "-1",
+        "high": "90"
+      }
+    },
+    "GUID_FS_PTCH_D": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "-1",
+        "high": "360"
+      }
+    },
+    "GUID_FS_RLL": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "-1",
+        "high": "90"
+      }
+    },
+    "GUID_FS_RLL_D": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "-1",
+        "high": "360"
+      }
+    },
+    "GUID_FS_ACC_XY": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "-1",
+        "high": "40"
+      }
+    },
+    "GUID_FS_ACC_Z": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "-1",
+        "high": "20"
+      }
+    },
+    "GUID_MAX_ACC_XY": {
+      "DisplayName": "Maximim acceleration in horizontal plane",
+      "User": "F4 Computer",
+      "Description": "Maximim acceleration in horizontal plane",
+      "Range": {
+        "low": "0",
+        "high": "10"
+      }
+    },
+    "GUID_MAX_ACC_Z": {
+      "DisplayName": "Maximum acceleration in vertical axis",
+      "User": "F4 Computer",
+      "Description": "Maximum acceleration in vertical axis",
+      "Range": {
+        "low": "0",
+        "high": "10"
+      }
+    },
+    "GUID_LQR_Q_PXY": {
+      "DisplayName": "Position controller horizontal position weight (increase to prioritize this state)",
+      "User": "F4 Computer",
+      "Description": "Position controller horizontal position weight (increase to prioritize this state)",
+      "Range": {
+        "low": "0.01",
+        "high": "10000.0"
+      }
+    },
+    "GUID_LQR_Q_PZ": {
+      "DisplayName": "Position controller vertical position weight (increase to prioritize this state)",
+      "User": "F4 Computer",
+      "Description": "Position controller vertical position weight (increase to prioritize this state)",
+      "Range": {
+        "low": "0.01",
+        "high": "10000.0"
+      }
+    },
+    "GUID_LQR_Q_VXY": {
+      "DisplayName": "Velocity controller horizontal position weight (increase to prioritize this state)",
+      "User": "F4 Computer",
+      "Description": "Velocity controller horizontal position weight (increase to prioritize this state)",
+      "Range": {
+        "low": "0.01",
+        "high": "10000.0"
+      }
+    },
+    "GUID_LQR_Q_VZ": {
+      "DisplayName": "Velocity controller vertical position weight (increase to prioritize this state)",
+      "User": "F4 Computer",
+      "Description": "Velocity controller vertical position weight (increase to prioritize this state)",
+      "Range": {
+        "low": "0.01",
+        "high": "10000.0"
+      }
+    },
+    "GUID_LQR_R_MIN": {
+      "DisplayName": "Position/velocity controller's minimal value of actuator penalty, must be less or equal to **GUID_LQR_R_MAX** (increase to dampen motor actions)",
+      "User": "F4 Computer",
+      "Description": "Position/velocity controller's minimal value of actuator penalty, must be less or equal to **GUID_LQR_R_MAX** (increase to dampen motor actions)",
+      "Range": {
+        "low": "0.01",
+        "high": "10000.0"
+      }
+    },
+    "GUID_LQR_R_MAX": {
+      "DisplayName": "Position/velocity controller's maximal value of actuator penalty, must be more or equal to **GUID_LQR_R_MIN** (increase to dampen motor actions)",
+      "User": "F4 Computer",
+      "Description": "Position/velocity controller's maximal value of actuator penalty, must be more or equal to **GUID_LQR_R_MIN** (increase to dampen motor actions)",
+      "Range": {
+        "low": "0.01",
+        "high": "10000.0"
+      }
+    },
+    "GUID_LQR_R_VEL": {
+      "DisplayName": "Position/velocity controller's actuator penalty velocity scaling factor (at 0 m/s penalty is set to **GUID_LQR_R_MIN**, at **GUID_LQR_R_VEL** m/s penalty is set to **GUID_LQR_R_MAX**)",
+      "User": "F4 Computer",
+      "Description": "Position/velocity controller's actuator penalty velocity scaling factor (at 0 m/s penalty is set to **GUID_LQR_R_MIN**, at **GUID_LQR_R_VEL** m/s penalty is set to **GUID_LQR_R_MAX**)",
+      "Range": {
+        "low": "0.0",
+        "high": "100.0"
+      }
+    },
+    "GUID_LQR_KI": {
+      "DisplayName": "Position/velocity controller integral gain",
+      "User": "F4 Computer",
+      "Description": "Position/velocity controller integral gain",
+      "Range": {
+        "low": "0.0",
+        "high": "10.0"
+      }
+    },
+    "GUID_LQR_PI_LIM": {
+      "DisplayName": "Position controller max integral error",
+      "User": "F4 Computer",
+      "Description": "Position controller max integral error",
+      "Range": {
+        "low": "0.0",
+        "high": "10.0"
+      }
+    },
+    "GUID_LQR_VI_LIM": {
+      "DisplayName": "Velocity controller max integral error",
+      "User": "F4 Computer",
+      "Description": "Velocity controller max integral error",
+      "Range": {
+        "low": "0.0",
+        "high": "10.0"
+      }
+    },
+    "GUID_BOMB_VEL": {
+      "DisplayName": "Max velocity allowed in bombing state [m/s]",
+      "User": "F4 Computer",
+      "Description": "Max velocity allowed in bombing state [m/s]",
+      "Range": {
+        "low": "0.0",
+        "high": "100.0"
+      }
+    },
+    "GUID_PTCH_BIAS": {
+      "DisplayName": "Terminal guidance pitch bias [rad] (positive to undershoot, negative to overshoot)",
+      "User": "F4 Computer",
+      "Description": "Terminal guidance pitch bias [rad] (positive to undershoot, negative to overshoot)",
+      "Range": {
+        "low": "-0.5",
+        "high": "0.5"
+      }
+    },
+    "GUID_K_YAW_LD": {
+      "DisplayName": "Terminal guidance heading lead gain",
+      "User": "F4 Computer",
+      "Description": "Terminal guidance heading lead gain",
+      "Range": {
+        "low": "0",
+        "high": "100"
+      }
+    },
+    "GUID_K_YAW_INT": {
+      "DisplayName": "Terminal guidance heading integral control gain",
+      "User": "F4 Computer",
+      "Description": "Terminal guidance heading integral control gain",
+      "Range": {
+        "low": "0",
+        "high": "10"
+      }
+    },
+    "GUID_K_PTCH_LD": {
+      "DisplayName": "Terminal guidance pitch lead gain",
+      "User": "F4 Computer",
+      "Description": "Terminal guidance pitch lead gain",
+      "Range": {
+        "low": "0",
+        "high": "100"
+      }
+    },
+    "GUID_K_VZ_PTCH": {
+      "DisplayName": "Terminal guidance vertical velocity proportional gain based on pitch error",
+      "User": "F4 Computer",
+      "Description": "Terminal guidance vertical velocity proportional gain based on pitch error",
+      "Range": {
+        "low": "0",
+        "high": "100"
+      }
+    },
+    "GUID_K_VZ_INT": {
+      "DisplayName": "Terminal guidance vertical velocity integral gain based on pitch error",
+      "User": "F4 Computer",
+      "Description": "Terminal guidance vertical velocity integral gain based on pitch error",
+      "Range": {
+        "low": "0",
+        "high": "100"
+      }
+    },
+    "GUID_K_VX_PTCH": {
+      "DisplayName": "Terminal guidance forward velocity proportional correction factor based on pitch error",
+      "User": "F4 Computer",
+      "Description": "Terminal guidance forward velocity proportional correction factor based on pitch error",
+      "Range": {
+        "low": "0",
+        "high": "100"
+      }
+    },
+    "GUID_N_VY": {
+      "DisplayName": "Terminal guidance lateral velocity constant bearing control gain",
+      "User": "F4 Computer",
+      "Description": "Terminal guidance lateral velocity constant bearing control gain",
+      "Range": {
+        "low": "0",
+        "high": "100"
+      }
+    },
+    "GUID_RLL_P": {
+      "DisplayName": "Dor",
+      "User": "F4 Computer",
+      "Description": "Dor",
+      "Range": {
+        "low": "0",
+        "high": "10"
+      }
+    },
+    "GUID_RLL_I": {
+      "DisplayName": "Dor",
+      "User": "F4 Computer",
+      "Description": "Dor",
+      "Range": {
+        "low": "0",
+        "high": "10"
+      }
+    },
+    "GUID_RLL_IMX": {
+      "DisplayName": "Dor",
+      "User": "F4 Computer",
+      "Description": "Dor",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "GUID_RLL_D": {
+      "DisplayName": "Dor",
+      "User": "F4 Computer",
+      "Description": "Dor",
+      "Range": {
+        "low": "0",
+        "high": "10"
+      }
+    },
+    "GUID_RLL_DF": {
+      "DisplayName": "Dor",
+      "User": "F4 Computer",
+      "Description": "Dor",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "GUID_RLL_FLT": {
+      "DisplayName": "Dor",
+      "User": "F4 Computer",
+      "Description": "Dor",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "GUID_RLL_MXR": {
+      "DisplayName": "Dor",
+      "User": "F4 Computer",
+      "Description": "Dor",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "GUID_POS_P": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "0.0",
+        "high": "100.0"
+      }
+    },
+    "GUID_POS_I": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "0.0",
+        "high": "100.0"
+      }
+    },
+    "GUID_POS_IMX": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "0.0",
+        "high": "10.0"
+      }
+    },
+    "GUID_POS_D": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "0.0",
+        "high": "100.0"
+      }
+    },
+    "GUID_POS_DF": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "0.0",
+        "high": "10.0"
+      }
+    },
+    "GUID_POSZ_P": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "0.0",
+        "high": "10.0"
+      }
+    },
+    "GUID_POSZ_D": {
+      "DisplayName": "N/A",
+      "User": "F4 Computer",
+      "Description": "N/A",
+      "Range": {
+        "low": "0.0",
+        "high": "10.0"
+      }
+    },
+    "GUID_CRUISE_AMP": {
+      "DisplayName": "Amplitude of path deviation in `Cruise` control mode",
+      "User": "F4 Computer",
+      "Description": "Amplitude of path deviation in `Cruise` control mode",
+      "Units": "m",
+      "Range": {
+        "low": "0",
+        "high": "5000"
+      }
+    },
+    "GUID_CRUISE_WL": {
+      "DisplayName": "Wavelength (period in meters) of sinusoidal path deviations in `Cruise` control mode",
+      "User": "F4 Computer",
+      "Description": "Wavelength (period in meters) of sinusoidal path deviations in `Cruise` control mode",
+      "Units": "m",
+      "Range": {
+        "low": "0",
+        "high": "100000"
+      }
+    },
+    "GUID_THR_MAX": {
+      "DisplayName": "",
+      "User": "F4 Computer",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "GUID_PTCH_TRM": {
+      "DisplayName": "",
+      "User": "F4 Computer",
+      "Range": {
+        "low": "0",
+        "high": "15"
+      }
+    },
+    "GUID_PTCH_FF": {
+      "DisplayName": "",
+      "User": "F4 Computer",
+      "Range": {
+        "low": "0",
+        "high": "10"
+      }
+    },
+    "GUID_PTCH_P": {
+      "DisplayName": "",
+      "User": "F4 Computer",
+      "Range": {
+        "low": "0",
+        "high": "10"
+      }
+    },
+    "GUID_PTCH_I": {
+      "DisplayName": "",
+      "User": "F4 Computer",
+      "Range": {
+        "low": "0",
+        "high": "10"
+      }
+    },
+    "GUID_PTCH_IMX": {
+      "DisplayName": "",
+      "User": "F4 Computer",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "GUID_PTCH_D": {
+      "DisplayName": "",
+      "User": "F4 Computer",
+      "Range": {
+        "low": "0",
+        "high": "5"
+      }
+    },
+    "GUID_PTCH_DF": {
+      "DisplayName": "",
+      "User": "F4 Computer",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "GUID_PTCH_MAX": {
+      "DisplayName": "",
+      "User": "F4 Computer",
+      "Range": {
+        "low": "0",
+        "high": "30"
+      }
+    },
+    "GUID_THR_INIT": {
+      "DisplayName": "",
+      "User": "F4 Computer",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "GUID_THR_P": {
+      "DisplayName": "",
+      "User": "F4 Computer",
+      "Range": {
+        "low": "0",
+        "high": "01"
+      }
+    },
+    "GUID_THR_I": {
+      "DisplayName": "",
+      "User": "F4 Computer",
+      "Range": {
+        "low": "0",
+        "high": "0.01"
+      }
+    },
+    "GUID_RLL_MAX": {
+      "DisplayName": "",
+      "User": "F4 Computer",
+      "Range": {
+        "low": "0",
+        "high": "90"
+      }
+    }
+  },
+  "CAM_": {
+    "CAM_FPS": {
+      "DisplayName": "Framerate of the video",
+      "User": "F4 Computer",
+      "Description": "Framerate of the video",
+      "Units": "fps",
+      "Range": {
+        "low": "5",
+        "high": "30"
+      },
+      "RebootRequired": "True"
+    },
+    "CAM_UDP_PORT": {
+      "DisplayName": "UPD Port to listen for video input",
+      "User": "F4 Computer",
+      "Description": "UPD Port to listen for video input",
+      "Range": {
+        "low": "1000",
+        "high": "10000"
+      },
+      "RebootRequired": "True"
+    },
+    "CAM_EXPOSURE": {
+      "DisplayName": "Manual camera exposure; overrides auto exposure.",
+      "User": "F4 Computer",
+      "Description": "Manual camera exposure; overrides auto exposure.",
+      "Range": {
+        "low": "-1",
+        "high": "20000"
+      }
+    },
+    "CAM_GAIN": {
+      "DisplayName": "Manual camera gain. Can be between 100 and 20'000, everything from -1 to 99 will be ignored.",
+      "User": "F4 Computer",
+      "Description": "Manual camera gain. Can be between 100 and 20'000, everything from -1 to 99 will be ignored.",
+      "Range": {
+        "low": "-1",
+        "high": "20000"
+      }
+    }
+  },
+  "VID_": {
+    "VID_OUT_TYPE": {
+      "DisplayName": "Video output format for the targeting camera stream. <br/> 1: RTP Output Stream <br/> 2: MPEG-TS Output Stream <br/> 3: Raspberry Pi analog converter. <br/> **NOTE: analog converter has limited support in the current version. Contact info@foxfour.ai for more information.**",
+      "User": "F4 Computer",
+      "Description": "Video output format for the targeting camera stream. <br/> 1: RTP Output Stream <br/> 2: MPEG-TS Output Stream <br/> 3: Raspberry Pi analog converter. <br/> **NOTE: analog converter has limited support in the current version. Contact info@foxfour.ai for more information.**",
+      "Values": {
+        "1": "RTP Output Stream",
+        "2": "MPEG-TS Output Stream",
+        "3": "Raspberry Pi analog converter."
+      },
+      "RebootRequired": "True"
+    },
+    "VID_OUT_CODEC": {
+      "DisplayName": "Video output codec.<br/>  0: H.264 (AVC) <br/> 1: H.265 (HEVC)",
+      "User": "F4 Computer",
+      "Description": "Video output codec.<br/>  0: H.264 (AVC) <br/> 1: H.265 (HEVC)",
+      "Values": {
+        "0": "H.264 (AVC)",
+        "1": "H.265 (HEVC)"
+      },
+      "RebootRequired": "True"
+    },
+    "VID_OUT_UDP_PORT": {
+      "DisplayName": "UPD Port to stream video output",
+      "User": "F4 Computer",
+      "Description": "UPD Port to stream video output",
+      "Range": {
+        "low": "1000",
+        "high": "10000"
+      },
+      "RebootRequired": "True"
+    },
+    "VID_OUT_UPD_GOP": {
+      "DisplayName": "H.264/H.265 GOP Size for Video Sink",
+      "User": "F4 Computer",
+      "Description": "H.264/H.265 GOP Size for Video Sink",
+      "RebootRequired": "True"
+    },
+    "VID_OUT_UDP_BTRT": {
+      "DisplayName": "H.264/H.265 Bitrate for Video Sink, in bits/s",
+      "User": "F4 Computer",
+      "Description": "H.264/H.265 Bitrate for Video Sink, in bits/s",
+      "Units": "Bps",
+      "Range": {
+        "low": "200000",
+        "high": "10000000"
+      },
+      "RebootRequired": "True"
+    },
+    "VID_OUT_UDP_IPRD": {
+      "DisplayName": "H.264/H.265 I-frame period for Video Sink",
+      "User": "F4 Computer",
+      "Description": "H.264/H.265 I-frame period for Video Sink",
+      "Range": {
+        "low": "1",
+        "high": "30"
+      },
+      "RebootRequired": "True"
+    },
+    "VID_OUT_UDP_MTU": {
+      "DisplayName": "Maximum Transmission Unit for RTP packet for Video Sink",
+      "User": "F4 Computer",
+      "Description": "Maximum Transmission Unit for RTP packet for Video Sink",
+      "Range": {
+        "low": "28",
+        "high": "2147483647"
+      },
+      "RebootRequired": "True"
+    },
+    "VID_OUT_ADDR1": {
+      "DisplayName": "First octet of the video output IP address",
+      "User": "F4 Computer",
+      "Description": "First octet of the video output IP address",
+      "Range": {
+        "low": "-1",
+        "high": "255"
+      },
+      "RebootRequired": "True"
+    },
+    "VID_OUT_ADDR2": {
+      "DisplayName": "Second octet of the video output IP address",
+      "User": "F4 Computer",
+      "Description": "Second octet of the video output IP address",
+      "Range": {
+        "low": "-1",
+        "high": "255"
+      },
+      "RebootRequired": "True"
+    },
+    "VID_OUT_ADDR3": {
+      "DisplayName": "Third octet of the video output IP address",
+      "User": "F4 Computer",
+      "Description": "Third octet of the video output IP address",
+      "Range": {
+        "low": "-1",
+        "high": "255"
+      },
+      "RebootRequired": "True"
+    },
+    "VID_OUT_ADDR4": {
+      "DisplayName": "Fourth octet of the video output IP address",
+      "User": "F4 Computer",
+      "Description": "Fourth octet of the video output IP address",
+      "Range": {
+        "low": "-1",
+        "high": "255"
+      },
+      "RebootRequired": "True"
+    },
+    "VID_OUT_SEL_CH": {
+      "DisplayName": "Channel number for camera selection",
+      "User": "F4 Computer",
+      "Description": "Channel number for camera selection",
+      "Range": {
+        "low": "-1",
+        "high": "16"
+      }
+    },
+    "VID_OUT_SEL_TRIM": {
+      "DisplayName": "PWM value of **VID_SEL_CH,** on which camera is switched",
+      "User": "F4 Computer",
+      "Description": "PWM value of **VID_SEL_CH,** on which camera is switched",
+      "Units": "\u03bcs",
+      "Range": {
+        "low": "900",
+        "high": "2100"
+      }
+    },
+    "VID_ZOOM_CH": {
+      "DisplayName": "Channel number for zoom scale, -1 to disable zoom",
+      "User": "F4 Computer",
+      "Description": "Channel number for zoom scale, -1 to disable zoom",
+      "Range": {
+        "low": "-1",
+        "high": "16"
+      }
+    },
+    "VID_ZOOM_MIN": {
+      "DisplayName": "Minimal zoom factor  for PWM value 1050",
+      "User": "F4 Computer",
+      "Description": "Minimal zoom factor  for PWM value 1050",
+      "Range": {
+        "low": "1",
+        "high": "16"
+      }
+    },
+    "VID_ZOOM_MAX": {
+      "DisplayName": "Maximal zoom factor for PWM value 1950",
+      "User": "F4 Computer",
+      "Description": "Maximal zoom factor for PWM value 1950",
+      "Range": {
+        "low": "1",
+        "high": "16"
+      }
+    },
+    "VID_ZOOM_DB": {
+      "DisplayName": "Dead band for zoom factor. The smallest possible step for zoom.",
+      "User": "F4 Computer",
+      "Description": "Dead band for zoom factor. The smallest possible step for zoom.",
+      "Range": {
+        "low": "1",
+        "high": "12"
+      }
+    },
+    "VID_ZOOM_SIZE_X": {
+      "DisplayName": "Width of picture-in-picture for zoom",
+      "User": "F4 Computer",
+      "Description": "Width of picture-in-picture for zoom",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      },
+      "RebootRequired": "True"
+    },
+    "VID_ZOOM_SIZE_Y": {
+      "DisplayName": "Height of picture-in-picture for zoom",
+      "User": "F4 Computer",
+      "Description": "Height of picture-in-picture for zoom",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      },
+      "RebootRequired": "True"
+    }
+  },
+  "TB_": {
+    "TB_TIMEOUT": {
+      "DisplayName": "How long after an unsuccessful terminal bombing mission odes the drone stop and ascend",
+      "User": "F4 Computer",
+      "Description": "How long after an unsuccessful terminal bombing mission odes the drone stop and ascend",
+      "Units": "s",
+      "Range": {
+        "low": "0",
+        "high": "100"
+      }
+    },
+    "TB_POS_TOL": {
+      "DisplayName": "Terminal bombing estimated bombing error tolerance",
+      "User": "F4 Computer",
+      "Description": "Terminal bombing estimated bombing error tolerance",
+      "Units": "m",
+      "Range": {
+        "low": "0",
+        "high": "20"
+      }
+    },
+    "TB_PKG_MASS": {
+      "DisplayName": "Terminal bombing payload mass",
+      "User": "F4 Computer",
+      "Description": "Terminal bombing payload mass",
+      "Units": "kg",
+      "Range": {
+        "low": "0",
+        "high": "100"
+      }
+    },
+    "TB_PKG_LEN": {
+      "DisplayName": "Terminal bombing payload length along its front facing axis (approximated as cylinder)",
+      "User": "F4 Computer",
+      "Description": "Terminal bombing payload length along its front facing axis (approximated as cylinder)",
+      "Units": "kg",
+      "Range": {
+        "low": "0",
+        "high": "100"
+      }
+    },
+    "TB_PKG_RADI": {
+      "DisplayName": "Terminal bombing payload radius (approximated as cylinder)",
+      "User": "F4 Computer",
+      "Description": "Terminal bombing payload radius (approximated as cylinder)",
+      "Units": "m",
+      "Range": {
+        "low": "0",
+        "high": "100"
+      }
+    },
+    "TB_PKG_CDFR": {
+      "DisplayName": "Terminal bombing payload front face drag coefficient (approximated as cylinder)",
+      "User": "F4 Computer",
+      "Description": "Terminal bombing payload front face drag coefficient (approximated as cylinder)",
+      "Range": {
+        "low": "0.001",
+        "high": "10"
+      }
+    },
+    "TB_PKG_CDSID": {
+      "DisplayName": "Terminal bombing payload side face drag coefficient (approximated as cylinder)",
+      "User": "F4 Computer",
+      "Description": "Terminal bombing payload side face drag coefficient (approximated as cylinder)",
+      "Range": {
+        "low": "0.001",
+        "high": "10"
+      }
+    }
+  },
+  "TGT_": {
+    "TGT_SEL_CENTER_X": {
+      "DisplayName": "x-axis location on the image of target selector center",
+      "User": "F4 Computer",
+      "Description": "x-axis location on the image of target selector center",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "TGT_SEL_CENTER_Y": {
+      "DisplayName": "y-axis location on the image of target selector center",
+      "User": "F4 Computer",
+      "Description": "y-axis location on the image of target selector center",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "TGT_SEL_SZ_CH": {
+      "DisplayName": "Channel number for changing size of be box for target selector",
+      "User": "F4 Computer",
+      "Description": "Channel number for changing size of be box for target selector",
+      "Range": {
+        "low": "-1",
+        "high": "16"
+      }
+    },
+    "TGT_SEL_SZ_MIN": {
+      "DisplayName": "Minimal height of a selection window for PWM value 1050. Fraction of image height (1 for full height)",
+      "User": "F4 Computer",
+      "Description": "Minimal height of a selection window for PWM value 1050. Fraction of image height (1 for full height)",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "TGT_SEL_SZ_MAX": {
+      "DisplayName": "Maximal height of a selection window for PWM value 1950. Fraction of image height (1 for full height)",
+      "User": "F4 Computer",
+      "Description": "Maximal height of a selection window for PWM value 1950. Fraction of image height (1 for full height)",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "TGT_SEL_SZ_DB": {
+      "DisplayName": "Dead band for box height. The smallest possible step for that height. Fraction of image height (1 for full height)",
+      "User": "F4 Computer",
+      "Description": "Dead band for box height. The smallest possible step for that height. Fraction of image height (1 for full height)",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    }
+  },
+  "VIO_": {
+    "VIO_ENABLE": {
+      "DisplayName": "Enable VIO subsystem",
+      "User": "F4 Computer",
+      "Description": "Enable VIO subsystem",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      },
+      "RebootRequired": "True"
+    },
+    "VIO_CAM_FLIP": {
+      "DisplayName": "Should be 1 if the VIO camera is physically mounted upside down",
+      "User": "F4 Computer",
+      "Description": "Should be 1 if the VIO camera is physically mounted upside down",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      },
+      "RebootRequired": "True"
+    },
+    "VIO_TRG_CH": {
+      "DisplayName": "Channel number for triggering VIO",
+      "User": "F4 Computer",
+      "Description": "Channel number for triggering VIO",
+      "Range": {
+        "low": "-1",
+        "high": "16"
+      }
+    },
+    "VIO_TRG_TRIM": {
+      "DisplayName": "PWM value of **VIO_TRG_CH,** on which VIO is enabled",
+      "User": "F4 Computer",
+      "Description": "PWM value of **VIO_TRG_CH,** on which VIO is enabled",
+      "Units": "\u03bcs",
+      "Range": {
+        "low": "900",
+        "high": "2100"
+      }
+    },
+    "VIO_AUTO_EKF": {
+      "DisplayName": "Enables automatic switching between EKF SRC1 and SRC2 in ArduPilot. When set to 0, VIO will publish",
+      "User": "F4 Computer",
+      "Description": "Enables automatic switching between EKF SRC1 and SRC2 in ArduPilot. When set to 0, VIO will publish",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "VIO_GPS_PRD": {
+      "DisplayName": "Initial GPS feeding time period",
+      "User": "F4 Computer",
+      "Description": "Initial GPS feeding time period",
+      "Range": {
+        "low": "-1",
+        "high": "3600"
+      }
+    },
+    "VIO_USE_MAG": {
+      "DisplayName": "Enable feeding of magnetomer to VIO (experimental)",
+      "User": "F4 Computer",
+      "Description": "Enable feeding of magnetomer to VIO (experimental)",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
+    "VIO_RESET_THR": {
+      "DisplayName": "Distance between two VIO estimates, after which EKF pose reset is triggered",
+      "User": "F4 Computer",
+      "Description": "Distance between two VIO estimates, after which EKF pose reset is triggered",
+      "Range": {
+        "low": "-1",
+        "high": "10.0"
+      }
+    },
+    "VIO_MNT_CAL": {
+      "DisplayName": "Enable automatic VIO camera mount calibration on the next VGM startup. Overrides previous set **VIO_MNT** parameters. The calibration process is similar to compass calibration. Contact info@foxfour.ai for more information.",
+      "User": "F4 Computer",
+      "Description": "Enable automatic VIO camera mount calibration on the next VGM startup. Overrides previous set **VIO_MNT** parameters. The calibration process is similar to compass calibration. Contact info@foxfour.ai for more information.",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      },
+      "RebootRequired": "True"
+    },
+    "VIO_MNT_PTCH": {
+      "DisplayName": "Pitch angle of the VIO camera mount",
+      "User": "F4 Computer",
+      "Description": "Pitch angle of the VIO camera mount",
+      "Units": "deg",
+      "Range": {
+        "low": "-90",
+        "high": "90"
+      }
+    },
+    "VIO_MNT_RLL": {
+      "DisplayName": "Roll angle of the VIO camera mount",
+      "User": "F4 Computer",
+      "Description": "Roll angle of the VIO camera mount",
+      "Units": "deg",
+      "Range": {
+        "low": "-90",
+        "high": "90"
+      }
+    },
+    "VIO_MNT_YAW": {
+      "DisplayName": "Yaw angle of the VIO camera mount",
+      "User": "F4 Computer",
+      "Description": "Yaw angle of the VIO camera mount",
+      "Units": "deg",
+      "Range": {
+        "low": "-90",
+        "high": "90"
+      }
+    },
+    "VIO_ARM_MIN_SAT": {
+      "DisplayName": "Minimal amount of GPS satellites for the proper VIO startup, applies arm restriction if condition is not satisfied",
+      "User": "F4 Computer",
+      "Description": "Minimal amount of GPS satellites for the proper VIO startup, applies arm restriction if condition is not satisfied",
+      "Range": {
+        "low": "-1",
+        "high": "255"
+      }
+    },
+    "VIO_ARM_MAX_DOP": {
+      "DisplayName": "Maximal GPS HDOP for the VIO startup, applies arm restriction if condition is not satisfied",
+      "User": "F4 Computer",
+      "Description": "Maximal GPS HDOP for the VIO startup, applies arm restriction if condition is not satisfied",
+      "Range": {
+        "low": "-1",
+        "high": "100"
+      }
+    },
+    "VIO_MAGR_MANTIS": {
+      "DisplayName": "MagnetometerR mantis",
+      "User": "F4 Computer",
+      "Description": "MagnetometerR mantis",
+      "Range": {
+        "low": "-1",
+        "high": "10"
+      },
+      "RebootRequired": "True"
+    },
+    "VIO_MAGR_EXP": {
+      "DisplayName": "MagnetometerR exponent",
+      "User": "F4 Computer",
+      "Description": "MagnetometerR exponent",
+      "Range": {
+        "low": "-100",
+        "high": "100"
+      },
+      "RebootRequired": "True"
+    },
+    "VIO_EXT_P_BEF_I": {
+      "DisplayName": "Wait for external pose before initialisation",
+      "User": "F4 Computer",
+      "Description": "Wait for external pose before initialisation",
+      "Range": {
+        "low": "-1",
+        "high": "1"
+      },
+      "RebootRequired": "True"
+    },
+    "VIO_USE_DSP": {
+      "DisplayName": "Enable DSP features in VIO (experimental)",
+      "User": "F4 Computer",
+      "Description": "Enable DSP features in VIO (experimental)",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      },
+      "RebootRequired": "True"
+    },
+    "VIO_USE_VPS": {
+      "DisplayName": "Enables the Visual Positioning System (VPS). <br/> <br/> 0: disabled; <br/> 1: enabled with BEV navigation output; <br/> 2: enabled with VPS visualization output. <br/> <br/> A reboot is required before the VPS parameter group is shown. [More information here](initial-setup/vps)",
+      "User": "F4 Computer",
+      "Description": "Enables the Visual Positioning System (VPS). <br/> <br/> 0: disabled; <br/> 1: enabled with BEV navigation output; <br/> 2: enabled with VPS visualization output. <br/> <br/> A reboot is required before the VPS parameter group is shown. [More information here](initial-setup/vps)",
+      "Values": {
+        "0": "Disabled",
+        "1": "Enabled with BEV navigation output",
+        "2": "Enabled with VPS visualization output."
+      },
+      "RebootRequired": "True"
+    }
+  },
+  "VPS_": {
+    "VPS_EXT_SOURCE": {
+      "DisplayName": "External position source used to seed VPS map matching. <br/> <br/> 0: unknown; <br/> 1: F4 VIO; <br/> 2: Experimental; <br/> 3: Sine Navigation System; <br/> 4: FCU.",
+      "User": "F4 Computer",
+      "Description": "External position source used to seed VPS map matching. <br/> <br/> 0: unknown; <br/> 1: F4 VIO; <br/> 2: Experimental; <br/> 3: Sine Navigation System; <br/> 4: FCU.",
+      "Values": {
+        "0": "Unknown",
+        "1": "F4 VIO",
+        "2": "Experimental",
+        "3": "Sine Navigation System",
+        "4": "FCU."
+      },
+      "RebootRequired": "True"
+    },
+    "VPS_ALT_SCALE": {
+      "DisplayName": "Multiplier used to determine the ground area represented by the downward-camera image from altitude.",
+      "User": "F4 Computer",
+      "Description": "Multiplier used to determine the ground area represented by the downward-camera image from altitude.",
+      "Range": {
+        "low": "0.1",
+        "high": "10.0"
+      },
+      "RebootRequired": "True"
+    },
+    "VPS_MIN_GRD_SZ": {
+      "DisplayName": "Minimum ground-area size used for VPS map matching.",
+      "User": "F4 Computer",
+      "Description": "Minimum ground-area size used for VPS map matching.",
+      "Units": "m",
+      "Range": {
+        "low": "10.0",
+        "high": "1000.0"
+      },
+      "RebootRequired": "True"
+    },
+    "VPS_MIN_HEIGHT": {
+      "DisplayName": "Minimum height at which VPS attempts map matching.",
+      "User": "F4 Computer",
+      "Description": "Minimum height at which VPS attempts map matching.",
+      "Units": "m",
+      "Range": {
+        "low": "0.1",
+        "high": "1000.0"
+      },
+      "RebootRequired": "True"
+    },
+    "VPS_OUT_FORMAT": {
+      "DisplayName": "VPS result handling. <br/> <br/> 0: log only; <br/> 1: MAV_CMD_EXTERNAL_POSITION_ESTIMATE, no VIO fusion; <br/> 2: apply VPS corrections to VIO and reset its pose when a new correction arrives. VPS estimates are published as `GLOBAL_POSITION_INT` for QGroundControl visualization in all modes.",
+      "User": "F4 Computer",
+      "Description": "VPS result handling. <br/> <br/> 0: log only; <br/> 1: MAV_CMD_EXTERNAL_POSITION_ESTIMATE, no VIO fusion; <br/> 2: apply VPS corrections to VIO and reset its pose when a new correction arrives. VPS estimates are published as `GLOBAL_POSITION_INT` for QGroundControl visualization in all modes.",
+      "Values": {
+        "0": "Log only",
+        "1": "MAV_CMD_EXTERNAL_POSITION_ESTIMATE, no VIO fusion",
+        "2": "Apply VPS corrections to VIO and reset its pose when a new correction arrives. VPS estimates are published as `GLOBAL_POSITION_INT` for QGroundControl visualization in all modes."
+      },
+      "RebootRequired": "True"
+    },
+    "VPS_PUB_PERIOD": {
+      "DisplayName": "Minimum time between VPS result publications.",
+      "User": "F4 Computer",
+      "Description": "Minimum time between VPS result publications.",
+      "Units": "s",
+      "Range": {
+        "low": "0.0",
+        "high": "3600.0"
+      }
+    }
+  },
+  "OSD_": {
+    "OSD_HOR_OFFSET": {
+      "DisplayName": "OSD overlay Horisontal offset",
+      "User": "F4 Computer",
+      "Description": "OSD overlay Horisontal offset",
+      "Units": "px",
+      "Range": {
+        "low": "0",
+        "high": "1920"
+      }
+    },
+    "OSD_VERT_OFFSET": {
+      "DisplayName": "OSD overlay Vertical offset",
+      "User": "F4 Computer",
+      "Description": "OSD overlay Vertical offset",
+      "Units": "px",
+      "Range": {
+        "low": "0",
+        "high": "1080"
+      }
+    },
+    "OSD_FONT_SCALE": {
+      "DisplayName": "OSD fonst scale factor; can be useful smaller/bigger screens",
+      "User": "F4 Computer",
+      "Description": "OSD fonst scale factor; can be useful smaller/bigger screens",
+      "Range": {
+        "low": "0.0",
+        "high": "10.0"
+      }
+    }
+  },
+  "GPS_": {
+    "GPS_TARGET_LAT": {
+      "DisplayName": "Fake GPS target latitude (experimental)",
+      "User": "F4 Computer",
+      "Description": "Fake GPS target latitude (experimental)",
+      "Units": "deg",
+      "Range": {
+        "low": "-90.0",
+        "high": "90.0"
+      }
+    },
+    "GPS_TARGET_LON": {
+      "DisplayName": "Fake GPS target longitude (experimental)",
+      "User": "F4 Computer",
+      "Description": "Fake GPS target longitude (experimental)",
+      "Units": "deg",
+      "Range": {
+        "low": "-180",
+        "high": "180"
+      }
+    },
+    "GPS_TARGET_ALT": {
+      "DisplayName": "Fake GPS target altitude (experimental)",
+      "User": "F4 Computer",
+      "Description": "Fake GPS target altitude (experimental)",
+      "Units": "m",
+      "Range": {
+        "low": "-500",
+        "high": "1000"
+      }
+    },
+    "GPS_TARGET_SZ": {
+      "DisplayName": "Fake GPS target size (experimental)",
+      "User": "F4 Computer",
+      "Description": "Fake GPS target size (experimental)",
+      "Units": "m",
+      "Range": {
+        "low": "-1.0",
+        "high": "30.0"
+      }
+    }
+  }
+}

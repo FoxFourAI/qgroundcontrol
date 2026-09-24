@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 
+import QGroundControl.FactControls
 import QGroundControl
 import QGroundControl.Controls
 
@@ -18,25 +19,10 @@ ToolIndicatorPage {
             SettingsGroupLayout {
                 heading: qsTr("VIO helper")
 
-                QGCCheckBoxSlider {
+                FactCheckBoxSlider {
                     Layout.fillWidth: true
-                    text: qsTr("Enable")
-                    onToggled: {
-                        let fact = parameterSetter.getFact(activeVehicle.id,
-                                                           "SCR_USER2", false)
-                        if (fact === undefined) {
-                            return
-                        }
-                        fact.value = checked
-                    }
-                    Component.onCompleted: {
-                        let fact = parameterSetter.getFact(activeVehicle.id,
-                                                           "SCR_USER2", false)
-                        if (fact === undefined) {
-                            checked = false
-                        }
-                        checked = fact.value
-                    }
+                    text: qsTr("Eanble")
+                    fact: comparer.user2Fact
                 }
 
                 LabelledLabel {

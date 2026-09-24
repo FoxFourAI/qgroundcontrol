@@ -22,6 +22,9 @@
 #include "VehicleLinkManager.h"
 #include "QGCStateMachine.h"
 #include "MultiVehicleManager.h"
+#include "SettingsManager.h"
+//FoxFour part
+#include "FoxFourSettings.h"
 
 #include <QtCore/QEasingCurve>
 #include <QtCore/QFile>
@@ -55,6 +58,11 @@ ParameterManager::ParameterManager(Vehicle *vehicle)
     _hashCheckTimer.setSingleShot(true);
     _hashCheckTimer.setInterval(QGC::runningUnitTests() ? kTestHashCheckTimeoutMs : kHashCheckTimeoutMs);
     (void) connect(&_hashCheckTimer, &QTimer::timeout, this, &ParameterManager::_hashCheckTimeout);
+
+    //FoxFour part
+    if (SettingsManager::instance()->foxFourSettings()->minimalMode()) {
+        _disableAllRetries = true;
+    }
 
     _paramRequestListTimer.setSingleShot(true);
     _paramRequestListTimer.setInterval(QGC::runningUnitTests() ? kTestInitialRequestIntervalMs : kParamRequestListTimeoutMs);
@@ -709,13 +717,13 @@ int ParameterManager::_actualComponentId(int componentId) const
     return componentId;
 }
 
-void ParameterManager::refreshParameter(int componentId, const QString &paramName)
+void ParameterManager::refreshParameter(int componentId, const QString &paramName, bool notify)
 {
     componentId = _actualComponentId(componentId);
 
     qCDebug(ParameterManagerLog) << _logVehiclePrefix(componentId) << "refreshParameter - name:" << paramName << ")";
 
-    _mavlinkParamRequestRead(componentId, paramName, -1, true /* notifyFailure */);
+    _mavlinkParamRequestRead(componentId, paramName, -1, notify);
 }
 
 void ParameterManager::refreshParametersPrefix(int componentId, const QString &namePrefix)
@@ -797,7 +805,10 @@ Fact *ParameterManager::getParameter(int componentId, const QString &paramName)
 
     const QString mappedParamName = _remapParamNameToVersion(paramName);
     if (!_mapCompId2FactMap.contains(componentId) || !_mapCompId2FactMap[componentId].contains(mappedParamName)) {
-        qgcApp()->reportMissingParameter(componentId, mappedParamName);
+        //FoxFour part: if we are in the minimal mode, we do not report missing parameters.
+        if (!SettingsManager::instance()->foxFourSettings()->minimalMode()->rawValue().toBool()) {
+            qgcApp()->reportMissingParameter(componentId, mappedParamName);
+        }
         return &_defaultFact;
     }
 
@@ -1343,10 +1354,14 @@ void ParameterManager::_checkInitialLoadComplete()
     _missingParameters = false;
     if (initialLoadFailures) {
         _missingParameters = true;
-        const QString errorMsg = tr("%1 was unable to retrieve the full set of parameters from vehicle %2. "
+        QString errorMsg = tr("%1 was unable to retrieve the full set of parameters from vehicle %2. "
                                     "This will cause %1 to be unable to display its full user interface. "
                                     "If you are using modified firmware, you may need to resolve any vehicle startup errors to resolve the issue. "
                                     "If you are using standard firmware, you may need to upgrade to a newer version to resolve the issue.").arg(QCoreApplication::applicationName()).arg(_vehicle->id());
+        //FoxFour part
+        if (SettingsManager::instance()->foxFourSettings()->minimalMode()) {
+            errorMsg = tr("Due to Minimal mode ") + errorMsg;
+        }
         qCDebug(ParameterManagerLog) << errorMsg;
         QGC::showAppMessage(errorMsg);
         if (!QGC::runningUnitTests()) {
@@ -1557,6 +1572,20 @@ QList<int> ParameterManager::componentIds() const
 bool ParameterManager::pendingWrites() const
 {
     return _pendingWritesCount > 0;
+}
+
+void ParameterManager::pullAllParameters() {
+    _paramCountMap.clear();
+    _disableAllRetries = false;
+    _waitingReadParamIndexMap.clear();
+    _failedReadParamIndexMap.clear();
+    _parametersReady = false;
+    _missingParameters = false;
+    _initialLoadComplete = false;
+    _waitingForDefaultComponent = true;
+    emit parametersReadyChanged(_parametersReady);
+    emit missingParametersChanged(_missingParameters);
+    refreshAllParameters();
 }
 
 #ifdef QGC_UNITTEST_BUILD

@@ -9,6 +9,7 @@ class Vehicle;
 class MandatoryParameters : public QObject {
     Q_OBJECT
     Q_PROPERTY(QVariantMap parameters READ parameters NOTIFY parametersChanged FINAL)
+    Q_PROPERTY(bool showList MEMBER _showList NOTIFY showListChanged)
 public:
 
     enum ComponentType {
@@ -25,11 +26,14 @@ public:
     ~MandatoryParameters();
     const QVariantMap parameters();
     const QMap<ComponentType,QStringList>& rawParameters();
-    Q_INVOKABLE void removeParameter(const QString& parameter, const QString component);
-    Q_INVOKABLE void addParameter(const QString& parameter, const int componentId);
+    Q_INVOKABLE void toggleParameter(const QString& parameter, const int componentId);
+    Q_INVOKABLE void removeParameter(const QString& parameter);
     Q_INVOKABLE void loadDefaultParameters();
+    Q_INVOKABLE bool isMandatory(const QString parameterName);
+    Q_INVOKABLE void pullAllParameters();
 signals:
     void parametersChanged();
+    void showListChanged();
 private:
     void _saveParameters();
     void _loadParameters();
@@ -37,5 +41,6 @@ private:
 private:
     QMap<ComponentType,QStringList> _parameters;
     bool _parametersReady = false;
-    static constexpr std::string _groupKey = "mandatoryParams";
+    static const QString _groupKey;
+    bool _showList = false;
 };

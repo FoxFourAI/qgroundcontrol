@@ -1,0 +1,3 @@
+[submodule "custom/plugins/Sine"]
+	path = custom/plugins/Sine
+	url = https://github.com/FoxFourAI/qgroundcontrol_sine.git

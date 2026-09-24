@@ -12,7 +12,7 @@ import QGroundControl.FlightMap
 import QGroundControl.PlanView
 import QGroundControl.Toolbar
 
-import Custom.Widgets 1.0
+import FoxFour.Widgets 1.0
 
 /// @brief Native QML top level window
 /// All properties defined here are visible to all QML pages.
@@ -445,8 +445,7 @@ ApplicationWindow {
                                                                    "text": dialogText,
                                                                    "buttons": buttons,
                                                                    "acceptFunction": acceptFunction,
-                                                                   "closeFunction": closeFunction,
-                                                                   "bypassNavigationCheck": bypassNavigationCheck
+                                                                   "closeFunction": closeFunction
                                                                })
         dialog.open()
     }
@@ -468,7 +467,7 @@ ApplicationWindow {
     Component {
         id: simpleMessageDialogComponent
 
-        CustomSimpleMessageDialog {}
+        FoxFourCustomSimpleMessageDialog {}
     }
 
     property bool _forceClose: false

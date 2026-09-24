@@ -90,7 +90,15 @@ FactMetaData *CompInfoParam::_resolveMetaData(const QString &name, FactMetaData:
     if (_noJsonMetadata) {
         // No vehicle-provided metadata — use firmware-bundled metadata
         if (ParameterMetaData *fwMeta = _getParameterMetaData()) {
-            return fwMeta->getMetaDataForFact(name, valueType);
+            // return fwMeta->getMetaDataForFact(name, valueType);
+            // FoxFour part
+            FactMetaData* metadata = fwMeta->getMetaDataForFact(name, valueType);
+            // if the data is from FCU or has a description, return it.
+            if (compId == MAV_COMP_ID_AUTOPILOT1 || !metadata->shortDescription().isEmpty()) {
+                return metadata;
+            } else {
+                delete metadata;
+            }
         }
     } else {
         // Vehicle provided JSON metadata — check exact match then indexed patterns
@@ -137,7 +145,15 @@ FactMetaData *CompInfoParam::_lookupJsonMetaData(const QString &name)
 
 ParameterMetaData *CompInfoParam::_getParameterMetaData()
 {
-    if (!_parameterMetaData && compId == MAV_COMP_ID_AUTOPILOT1) {
+    //FoxFour part
+    static const QVector<int> available_comps{
+                                MAV_COMP_ID_AUTOPILOT1,
+                                MAV_COMP_ID_ONBOARD_COMPUTER,
+                                MAV_COMP_ID_ONBOARD_COMPUTER2,
+                                MAV_COMP_ID_ONBOARD_COMPUTER3,
+                                MAV_COMP_ID_ONBOARD_COMPUTER4};
+
+    if (!_parameterMetaData && available_comps.contains(compId)) {
         _parameterMetaData = vehicle->firmwarePlugin()->loadParameterMetaData(vehicle);
         if (_parameterMetaData) {
             _parameterMetaData->setParent(this);

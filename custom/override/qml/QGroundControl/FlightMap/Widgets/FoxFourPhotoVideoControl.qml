@@ -353,9 +353,9 @@ Rectangle {
                             centerIn:           parent
                             alignWhenCentered:  false
                         }
-                        width:              parent.width * (_isShootingInCurrentMode ? 0.5 : 0.75)
+                        width:              parent.width * (!_videoCaptureIdle ? 0.5 : 0.75)
                         height:             width
-                        radius:             _isShootingInCurrentMode ? 0 : width * 0.5
+                        radius:             !_videoCaptureIdle ? 0 : width * 0.5
                         color:              _isShootingInCurrentMode || _canShootInCurrentMode ? qgcPal.colorRed : qgcPal.colorGrey
 
                         property bool _isShootingInPhotoMode:   _cameraInPhotoMode && _camera.photoCaptureStatus === MavlinkCameraControlInterface.CapturePhotosStateCapturingSinglePhoto
@@ -770,6 +770,7 @@ Rectangle {
         ColumnLayout{
             Layout.fillHeight: true
             spacing:0
+            visible: _activeVehicle.autopilotPlugin.exposureAvailable
 
             QGCLabel {
                 Layout.alignment:   Qt.AlignHCenter
@@ -806,7 +807,7 @@ Rectangle {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.fillHeight: true
                 from: 1
-                to: 15
+                to: 20
                 snapMode: Slider.SnapAlways
                 stepSize: 1
 
@@ -818,7 +819,7 @@ Rectangle {
                     let goldenRatio = 1.61803398875
                     let compId = globalShortcuts.currentComputerId
                     let paramSetter = globalShortcuts.parameterSetter
-                    let newExposure = Math.ceil(2 * Math.pow(goldenRatio, value))
+                    let newExposure = Math.floor(Math.pow(goldenRatio, value))
                     paramSetter.setParameter(compId, "CAM_EXPOSURE", newExposure)
                     enabled = false
                     exposureSliderTimeout.start()

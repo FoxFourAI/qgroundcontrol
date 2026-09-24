@@ -63,8 +63,11 @@ def _setup_gstreamer_env(build_dir: Path) -> None:
 
     lib_dir = str(gst_root / "lib")
     if platform.system() == "Darwin":
-        existing = os.environ.get("DYLD_LIBRARY_PATH", "")
-        os.environ["DYLD_LIBRARY_PATH"] = f"{lib_dir}:{existing}" if existing else lib_dir
+        existing = os.environ.get("DYLD_FALLBACK_LIBRARY_PATH", "")
+        default = f"{os.path.expanduser('~')}/lib:/usr/local/lib:/usr/lib"
+        os.environ["DYLD_FALLBACK_LIBRARY_PATH"] = ":".join(
+        p for p in (lib_dir, existing or default) if p
+        )
     elif platform.system() == "Windows":
         bin_dir = str(gst_root / "bin")
         existing = os.environ.get("PATH", "")

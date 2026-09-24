@@ -56,7 +56,7 @@ public:
     void tryHashCheckCacheLoad();
 
     /// Request a refresh on the specific parameter
-    void refreshParameter(int componentId, const QString &paramName);
+    void refreshParameter(int componentId, const QString& paramName, bool notify = true);
 
     /// Request a refresh on all parameters that begin with the specified prefix
     void refreshParametersPrefix(int componentId, const QString &namePrefix);
@@ -89,6 +89,9 @@ public:
     void writeParametersToStream(QTextStream &stream) const;
 
     bool pendingWrites() const;
+
+    //FoxFour part
+    void pullAllParameters();
 
 #ifdef QGC_UNITTEST_BUILD
     /// Test-only: deterministically force the pendingWrites state on or off,

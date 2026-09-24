@@ -7,6 +7,17 @@
 #include "MandatoryParameters/MandatoryParameters.h"
 #include "QGCLoggingCategory.h"
 #include "QGCPalette.h"
+
+#include "InstrumentValueData.h"
+#include "FactValueGrid.h"
+#include <QmlObjectListModel.h>
+
+//Plugin system.
+#include "custom/plugins/Plugin.h"
+#ifdef SNS_ENABLE
+#include "SinePlugin.h"
+#endif
+
 QGC_LOGGING_CATEGORY(FoxFourPluginLog, "FoxFour.Plugin")
 
 Q_APPLICATION_STATIC(FoxFourPlugin, _customPluginInstance);
@@ -20,11 +31,118 @@ FoxFourPlugin::FoxFourPlugin(QObject* parent) : QGCCorePlugin(parent) {
     _showAdvancedUI = true;
     (void)connect(this, &FoxFourPlugin::showAdvancedUIChanged, this, &FoxFourPlugin::_advancedChanged);
 
+#ifdef SNS_ENABLE
+    _plugins.append(new SinePlugin());
+#endif
+
+}
+
+FoxFourPlugin::~FoxFourPlugin()
+{
+    for(auto *plugin: _plugins){
+        delete plugin;
+    }
 }
 
 QGCCorePlugin* FoxFourPlugin::instance() { return _customPluginInstance(); }
 
+void FoxFourPlugin::init()
+{
+    for (auto *plugin: _plugins) {
+        plugin->init();
+    }
+}
+
+void FoxFourPlugin::factValueGridCreateDefaultSettings(FactValueGrid* factValueGrid) {
+    factValueGrid->setFontSize(FactValueGrid::LargeFontSize);
+    (void) factValueGrid->appendColumn();
+    (void) factValueGrid->appendColumn();
+    (void) factValueGrid->appendColumn();
+    (void) factValueGrid->appendColumn();
+    (void) factValueGrid->appendColumn();
+    (void) factValueGrid->appendRow();
+
+    int rowIndex =0;
+    //first column
+    QmlObjectListModel *column = factValueGrid->columns()->value<QmlObjectListModel*>(0);
+
+    InstrumentValueData* value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","GroundSpeed");
+    value->setText("Ground Spd.");
+    value->setShowUnits(true);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","ThrottlePct");
+    value->setText("Throttle");
+    value->setShowUnits(true);
+
+    //second column
+    rowIndex = 0;
+    column = factValueGrid->columns()->value<QmlObjectListModel*>(1);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","AltitudeRelative");
+    value->setText("Alt(Rel)");
+    value->setShowUnits(true);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","ClimbRate");
+    value->setText("Climb Rate");
+    value->setShowUnits(true);
+
+    //third column
+    rowIndex = 0;
+    column = factValueGrid->columns()->value<QmlObjectListModel*>(2);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","FlightTime");
+    value->setText("Flight Time");
+    value->setShowUnits(true);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","RangeFinderDist");
+    value->setText("Range finder");
+    value->setShowUnits(true);
+
+    //fourth column
+    rowIndex = 0;
+    column = factValueGrid->columns()->value<QmlObjectListModel*>(3);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","Roll");
+    value->setText("Roll");
+    value->setShowUnits(true);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Vehicle","Pitch");
+    value->setText("Pitch");
+    value->setShowUnits(true);
+
+    //fifth column
+    rowIndex = 0;
+    column = factValueGrid->columns()->value<QmlObjectListModel*>(3);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Battery0","Voltage");
+    value->setText("Voltage");
+    value->setShowUnits(true);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Battery0","Current");
+    value->setText("Current");
+    value->setShowUnits(true);
+
+    //sixth column
+    rowIndex = 0;
+    column = factValueGrid->columns()->value<QmlObjectListModel*>(4);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Clock","CurrentTime");
+    value->setText("Time");
+    value->setShowUnits(true);
+    value = column->value<InstrumentValueData*>(rowIndex++);
+    value->setFact("Clock","CurrentDate");
+    value->setText("Date");
+    value->setShowUnits(true);
+
+}
+
 void FoxFourPlugin::cleanup() {
+
+    for (auto *plugin: _plugins) {
+        plugin->cleanup();
+    }
+
     if (_qmlEngine) {
         _qmlEngine->removeUrlInterceptor(_selector);
     }
@@ -57,7 +175,12 @@ QQmlApplicationEngine* FoxFourPlugin::createQmlApplicationEngine(QObject* parent
     _qmlEngine = QGCCorePlugin::createQmlApplicationEngine(parent);
     // TODO: Investigate _qmlEngine->setExtraSelectors({"custom"})
     _selector = new CustomOverrideInterceptor();
+    _selector->setPlugins(_plugins);
     _qmlEngine->addUrlInterceptor(_selector);
+
+    for(auto *plugin: _plugins) {
+        plugin->attachToQmlEngine(_qmlEngine);
+    }
 
     return _qmlEngine;
 }
@@ -280,6 +403,14 @@ void FoxFourPlugin::paletteOverride(const QString& colorName, QGCPalette::Palett
 CustomOverrideInterceptor::CustomOverrideInterceptor() : QQmlAbstractUrlInterceptor() {}
 
 QUrl CustomOverrideInterceptor::intercept(const QUrl& url, QQmlAbstractUrlInterceptor::DataType type) {
+
+    for(auto *plugin : _plugins) {
+        QUrl newUrl = plugin->resourceIntercept(url,type);
+        if(newUrl != url) {
+            return newUrl;
+        }
+    }
+
     switch (type) {
     case QQmlAbstractUrlInterceptor::QmlFile:
     case QQmlAbstractUrlInterceptor::UrlString:

@@ -131,6 +131,11 @@ Examples:
         help="Install Visual Studio Build Tools / VCTools (Windows only)",
     )
     parser.add_argument(
+        "--gdal",
+        action="store_true",
+        help="Install GDAL (Windows only)"
+    )
+    parser.add_argument(
         "--msvc-arm64",
         action="store_true",
         help="Also add the ARM64 cross compiler component (implies --msvc, Windows only)",
@@ -215,6 +220,7 @@ def main() -> int:
             msvc=args.msvc or args.msvc_arm64,
             msvc_arm64=args.msvc_arm64,
             nsis=args.nsis,
+            gdal=args.gdal
         )
     else:
         _c.log_error(f"Unsupported platform: {platform}")
