@@ -107,8 +107,10 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FoxFourPlugin.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoPilotPlugin/FoxFourAutoPilotPlugin.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoPilotPlugin/FoxFourAutoPilotPlugin.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourFirmwarePlugin.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourFirmwarePlugin.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourCopterFirmwarePlugin.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourCopterFirmwarePlugin.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourPlaneFirmwarePlugin.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourPlaneFirmwarePlugin.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourFirmwarePluginFactory.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourFirmwarePluginFactory.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera/FoxFourCameraControl.h

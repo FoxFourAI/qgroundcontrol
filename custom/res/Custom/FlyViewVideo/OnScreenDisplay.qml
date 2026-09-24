@@ -24,7 +24,7 @@ Item {
     property color fontColor:     Qt.rgba(100 / 255, 1,0,1)
     property color boxColor:      Qt.rgba(0, 0, 0, 0.45)
     // Drop shadow, rendered once on the GPU for the whole OSD
-    property bool  shadowEnabled: true
+    property bool  shadowEnabled: false
     property color shadowColor:   Qt.rgba(0, 0, 0, 0.9)
     property real  shadowBlur:    4     // px
     property real  shadowOffsetX: 2
@@ -563,10 +563,10 @@ Item {
         ctx.moveTo(-width, yh)
         ctx.lineTo(width, yh)
         if (!isNaN(headingDeg)) {
-            var compassHalfSpan = _streamInfo.hfov / 4
-            var imageWidth =
+            var compassHalfSpan = 102 / 4 // HARDCODED, switch to the _streamInfo.hfov and recalcualte the ticks!!!
+            var imageWidth = 1920 //HARDCODED, swithc to the _streamInfo.resolution.width !!!!
             var leftBearing = headingDeg - compassHalfSpan
-            var rightBearing = headingAngle + compassHalfSpan
+            var rightBearing = headingDeg  + compassHalfSpan
             var first = Math.ceil(leftBearing / 5)
             var last  = Math.floor(rightBearing / 5)
             for (var i = first; i <= last; i++) {
@@ -651,6 +651,10 @@ Item {
                 if (v < minValue)
                     continue
                 var y = _cy - (v - value) * ppu
+                if(y > _cy - _boxH / 2 && y < _cy + _boxH / 2) {
+                    continue
+                }
+
                 ctx.moveTo(axisX, y)
                 ctx.lineTo(axisX + tickDir * (major ? _tickMajor : _tickMinor), y)
                 if (major)
