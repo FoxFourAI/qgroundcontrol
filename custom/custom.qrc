@@ -11,6 +11,7 @@
         <file alias="arrowc.svg">res/Images/arrowc.svg</file>
         <file alias="arrowcc.svg">res/Images/arrowcc.svg</file>
         <file alias="drop.svg">res/Images/drop.svg</file>
+        <file alias="NoVideoBackground.jpg">res/Images/NoVideoBackground.jpg</file>
     </qresource>
     <qresource prefix="/Custom/res">
         <file alias="TrashDelete.svg">res/Images/TrashDelete.svg</file>
@@ -40,7 +41,7 @@
         <file alias="QGroundControl/FlyView/FlyViewMap.qml">override/qml/QGroundControl/FlyView/FoxFourFlyViewMap.qml</file>
         <file alias="QGroundControl/FlyView/FlyViewCustomLayer.qml">override/qml/QGroundControl/FlyView/FoxFourFlyViewCustomLayer.qml</file>
         <file alias="QGroundControl/FlyView/FlyViewWidgetLayer.qml">override/qml/QGroundControl/FlyView/FoxFourFlyViewWidgetLayer.qml</file>
-        <file alias="QGroundControl/FlyView/FlightDisplayViewVideo.qml">../src/FlyView/FlightDisplayViewVideo.qml</file>                               <!--just to link qml-->
+        <file alias="QGroundControl/FlyView/FlightDisplayViewVideo.qml">override/qml/QGroundControl/FlyView/FoxFourFlightDisplayViewVideo.qml</file>
         <file alias="QGroundControl/FlyView/ProximityRadarVideoView.qml">../src/FlyView/ProximityRadarVideoView.qml</file>                             <!--just to link qml-->
         <file alias="QGroundControl/FlyView/FlyViewBottomRightRowLayout.qml">override/qml/QGroundControl/FlyView/FoxFourFlyViewBottomRightRowLayout.qml</file>
         <file alias="QGroundControl/FlyView/ObstacleDistanceOverlay.qml">../src/FlyView/ObstacleDistanceOverlay.qml</file>                             <!--just to link qml-->

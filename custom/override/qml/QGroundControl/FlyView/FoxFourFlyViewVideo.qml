@@ -3,7 +3,6 @@ import QtQuick
 import QGroundControl
 import QGroundControl.Controls
 
-import FoxFour.Widgets 1.0
 
 Item {
     id: _root
@@ -12,6 +11,7 @@ Item {
     property Item pipState: videoPipState
     property bool toolbarOverlap : QGroundControl.settingsManager.foxFourSettings.videoToolBarOverlap.rawValue
     property bool toolbarVisible: !QGroundControl.videoManager.fullScreen
+    property var statusGrid: null
     PipState {
         id:         videoPipState
         pipView:    _root.pipView
@@ -28,7 +28,8 @@ Item {
         }
 
         onStateChanged: {
-            if (pipState.state !== pipState.fullState) {
+            videoStreaming.osdVisible = videoPipState.state !== videoPipState.pipState
+            if (videoPipState.state !== videoPipState.fullState) {
                 QGroundControl.videoManager.fullScreen = false
             }
         }
@@ -44,10 +45,12 @@ Item {
 
     //-- Video Streaming
     FlightDisplayViewVideo {
+        statusGrid: _root.statusGrid
         id:             videoStreaming
         anchors.fill:   parent
         anchors.topMargin:{
-            if(parent.pipState.state == parent.pipState.pipState || !parent.toolbarVisible)
+            return
+            if(parent.pipState.state !== parent.pipState.pipState || !parent.toolbarVisible)
                 return 0
             if(parent.toolbarOverlap){
                 return 0
@@ -56,7 +59,8 @@ Item {
             }
         }
         useSmallFont:   _root.pipState.state !== _root.pipState.fullState
-        visible:        QGroundControl.videoManager.isStreamSource || QGroundControl.videoManager.isUvc   
+        visible:        QGroundControl.videoManager.isStreamSource || QGroundControl.videoManager.isUvc
+
         OnScreenCameraTrackingController {
             id:                      cameraTrackingController
             anchors.fill:            parent
@@ -114,16 +118,15 @@ Item {
         }
     }
 
-    OnScreenDisplay{
-        id: osd
-        anchors.fill: parent
-    }
+
 
     QGCLabel {
         text: qsTr("Double-click to exit full screen")
         font.pointSize: ScreenTools.largeFontPointSize
         visible: QGroundControl.videoManager.fullScreen
-        anchors.centerIn: parent
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.verticalCenterOffset: -parent.height * 0.2
 
         onVisibleChanged: {
             if (visible) {
