@@ -12,8 +12,7 @@
 #include "FirmwarePluginFactory.h"
 #include "QGCMAVLink.h"
 
-
-class FoxFourFirmwarePlugin;
+class APMFirmwarePlugin;
 class PX4FirmwarePlugin;
 class FirmwarePlugin;
 
@@ -28,8 +27,8 @@ public:
     FirmwarePlugin* firmwarePluginForAutopilot(MAV_AUTOPILOT autopilotType, MAV_TYPE vehicleType) final;
 
 private:
-    FoxFourFirmwarePlugin* _ardupilotPluginInstance = nullptr;
-        PX4FirmwarePlugin* _px4PluginInstance = nullptr;
+    APMFirmwarePlugin* _ardupilotPluginInstance = nullptr;
+    PX4FirmwarePlugin* _px4PluginInstance = nullptr;
 };
 
 extern FoxFourFirmwarePluginFactory CustomFirmwarePluginFactoryImp;

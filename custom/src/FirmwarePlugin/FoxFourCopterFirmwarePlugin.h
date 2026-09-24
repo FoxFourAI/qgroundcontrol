@@ -13,7 +13,7 @@
 class AutoPilotPlugin;
 class Vehicle;
 
-class FoxFourFirmwarePlugin : public ArduCopterFirmwarePlugin
+class FoxFourCopterFirmwarePlugin : public ArduCopterFirmwarePlugin
 {
     Q_OBJECT
 public:
