@@ -346,9 +346,10 @@ VisualMissionItem* MissionController::insertTakeoffItem(QGeoCoordinate /*coordin
 }
 
 bool MissionController::multipleLandPatternsAllowed(void) const {
-    // Can't have more than one land sequence unless allowed in settings and
-    // supported by the firmware
-    return _planViewSettings->allowMultipleLandingPatterns()
+    // Multiple landing sequences are a fixed-wing/VTOL landing pattern concept.
+    // Other vehicle types insert RTL, which only makes sense once per mission.
+    return (_controllerVehicle->fixedWing() || _controllerVehicle->vtol()) &&
+           _planViewSettings->allowMultipleLandingPatterns()
                ->rawValue().toBool() &&
            !_masterController->managerVehicle()->px4Firmware();
 }
@@ -362,7 +363,7 @@ VisualMissionItem* MissionController::insertLandItem(QGeoCoordinate coordinate, 
         VTOLLandingComplexItem* vtolLanding = qobject_cast<VTOLLandingComplexItem*>(insertComplexMissionItem(VTOLLandingComplexItem::canonicalName, coordinate, visualItemIndex, makeCurrentItem));
         return vtolLanding;
     } else {
-        return _insertSimpleMissionItemWorker(coordinate, _controllerVehicle->vtol() ? MAV_CMD_NAV_VTOL_LAND : MAV_CMD_NAV_RETURN_TO_LAUNCH, visualItemIndex, makeCurrentItem);
+        return _insertSimpleMissionItemWorker(coordinate, MAV_CMD_NAV_RETURN_TO_LAUNCH, visualItemIndex, makeCurrentItem);
     }
 }
 
@@ -912,6 +913,17 @@ void MissionController::save(QJsonObject& json)
     json[_jsonItemsKey] = rgJsonMissionItems;
 }
 
+static FlightPathSegment::SegmentType segmentTypeForPair(const VisualItemPair& pair, bool mavlinkTerrainFrame)
+{
+    if (pair.second->isTakeoffItem()) {
+        return FlightPathSegment::SegmentTypeTakeoff;
+    }
+    if (pair.second->isLandCommand()) {
+        return FlightPathSegment::SegmentTypeLand;
+    }
+    return mavlinkTerrainFrame ? FlightPathSegment::SegmentTypeTerrainFrame : FlightPathSegment::SegmentTypeGeneric;
+}
+
 FlightPathSegment* MissionController::_createFlightPathSegmentWorker(VisualItemPair& pair, bool mavlinkTerrainFrame)
 {
     // The takeoff goes straight up from ground to alt and then over to specified position at same alt. Which means
@@ -923,14 +935,9 @@ FlightPathSegment* MissionController::_createFlightPathSegmentWorker(VisualItemP
     double              coord2AMSLAlt       = pair.second->amslEntryAlt();
     double              coord1AMSLAlt       = takeoffStraightUp ? coord2AMSLAlt : pair.first->amslExitAlt();
 
-    FlightPathSegment::SegmentType segmentType = mavlinkTerrainFrame ? FlightPathSegment::SegmentTypeTerrainFrame : FlightPathSegment::SegmentTypeGeneric;
-    if (pair.second->isTakeoffItem()) {
-        segmentType = FlightPathSegment::SegmentTypeTakeoff;
-    } else if (pair.second->isLandCommand()) {
-        segmentType = FlightPathSegment::SegmentTypeLand;
-    }
-
-    FlightPathSegment* segment = new FlightPathSegment(segmentType, coord1, coord1AMSLAlt, coord2, coord2AMSLAlt, !_flyView /* queryTerrainData */,  this);
+    FlightPathSegment* segment =
+        new FlightPathSegment(segmentTypeForPair(pair, mavlinkTerrainFrame), coord1, coord1AMSLAlt, coord2,
+                              coord2AMSLAlt, !_flyView /* queryTerrainData */, this);
 
     if (takeoffStraightUp) {
         connect(pair.second, &VisualMissionItem::amslEntryAltChanged, segment, &FlightPathSegment::setCoord1AMSLAlt);
@@ -957,7 +964,8 @@ FlightPathSegment* MissionController::_addFlightPathSegment(FlightPathSegmentHas
 {
     FlightPathSegment* segment = nullptr;
 
-    if (prevItemPairHashTable.contains(pair) && (prevItemPairHashTable[pair]->segmentType() == FlightPathSegment::SegmentTypeTerrainFrame) != mavlinkTerrainFrame) {
+    if (prevItemPairHashTable.contains(pair) &&
+        prevItemPairHashTable[pair]->segmentType() == segmentTypeForPair(pair, mavlinkTerrainFrame)) {
         // Pair already exists and connected, just re-use
         _flightPathSegmentHashTable[pair] = segment = prevItemPairHashTable.take(pair);
     } else {

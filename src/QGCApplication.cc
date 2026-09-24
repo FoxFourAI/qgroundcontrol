@@ -433,11 +433,16 @@ void QGCApplication::showAppMessage(const QString& message, const QString& title
     const QString dialogTitle = title.isEmpty() ? applicationName() : title;
 
     if (runningUnitTests()) {
-        // Never show a blocking dialog during unit tests — it would hang the test runner.
-        // Logged under QGCAppMessageLog so tests can use expectAppMessage() to white-list
-        // expected dialogs without matching against the general QGCApplication category.
+        // Logged under QGCAppMessageLog so tests can assert expected dialogs via
+        // expectAppMessage() without matching against the general QGCApplication category.
         qCDebug(QGCAppMessageLog) << "showAppMessage:" << dialogTitle << "-" << message;
-        return;
+        if (!_uiTestMode) {
+            // Headless test: there is no QML root to host the dialog and the delayed-message
+            // timer would retry forever, so the log is the only record.
+            return;
+        }
+        // UI tests fall through: the message dialog is a non-blocking QML popup, so show it
+        // for real and let the test handle it the same way a user would.
     }
 
     QObject* const rootQmlObject = _rootQmlObject();
@@ -453,20 +458,51 @@ void QGCApplication::showAppMessage(const QString& message, const QString& title
     }
 }
 
+bool QGCApplication::_rebootMessageDebounced()
+{
+    const QTime currentTime = QTime::currentTime();
+    const QTime previousTime = _lastRebootMessageTime;
+    _lastRebootMessageTime = currentTime;
+
+    return previousTime.isValid() && (previousTime.msecsTo(currentTime) < (60 * 1000 * 2));
+}
+
 void QGCApplication::showRebootAppMessage(const QString& message, const QString& title)
 {
-    static QTime lastRebootMessage;
-
-    const QTime currentTime = QTime::currentTime();
-    const QTime previousTime = lastRebootMessage;
-    lastRebootMessage = currentTime;
-
-    if (previousTime.isValid() && (previousTime.msecsTo(currentTime) < (60 * 1000 * 2))) {
-        // Debounce reboot messages
+    if (_rebootMessageDebounced()) {
         return;
     }
 
     showAppMessage(message, title);
+}
+
+void QGCApplication::showRebootVehicleMessage(const QString& message, const QString& title)
+{
+    if (_rebootMessageDebounced()) {
+        return;
+    }
+
+    const QString dialogTitle = title.isEmpty() ? applicationName() : title;
+
+    if (runningUnitTests()) {
+        // Same log format as showAppMessage() so tests assert this via expectAppMessage()
+        qCDebug(QGCAppMessageLog) << "showAppMessage:" << dialogTitle << "-" << message;
+        if (!_uiTestMode) {
+            return;
+        }
+    }
+
+    QObject* const rootQmlObject = _rootQmlObject();
+    if (rootQmlObject) {
+        QVariant varReturn;
+        QVariant varMessage = QVariant::fromValue(message);
+        QMetaObject::invokeMethod(rootQmlObject, "_showRebootVehicleDialog", Q_RETURN_ARG(QVariant, varReturn),
+                                  Q_ARG(QVariant, dialogTitle), Q_ARG(QVariant, varMessage));
+    } else {
+        // UI isn't ready yet: fall back to the plain app message queue
+        _delayedAppMessages.append(QPair<QString, QString>(dialogTitle, message));
+        QTimer::singleShot(200, this, &QGCApplication::_showDelayedAppMessages);
+    }
 }
 
 void QGCApplication::_showDelayedAppMessages()
@@ -488,13 +524,6 @@ QQuickWindow* QGCApplication::mainRootWindow()
     }
 
     return _mainRootWindow;
-}
-
-void QGCApplication::showVehicleConfig()
-{
-    if (_rootQmlObject()) {
-        QMetaObject::invokeMethod(_rootQmlObject(), "showVehicleConfig");
-    }
 }
 
 void QGCApplication::qmlAttemptWindowClose()
@@ -736,6 +765,13 @@ void QGCApplication::shutdown()
 
     if (_videoManagerInitialized) {
         VideoManager::instance()->cleanup();
+    }
+
+    // Engines from createQmlApplicationEngine must die through the destroy hook so the plugin
+    // can release per-engine state; parent-based teardown in ~QGCApplication would bypass it.
+    if (_qmlAppEngine) {
+        QGCCorePlugin::instance()->destroyQmlApplicationEngine(_qmlAppEngine);
+        _qmlAppEngine = nullptr;
     }
 
     QGCCorePlugin::instance()->cleanup();

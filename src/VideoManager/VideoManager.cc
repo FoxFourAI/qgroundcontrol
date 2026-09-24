@@ -579,6 +579,7 @@ bool VideoManager::_updateUVC(VideoReceiver * /*receiver*/)
 
 bool VideoManager::autoStreamConfigured() const
 {
+    //FoxFour part
     if (!SettingsManager::instance()->foxFourSettings()->autoConfigureStream()->rawValue().toBool()) {
         return false;
     }
@@ -617,15 +618,15 @@ bool VideoManager::_updateAutoStream(VideoReceiver *receiver)
     case VIDEO_STREAM_TYPE_RTPUDP:
         if (pInfo->encoding() == VIDEO_STREAM_ENCODING_H265) {
             source = VideoSettings::videoSourceUDPH265;
-            url = pInfo->uri().contains("udp265://") ? pInfo->uri() : QStringLiteral("udp265://%1").arg(pInfo->uri());
+            url = pInfo->uri().contains("udp265://") ? pInfo->uri() : QStringLiteral("udp265://0.0.0.0:%1").arg(pInfo->uri());
         } else {
             source = VideoSettings::videoSourceUDPH264;
-            url = pInfo->uri().contains("udp://") ? pInfo->uri() : QStringLiteral("udp://%1").arg(pInfo->uri());
+            url = pInfo->uri().contains("udp://") ? pInfo->uri() : QStringLiteral("udp://0.0.0.0:%1").arg(pInfo->uri());
         }
         break;
     case VIDEO_STREAM_TYPE_MPEG_TS:
         source = VideoSettings::videoSourceMPEGTS;
-        url = pInfo->uri().contains("mpegts://") ? pInfo->uri() : QStringLiteral("mpegts://%1").arg(pInfo->uri());
+        url = pInfo->uri().contains("mpegts://") ? pInfo->uri() : QStringLiteral("mpegts://0.0.0.0:%1").arg(pInfo->uri());
         break;
     default:
         qCWarning(VideoManagerLog) << "Unknown VIDEO_STREAM_TYPE";
@@ -696,11 +697,7 @@ bool VideoManager::_updateSettings(VideoReceiver *receiver)
     }
 
     settingsChanged |= _updateUVC(receiver);
-
-    if (SettingsManager::instance()->foxFourSettings()->autoConfigureStream()->rawValue().toBool()) {
-        settingsChanged =_updateAutoStream(receiver);
-        return settingsChanged;
-    }
+    settingsChanged |= _updateAutoStream(receiver);
 
     const QString source = _videoSettings->videoSource()->rawValue().toString();
     if (source == VideoSettings::videoSourceUDPH264) {
@@ -976,7 +973,7 @@ void VideoManager::_initVideoReceiver(VideoReceiver *receiver, QQuickWindow *win
         const QGCVideoStreamInfo *videoStreamInfo = receiver->videoStreamInfo();
         qCDebug(VideoManagerLog) << "Video" << receiver->name() << "stream info:" << (videoStreamInfo ? "received" : "lost");
         if (SettingsManager::instance()->foxFourSettings()->autoConfigureStream()->rawValue().toBool()) {
-            (void) _videoSourceChanged();
+            (void) _updateAutoStream(receiver);
         }
     });
 

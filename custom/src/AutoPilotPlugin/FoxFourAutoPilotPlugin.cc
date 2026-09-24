@@ -78,29 +78,6 @@ void FoxFourAutoPilotPlugin::setServo(int servo, int value) {
 
 OnboardComputersManager* FoxFourAutoPilotPlugin::onboardComputersManager() { return _onboardComputersMngr; }
 
-void FoxFourAutoPilotPlugin::parametersReadyPreChecks()
-{
-    _recalcSetupComplete();
-
-    // Connect signals in order to keep setupComplete up to date
-    for (QVariant componentVariant : vehicleComponents()) {
-        VehicleComponent *const component = qobject_cast<VehicleComponent*>(qvariant_cast<QObject*>(componentVariant));
-        if (component) {
-            (void) connect(component, &VehicleComponent::setupCompleteChanged, this, &FoxFourAutoPilotPlugin::_recalcSetupComplete);
-        } else {
-            qCWarning(FoxFourArduPilotLog) << "Incorrectly typed VehicleComponent";
-        }
-    }
-
-    bool minimalMode = SettingsManager::instance()->foxFourSettings()->minimalMode()->rawValue().toBool();
-
-    if (!_setupComplete && !minimalMode) {
-        // Take the user to Vehicle Config Summary
-        qgcApp()->showVehicleConfig();
-        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-        QGC::showAppMessage(tr("One or more vehicle components require setup prior to flight."));
-    }
-}
 
 void FoxFourAutoPilotPlugin::_recalcSetupComplete()
 {

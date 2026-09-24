@@ -16,4 +16,12 @@ public:
 
 private slots:
     void _testNavigateViews();
+    void _testSettingsSectionVisibility();
+    void _testSettingsHiddenSectionAfterPageSwitch();
+    void _testSettingsSectionCollapseToSingle();
+    void _testSettingsPageUnavailableFallback();
+    void _testSettingsSearchExcludesHiddenSections();
+
+private:
+    QQuickItem* _clickSettingsButton(const QString& pageName);
 };
