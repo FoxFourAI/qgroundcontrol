@@ -26,3 +26,7 @@ With the safety switch toggled, individual actuator sliders appear for testing e
 ## Actuator Actions
 
 Dynamic action buttons (e.g., beep, identify, 3D mode) are shown based on the vehicle's actuator configuration. The **motor identification** feature spins motors one at a time to verify correct wiring and rotation direction.
+
+## Troubleshooting a Missing Actuators Page
+
+If the Actuators page does not appear (the legacy Motors page is shown instead), see [Missing Actuators Page](../../troubleshooting/actuators.md).

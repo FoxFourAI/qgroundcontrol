@@ -18,6 +18,8 @@ private slots:
     void _validateConvertOnly_test();
     void _clampOutOfRange_test();
     void _enumOperations_test();
+    void _selectedBitmaskStringsBit31_test();
+    void _enumIndexUnknownValueNoSyncSignal_test();
     void _valueChangedSignal_test();
     void _rawValueChangedSignal_test();
     void _noSignalOnSameValue_test();
@@ -26,4 +28,5 @@ private slots:
     void _valueEqualsDefault_test();
     void _rawValueStringFullPrecisionFloat_test();
     void _rawValueStringFullPrecisionDouble_test();
+    void _labelFallback_test();
 };

@@ -36,9 +36,6 @@ void MissionManagerTest::init()
     // cause showAppMessage() debug logs. Ignore them for the whole fixture.
     ignoreLogMessage("API.QGCApplication.AppMessage", QtDebugMsg,
                      QRegularExpression("Mission transfer failed"));
-    // ArduPilot mock link has no metadata source; this warning is expected for APM variants.
-    ignoreLogMessage("ComponentInformation.RequestMetaDataTypeStateMachine", QtWarningMsg,
-                     QRegularExpression("failed to load metadata"));
     // ArduPilot metadata includes an invalid enum value for RTL_CONE_SLOPE; skip warning is expected.
     ignoreLogMessage("FirmwarePlugin.ParameterMetaData", QtWarningMsg,
                      QRegularExpression("Skipping invalid enum value"));
@@ -252,12 +249,18 @@ void MissionManagerTest::_testReadFailureHandlingWorker()
 
 void MissionManagerTest::_testWriteFailureHandlingAPM()
 {
+    if (!apmFirmwareSupported()) {
+        QSKIP("ArduPilot support not registered in this build");
+    }
     _initForFirmwareType(MAV_AUTOPILOT_ARDUPILOTMEGA);
     _testWriteFailureHandlingWorker();
 }
 
 void MissionManagerTest::_testReadFailureHandlingAPM()
 {
+    if (!apmFirmwareSupported()) {
+        QSKIP("ArduPilot support not registered in this build");
+    }
     _initForFirmwareType(MAV_AUTOPILOT_ARDUPILOTMEGA);
     _testReadFailureHandlingWorker();
 }

@@ -89,14 +89,12 @@ void MultiVehicleManager::_vehicleHeartbeatInfo(LinkInterface* link, int vehicle
         }
     }
 
-#ifndef QGC_NO_ARDUPILOT_DIALECT
     // When you flash a new ArduCopter it does not set a FRAME_CLASS for some reason. This is the only ArduPilot variant which
     // works this way. Because of this the vehicle type is not known at first connection. In order to make QGC work reasonably
     // we assume ArduCopter for this case.
     if ((vehicleType == MAV_TYPE_GENERIC) && (vehicleFirmwareType == MAV_AUTOPILOT_ARDUPILOTMEGA)) {
         vehicleType = MAV_TYPE_QUADROTOR;
     }
-#endif
 
     switch (vehicleType) {
     case MAV_TYPE_GCS:
@@ -104,6 +102,7 @@ void MultiVehicleManager::_vehicleHeartbeatInfo(LinkInterface* link, int vehicle
     case MAV_TYPE_ADSB:
         // These are not vehicles, so don't create a vehicle for them
         return;
+    //FoxFour part
     case MAV_TYPE_ONBOARD_CONTROLLER:
         if (!directVGMEnable) {
             return;

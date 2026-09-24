@@ -283,7 +283,7 @@ FlightMap {
     // Add ADSB vehicles to the map
     MapItemView {
         model: QGroundControl.adsbVehicleManager.adsbVehicles
-        delegate: VehicleMapItem {
+        delegate: ADSBVehicleMapItem {
             coordinate:     object.coordinate
             altitude:       object.altitude
             callsign:       object.callsign
@@ -362,7 +362,9 @@ FlightMap {
         mapControl:         parent
         mapCircle:          _fwdFlightGotoMapCircle
         radiusLabelVisible: true
+        // PX4 ignores the commanded loiter radius (flies NAV_LOITER_RAD), so the circle size is unknown
         visible:            gotoLocationItem.visible && _activeVehicle &&
+                            !_activeVehicle.px4Firmware &&
                             _activeVehicle.inFwdFlight &&
                             !_activeVehicle.orbitActive
 
@@ -405,7 +407,7 @@ FlightMap {
             showRotation:       true
             clockwiseRotation:  true
 
-            property real _defaultLoiterRadius: _flyViewSettings.forwardFlightGoToLocationLoiterRad.value
+            property real _defaultLoiterRadius: _flyViewSettings.forwardFlightGoToLocationLoiterRad.rawValue
             property real _committedRadius;
 
             onCenterChanged: {
