@@ -20,6 +20,8 @@ Item {
     readonly property bool _trackingEnabled: camera && camera.trackingEnabled
     readonly property bool _canTrackPoint: _trackingEnabled && camera.supportsTrackingPoint
     readonly property bool _canTrackRect: _trackingEnabled && camera.supportsTrackingRect
+    property var _settingsManager: QGroundControl.settingsManager
+    property var _settings: _settingsManager.foxFourSettings
 
     // function mouseClicked(mouseX, mouseY) {
 
@@ -101,8 +103,11 @@ Item {
         }
 
         // Drag = rectangle zooming
-        // camera.startTracking(Qt.rect(x0, y0, w, h), true)
-        camera.zoomToRegion(Qt.rect(x0,y0,w,h),"0")
+        if (control._settings.enableVGMDialect.rawValue) {
+            camera.zoomToRegion(Qt.rect(x0,y0,w,h))
+        } else {
+            camera.startTracking(Qt.rect(x0, y0, w, h), true)
+        }
     }
 
 

@@ -20,7 +20,7 @@ public:
     Q_INVOKABLE void stopTracking() override;
     Q_INVOKABLE void setCameraIndex(int index);
     // Q_INVOKABLE virtual void zoom                   (QRectF rec);
-    Q_INVOKABLE void zoomToRegion(QRectF rec,QString timestamp);
+    Q_INVOKABLE void zoomToRegion(QRectF rec);
     void setZoomLevel(qreal level) override;
     void handleCameraCaptureStatus(const mavlink_camera_capture_status_t& cameraCaptureStatus) override;
 

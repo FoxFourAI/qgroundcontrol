@@ -13,6 +13,8 @@
 #include "FoxFourSettings.h"
 #include "FoxFourAutoPilotPlugin.h"
 #include "FoxFourPlugin.h"
+#include "VideoManager.h"
+#include "VideoReceiver/FoxFourGstVideoReceiver.h"
 #include "MissionCommandTree.h"
 #include "ParameterManager.h"
 #include "ParameterSetter.h"
@@ -224,7 +226,9 @@ bool FoxFourCameraControl::stopVideoRecording() {
 
 //-----------------------------------------------------------------------------
 void FoxFourCameraControl::startTracking(QRectF rec, bool zoom) {
-    uint64_t time = QDateTime::currentMSecsSinceEpoch(); // TODO : change to KLV timestamps
+
+    uint64_t time = reinterpret_cast<FoxFourPlugin*>(FoxFourPlugin::instance())->latestKlvTimestamp();
+
     if (_trackingImageRect != rec) {
         _trackingImageRect = rec;
 
@@ -268,7 +272,7 @@ void FoxFourCameraControl::startTracking(QRectF rec, bool zoom) {
 //-----------------------------------------------------------------------------
 void FoxFourCameraControl::stopTracking() {
     qCDebug(FoxFourCameraControlLog) << "Stop Tracking";
-    uint64_t timestamp = QDateTime::currentMSecsSinceEpoch();
+    uint64_t timestamp = reinterpret_cast<FoxFourPlugin*>(FoxFourPlugin::instance())->latestKlvTimestamp();
     uint32_t timestampLow = static_cast<uint32_t>(timestamp);
     uint32_t timestampHigh = static_cast<uint32_t>(timestamp >> 32);
 
@@ -301,13 +305,13 @@ void FoxFourCameraControl::setZoomLevel(qreal level) {
 }
 
 //-----------------------------------------------------------------------------
-void FoxFourCameraControl::zoomToRegion(QRectF rec, QString /*timestamp*/)
+void FoxFourCameraControl::zoomToRegion(QRectF rec)
 {
     int vgmCompID = reinterpret_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager()->currentComputerComponent();
     if(vgmCompID == 0){
         return;
     }
-    uint64_t time = QDateTime::currentMSecsSinceEpoch(); // TODO: change to KLV timestamps
+    uint64_t time = reinterpret_cast<FoxFourPlugin*>(FoxFourPlugin::instance())->latestKlvTimestamp();
     uint32_t timestampLow = static_cast<uint32_t>(time);
     uint32_t timestampHigh = static_cast<uint32_t>(time >> 32);
     float param5;

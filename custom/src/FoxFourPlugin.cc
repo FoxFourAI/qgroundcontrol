@@ -160,6 +160,10 @@ void FoxFourPlugin::_advancedChanged(bool changed) {
 VideoReceiver* FoxFourPlugin::createVideoReceiver(QObject* parent) {
 #ifdef QGC_GST_STREAMING
     // return QGCCorePlugin::createVideoReceiver(parent);
+    FoxFourGstVideoReceiver *receiver = new FoxFourGstVideoReceiver(parent);
+    connect(receiver, &FoxFourGstVideoReceiver::timestampReceived,this,[this] (quint64 ts) {
+        _latestKlvTimestamp = ts;
+    });
     return new FoxFourGstVideoReceiver(parent);
 #elif defined(QGC_QT_STREAMING)
     return QtMultimediaReceiver::createVideoReceiver(parent);
