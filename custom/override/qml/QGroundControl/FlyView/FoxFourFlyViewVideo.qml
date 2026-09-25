@@ -49,14 +49,10 @@ Item {
         id:             videoStreaming
         anchors.fill:   parent
         anchors.topMargin:{
-            return
-            if(parent.pipState.state !== parent.pipState.pipState || !parent.toolbarVisible)
-                return 0
-            if(parent.toolbarOverlap){
-                return 0
-            } else {
+            if (videoPipState.state === videoPipState.fullState && _root.toolbarOverlap) {
                 return ScreenTools.toolbarHeight
             }
+            return 0
         }
         useSmallFont:   _root.pipState.state !== _root.pipState.fullState
         visible:        QGroundControl.videoManager.isStreamSource || QGroundControl.videoManager.isUvc
