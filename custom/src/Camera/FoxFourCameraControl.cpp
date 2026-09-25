@@ -144,9 +144,11 @@ void FoxFourCameraControl::_zoomResponse(void *resultHandlerData, int /*compId*/
 {
     auto camControl = reinterpret_cast<FoxFourCameraControl*>(resultHandlerData);
     qCDebug(FoxFourCameraControlLog) << "new factor is " << ack.result_param2 / 100.;
-    float new_factor = qMin(camControl->maxZoomLevel(),qMax(camControl->minZoomLevel(),ack.result_param2 / 100));
+    float newFactor = qMin(camControl->maxZoomLevel(),qMax(camControl->minZoomLevel(),ack.result_param2 / 100));
 
-    camControl->setZoomLevel(new_factor);
+    camControl->_zoomLevel = newFactor;
+    camControl->emit minZoomLevelChanged();
+
 }
 
 //-----------------------------------------------------------------------------
@@ -265,7 +267,9 @@ void FoxFourCameraControl::startTracking(QRectF rec, bool zoom) {
                                  static_cast<float>(rec.y() + rec.height()), param5, param6);
 
         // Request tracking status
+        if (!zoom) {
         _requestTrackingStatus();
+        }
     }
 }
 
