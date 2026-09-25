@@ -1,5 +1,6 @@
 import QtQuick
 
+import QGroundControl
 Item {
     id: rootItem
 
@@ -103,7 +104,7 @@ Item {
         }
 
         // Drag = rectangle zooming
-        if (control._settings.enableVGMDialect.rawValue) {
+        if (rootItem._settings.enableVGMDialect.rawValue) {
             camera.zoomToRegion(Qt.rect(x0,y0,w,h))
         } else {
             camera.startTracking(Qt.rect(x0, y0, w, h), true)
