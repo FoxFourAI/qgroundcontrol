@@ -61,6 +61,7 @@ public:
     QString decoderName()     const { QMutexLocker locker(&_decoderNameMutex); return _decoderName; }
     quint64 processedFrames() const { return _processedFrames.load(std::memory_order_relaxed); }
     quint64 droppedFrames()   const { return _droppedFrames.load(std::memory_order_relaxed); }
+    quint64 latestTimestamp() const { return _latestTimestamp;}
     qint64  currentJitterNs() const { return _currentJitterNs.load(std::memory_order_relaxed); }
     double  qosProportion()   const { return _qosProportion.load(std::memory_order_relaxed); }
     int     qosQuality()      const { return _qosQuality.load(std::memory_order_relaxed); }
@@ -81,7 +82,7 @@ public slots:
 
 signals:
     void decoderStatsChanged();
-
+    void timestampReceived(quint64 timestamp);
 private slots:
     void _watchdog();
     void _handleEOS();
@@ -126,6 +127,9 @@ protected:
     static GstPadProbeReturn _eosProbe(GstPad *pad, GstPadProbeInfo *info, gpointer user_data);
     static GstPadProbeReturn _keyframeWatch(GstPad *pad, GstPadProbeInfo *info, gpointer user_data);
 
+    //KLV reader
+    static GstFlowReturn _onKlvSample(GstElement *sink, gpointer user_data);
+
     GstElement *_decoder = nullptr;
     GstElement *_decoderValve = nullptr;
     GstElement *_fileSink = nullptr;
@@ -135,6 +139,8 @@ protected:
     GstElement *_source = nullptr;
     GstElement *_tee = nullptr;
     GstElement *_videoSink = nullptr;
+    GstElement *_klvQueue = nullptr;
+    GstElement *_klvAppSink = nullptr;
     FoxFourGstVideoWorker *_worker = nullptr;
     std::atomic<int> _reconnectAttempts = 0;     ///< Written on the streaming thread (_noteTeeFrame) and GUI thread (reconnect lambda); atomic.
     std::atomic<quint64> _reconnectEpoch = 0;    ///< Bumped on every stop() — pending singleShot lambdas check this before firing, replacing an explicit cancel/pending-flag pair.
@@ -145,6 +151,7 @@ protected:
     gulong _eosProbeId = 0;
     GstPad *_eosProbePad = nullptr;  // ref-held: probe install pad, kept so removal targets the right pad regardless of _decoder lifecycle
     gulong _keyframeWatchId = 0;
+    quint64 _latestTimestamp = 0;
     bool _recordingStopRequested = false;
 
     mutable QMutex _decoderNameMutex;  // QString refcount isn't thread-safe across reader/writer threads
@@ -161,4 +168,7 @@ protected:
         "qtmux",
         "mp4mux"
     };
+
+private:
+    static quint64 _parseKlvTimestamp(guint8* data, gsize size, qint64 pts);
 };

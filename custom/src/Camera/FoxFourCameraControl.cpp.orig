@@ -13,8 +13,6 @@
 #include "FoxFourSettings.h"
 #include "FoxFourAutoPilotPlugin.h"
 #include "FoxFourPlugin.h"
-#include "VideoManager.h"
-#include "VideoReceiver/FoxFourGstVideoReceiver.h"
 #include "MissionCommandTree.h"
 #include "ParameterManager.h"
 #include "ParameterSetter.h"
@@ -144,11 +142,9 @@ void FoxFourCameraControl::_zoomResponse(void *resultHandlerData, int /*compId*/
 {
     auto camControl = reinterpret_cast<FoxFourCameraControl*>(resultHandlerData);
     qCDebug(FoxFourCameraControlLog) << "new factor is " << ack.result_param2 / 100.;
-    float newFactor = qMin(camControl->maxZoomLevel(),qMax(camControl->minZoomLevel(),ack.result_param2 / 100));
+    float new_factor = qMin(camControl->maxZoomLevel(),qMax(camControl->minZoomLevel(),ack.result_param2 / 100));
 
-    camControl->_zoomLevel = newFactor;
-    camControl->emit minZoomLevelChanged();
-
+    camControl->setZoomLevel(new_factor);
 }
 
 //-----------------------------------------------------------------------------
@@ -204,7 +200,7 @@ void FoxFourCameraControl::setCameraIndex(int index) {
 //-----------------------------------------------------------------------------
 void FoxFourCameraControl::handleStorageInfo(const mavlink_storage_information_t& st) {
     VehicleCameraControl::handleStorageInformation(st);
-    qCDebug(FoxFourCameraControlLog)<<"capacity changed";
+    qDebug()<<"capacity changed";
     emit storageCapacityChanged(_storageTotal, _storageFree);
     // }
 }
@@ -228,9 +224,7 @@ bool FoxFourCameraControl::stopVideoRecording() {
 
 //-----------------------------------------------------------------------------
 void FoxFourCameraControl::startTracking(QRectF rec, bool zoom) {
-
-    uint64_t time = reinterpret_cast<FoxFourPlugin*>(FoxFourPlugin::instance())->latestKlvTimestamp();
-
+    uint64_t time = QDateTime::currentMSecsSinceEpoch(); // TODO : change to KLV timestamps
     if (_trackingImageRect != rec) {
         _trackingImageRect = rec;
 
@@ -267,16 +261,14 @@ void FoxFourCameraControl::startTracking(QRectF rec, bool zoom) {
                                  static_cast<float>(rec.y() + rec.height()), param5, param6);
 
         // Request tracking status
-        if (!zoom) {
         _requestTrackingStatus();
-        }
     }
 }
 
 //-----------------------------------------------------------------------------
 void FoxFourCameraControl::stopTracking() {
     qCDebug(FoxFourCameraControlLog) << "Stop Tracking";
-    uint64_t timestamp = reinterpret_cast<FoxFourPlugin*>(FoxFourPlugin::instance())->latestKlvTimestamp();
+    uint64_t timestamp = QDateTime::currentMSecsSinceEpoch();
     uint32_t timestampLow = static_cast<uint32_t>(timestamp);
     uint32_t timestampHigh = static_cast<uint32_t>(timestamp >> 32);
 
@@ -309,13 +301,13 @@ void FoxFourCameraControl::setZoomLevel(qreal level) {
 }
 
 //-----------------------------------------------------------------------------
-void FoxFourCameraControl::zoomToRegion(QRectF rec)
+void FoxFourCameraControl::zoomToRegion(QRectF rec, QString /*timestamp*/)
 {
     int vgmCompID = reinterpret_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager()->currentComputerComponent();
     if(vgmCompID == 0){
         return;
     }
-    uint64_t time = reinterpret_cast<FoxFourPlugin*>(FoxFourPlugin::instance())->latestKlvTimestamp();
+    uint64_t time = QDateTime::currentMSecsSinceEpoch(); // TODO: change to KLV timestamps
     uint32_t timestampLow = static_cast<uint32_t>(time);
     uint32_t timestampHigh = static_cast<uint32_t>(time >> 32);
     float param5;
