@@ -11,49 +11,29 @@
 
 #include "FoxFourCopterFirmwarePlugin.h"
 #include "FoxFourPlaneFirmwarePlugin.h"
-#include "PX4FirmwarePlugin.h"
 FoxFourFirmwarePluginFactory FoxFourFirmwarePluginFactoryImp;
 
 FoxFourFirmwarePluginFactory::FoxFourFirmwarePluginFactory() {}
 
-QList<QGCMAVLink::FirmwareClass_t> FoxFourFirmwarePluginFactory::supportedFirmwareClasses() const
-{
-    QList<QGCMAVLink::FirmwareClass_t> firmwareClasses;
-    firmwareClasses.append(QGCMAVLink::FirmwareClassPX4);
-    firmwareClasses.append(QGCMAVLink::FirmwareClassArduPilot);
-    return firmwareClasses;
-}
-
-QList<QGCMAVLink::VehicleClass_t> FoxFourFirmwarePluginFactory::supportedVehicleClasses() const
-{
-    QList<QGCMAVLink::VehicleClass_t> vehicleClasses;
-    // vehicleClasses.append(QGCMAVLink::VehicleClassMultiRotor);
-    vehicleClasses = FirmwarePluginFactory::supportedVehicleClasses();
-    return vehicleClasses;
+QList<QGCMAVLinkTypes::FirmwareClass_t> FoxFourFirmwarePluginFactory::supportedFirmwareClasses() const {
+    return {QGCMAVLink::FirmwareClassArduPilot};
 }
 
 FirmwarePlugin* FoxFourFirmwarePluginFactory::firmwarePluginForAutopilot(MAV_AUTOPILOT autopilotType,
                                                                          [[maybe_unused]] MAV_TYPE vehicleType)
 {
     // For now F4 only supported ArduPilot
-
     if (autopilotType == MAV_AUTOPILOT_ARDUPILOTMEGA) {
-        if (!_ardupilotPluginInstance) {
             switch (vehicleType) {
                 case MAV_TYPE_FIXED_WING:
-                    _ardupilotPluginInstance = new FoxFourPlaneFirmwarePlugin;
+                    return new FoxFourPlaneFirmwarePlugin;
+                    break;
+                case MAV_TYPE_QUADROTOR:
+                    return new FoxFourCopterFirmwarePlugin;
                     break;
                 default:
-                    _ardupilotPluginInstance = new FoxFourCopterFirmwarePlugin;
-                    break;
+                    return nullptr;
             }
-        }
-        return _ardupilotPluginInstance;
-    } else if (autopilotType == MAV_AUTOPILOT_PX4) {
-        if (!_px4PluginInstance) {
-            _px4PluginInstance = new PX4FirmwarePlugin;
-        }
-        return _px4PluginInstance;
     }
     return nullptr;
 }
