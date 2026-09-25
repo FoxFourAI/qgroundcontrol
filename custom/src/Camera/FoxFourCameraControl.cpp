@@ -202,7 +202,7 @@ void FoxFourCameraControl::setCameraIndex(int index) {
 //-----------------------------------------------------------------------------
 void FoxFourCameraControl::handleStorageInfo(const mavlink_storage_information_t& st) {
     VehicleCameraControl::handleStorageInformation(st);
-    qDebug()<<"capacity changed";
+    qCDebug(FoxFourCameraControlLog)<<"capacity changed";
     emit storageCapacityChanged(_storageTotal, _storageFree);
     // }
 }
