@@ -45,7 +45,7 @@ public:
 
     QQmlApplicationEngine* createQmlApplicationEngine(QObject* parent) final;
     void paletteOverride(const QString& colorName, QGCPalette::PaletteColorInfo_t& colorInfo) override;
-signals:
+    quint64 latestKlvTimestamp() {return _latestKlvTimestamp;}
 
 private slots:
     void _advancedChanged(bool advanced);
@@ -58,6 +58,7 @@ private:
     QVariantList _customSettingsList;  // Not to be mixed up with QGCCorePlugin implementation
     MandatoryParameters* _mandatoryParameters = nullptr;
     QList<Plugin*> _plugins;
+    quint64 _latestKlvTimestamp = 0;
 };
 
 /*===========================================================================*/
