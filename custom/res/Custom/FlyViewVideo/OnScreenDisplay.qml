@@ -1,19 +1,15 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Effects
-import QtQuick.Layouts
 
 import QGroundControl
 import QGroundControl.Controls
-import QGroundControl.FlyView
 
 Item {
 
     id: _root
     property var _activeVehicle:  globals.activeVehicle
-    property var _cameraManager:  _activeVehicle.cameraManager
-    property var _camera:         _cameraManager.currentCameraInstance
-    property var _streamInfo:     _camera.currentStreamInstance
+    property var _videoManager:     QGroundControl.videoManager
     property var activeGroup:     _activeVehicle ? _activeVehicle.vehicle : null
     property real fontSize:       ScreenTools.largeFontPointSize * 1.5
     property real smallFontScale: 0.7       // tick labels / captions relative to fontSize
@@ -29,6 +25,7 @@ Item {
     property real  shadowBlur:    4     // px
     property real  shadowOffsetX: 2
     property real  shadowOffsetY: 2
+    property real  tickStep: 10
 
     // Scale configuration
     property real pitchRangeDeg:  22  // degrees of pitch from screen centre to top edge (hardcoded for now, need to be taken from the camera fov)
@@ -86,13 +83,11 @@ Item {
 
     // Status bar: driven by a HorizontalFactValueGrid, columns split around the roll scale
     property var  statusGrid:          null
-
     readonly property int  _statusCols:     statusGrid.columns ? statusGrid.columns.count : 0
     readonly property int  _statusLeftCols: Math.ceil(_statusCols / 2)
     readonly property int  _statusPerSide:  Math.max(1, _statusLeftCols)
     readonly property real _statusGap:      _rollR + _tickMajor + _pad * 2     // half-width kept free for the roll scale
     readonly property real _statusSlotW:    Math.max(0, (_cx - _statusGap - _margin) / _statusPerSide)
-
 
 
     TextMetrics {
@@ -326,7 +321,7 @@ Item {
             id:     speedTape
             x:      0
             y:      _root._tapeTop - _root._smallH
-            width:  _root._clipLeft + _root._boxW      // room for the GS box to grow
+            width:  _root._clipLeft + _root._boxW / 2      // room for the GS box to grow
             height: _root._tapeH + _root._smallH * 2
             onPaint: {
                 var ctx = _root._begin(this, true)
@@ -386,6 +381,10 @@ Item {
     function _fmtTick(v) {
         return Number(v.toFixed(2)).toString()
     }
+
+    function deg2rad(d) { return d * Math.PI / 180.0 }
+
+    function rad2deg(r) { return r * 180.0 / Math.PI }
 
     function _norm360(d) {
         return ((d % 360) + 360) % 360
@@ -542,7 +541,6 @@ Item {
     }
 
     // ---------------------------------------------------------------- dynamic parts
-
     function _drawPitchLadder(ctx) {
         if (isNaN(rollDeg) || isNaN(pitchDeg))
             return
@@ -562,22 +560,21 @@ Item {
         ctx.beginPath()
         ctx.moveTo(-width, yh)
         ctx.lineTo(width, yh)
-        if (!isNaN(headingDeg)) {
-            var compassHalfSpan = 102 / 4 // HARDCODED, switch to the _streamInfo.hfov and recalcualte the ticks!!!
-            var imageWidth = 1920 //HARDCODED, swithc to the _streamInfo.resolution.width !!!!
-            var leftBearing = headingDeg - compassHalfSpan
-            var rightBearing = headingDeg  + compassHalfSpan
-            var first = Math.ceil(leftBearing / 5)
-            var last  = Math.floor(rightBearing / 5)
-            for (var i = first; i <= last; i++) {
-                var d    = i * 5
-                var x = imageWidth / 2 + Math.tan((d - headingDeg) * (Math.PI / 180))
-                var norm = _norm360(d)
-                var ten  = (norm % 10 === 0)
-                ctx.moveTo(x, yh)
-                ctx.lineTo(x, yh - (ten ? _tickMajor : _tickMinor))
-                if (ten)
-                    labels.push({ text: norm.toString(), x: x, y: yh - _pad * 2, align: "center", baseline: "bottom" })
+        if (!isNaN(headingDeg) && _videoManager) {
+            const halfHfov = deg2rad(_videoManager.hfov / 2)
+            const fDisp    = (width / 2) / Math.tan(halfHfov)
+            const span = rad2deg(Math.atan( Math.tan(halfHfov)))
+
+
+            const left = headingDeg - span
+            const first = Math.ceil(left / _root.tickStep) * tickStep
+            for( let b = first; b < headingDeg + span; b += tickStep) {
+                const rel = _norm360(b - headingDeg) - 180
+                const tickX = -x + _videoManager.videoSize.width / 2 + fDisp * Math.tan(deg2rad(rel))
+                ctx.moveTo(tickX, yh)
+                ctx.lineTo(tickX, yh - _tickMajor)
+                labels.push({ text: _fmtTick(_norm360(b)), x: tickX, y: yh - _tickMajor - _pad,
+                                align: "center", baseline: "bottom" })
             }
         }
         ctx.stroke()
