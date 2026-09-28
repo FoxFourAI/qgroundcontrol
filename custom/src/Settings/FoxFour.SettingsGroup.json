@@ -44,6 +44,13 @@
             "default": true,
             "label": "Show GPS_RAW_INT trajectory on map",
             "keywords":"trajectory gps"
+        },{
+            "name": "showDetections",
+            "shortDesc": "Show detections on map",
+            "type": "bool",
+            "default": true,
+            "label": "Show detections on map",
+            "keywords":"detections map"
         },
         {
             "name": "mapMatchingPointsCnt",

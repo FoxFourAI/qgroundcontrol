@@ -13,6 +13,7 @@ Item {
     property real _spacing: ScreenTools.defaultFontPixelWidth / 2
     property var _settingsManager: QGroundControl.settingsManager
     property var _settings: _settingsManager.foxFourSettings
+    property var _autoPilot: globals.activeVehicle.autopilotPlugin
 
     Image {
         id: foxFourLogo
@@ -146,6 +147,22 @@ Item {
                     fact: control._settings.mapMatchingPointsCnt
                     textField.numericValuesOnly: true
                 }
+
+
+                SettingsGroupLayout {
+                    heading: qsTr("Detections")
+                    FactCheckBoxSlider {
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.showDetections
+                    }
+                    QGCButton {
+                        Layout.fillWidth: true
+                        text: qsTr("Clear")
+                        onClicked: _autoPilot.dialectHandler.clearDetections()
+                    }
+                }
+
             }
 
             SettingsGroupLayout {
