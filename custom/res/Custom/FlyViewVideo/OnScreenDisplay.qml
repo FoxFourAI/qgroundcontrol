@@ -20,8 +20,8 @@ Item {
     property color fontColor:     Qt.rgba(100 / 255, 1,0,1)
     property color boxColor:      Qt.rgba(0, 0, 0, 0.45)
     // Drop shadow, rendered once on the GPU for the whole OSD
-    property bool  shadowEnabled: false
-    property color shadowColor:   Qt.rgba(0, 0, 0, 0.9)
+    property bool  shadowEnabled: true
+    property color shadowColor:   Qt.rgba(0, 0, 0, 0.7)
     property real  shadowBlur:    4     // px
     property real  shadowOffsetX: 2
     property real  shadowOffsetY: 2
@@ -555,22 +555,27 @@ Item {
         ctx.rotate(-rollDeg * Math.PI / 180)
 
         // Horizon line + conformal heading ticks, one stroke
-        var yh = pitchDeg * ppd
+        const halfHfov = deg2rad(_videoManager.hfov / 2)
+        var fDisp = _videoManager
+                ? (width / 2) / Math.tan(halfHfov)
+                : NaN
+        var pitchToY = function (relDeg) {
+            return isNaN(fDisp) ? relDeg * ppd                     // fallback: linear scale
+                                : fDisp * Math.tan(deg2rad(relDeg))
+        }
+        var yh = pitchToY(pitchDeg)
         ctx.lineWidth = majorLineWidth
         ctx.beginPath()
         ctx.moveTo(-width, yh)
         ctx.lineTo(width, yh)
+
+        const halfSpan = Math.ceil(rad2deg(Math.atan(0.5 * Math.tan(halfHfov))))
         if (!isNaN(headingDeg) && _videoManager) {
-            const halfHfov = deg2rad(_videoManager.hfov / 2)
-            const fDisp    = (width / 2) / Math.tan(halfHfov)
-            const span = rad2deg(Math.atan( Math.tan(halfHfov)))
-
-
-            const left = headingDeg - span
-            const first = Math.ceil(left / _root.tickStep) * tickStep
-            for( let b = first; b < headingDeg + span; b += tickStep) {
+            const left = headingDeg - halfSpan
+            const first = Math.floor(left / _root.tickStep) * tickStep
+            for( let b = first; b < headingDeg + halfSpan + _root.tickStep; b += tickStep) {
                 const rel = _norm360(b - headingDeg) - 180
-                const tickX = -x + _videoManager.videoSize.width / 2 + fDisp * Math.tan(deg2rad(rel))
+                const tickX = fDisp * Math.tan(deg2rad(rel))
                 ctx.moveTo(tickX, yh)
                 ctx.lineTo(tickX, yh - _tickMajor)
                 labels.push({ text: _fmtTick(_norm360(b)), x: tickX, y: yh - _tickMajor - _pad,
@@ -580,6 +585,7 @@ Item {
         ctx.stroke()
 
         // Pitch lines in four strokes: (nose up / nose down) x (major / minor)
+
         for (var g = 0; g < 4; g++) {
             var positive = (g < 2)
             var major    = (g % 2 === 0)
@@ -599,7 +605,10 @@ Item {
                 if ((a % 10 === 0) !== major)
                     continue
                 var pa = positive ? a : -a
-                var y  = (pitchDeg - pa) * ppd
+                var rel = pitchDeg - pa
+                if (Math.abs(rel) >= 89)
+                    continue
+                var y  = pitchToY(rel)
                 if (Math.abs(y) > height)
                     continue
                 ctx.moveTo(-w, y + t); ctx.lineTo(-w, y); ctx.lineTo(-gap, y)

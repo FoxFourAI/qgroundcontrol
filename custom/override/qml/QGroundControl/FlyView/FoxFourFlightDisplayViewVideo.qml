@@ -235,6 +235,13 @@ Item {
             property int zoom: 0
         }
     }
+    // OSD {
+    //     id: osd1
+    //     anchors.centerIn: parent
+    //     width: videoBackground.getWidth()
+    //     height: videoBackground.getHeight()
+    // }
+
     OnScreenDisplay{
         id: osd
         statusGrid: root.statusGrid

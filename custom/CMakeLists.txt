@@ -76,6 +76,10 @@ qgc_set_qt_resource_alias(
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusLabel.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusColors.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSD.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDCanvas.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDLadder.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDStyle.qml
     )
 
 qt_add_qml_module(FoxFourModule
@@ -94,6 +98,10 @@ qt_add_qml_module(FoxFourModule
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusLabel.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusColors.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSD.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDCanvas.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDLadder.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDStyle.qml
     NO_PLUGIN
     SOURCES
 )

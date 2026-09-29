@@ -22,6 +22,7 @@
 #include "QGCCorePlugin.h"
 #include "SettingsManager.h"
 #include "VideoManager.h"
+#include "QGCCameraManager.h"
 
 QGC_LOGGING_CATEGORY(FoxFourCameraControlLog, "FoxFour.CameraControl")
 
@@ -164,6 +165,7 @@ void _cameraSwitchHandler(void* resultHandlerData,[[maybe_unused]] int compId, c
         ctrl->_unsubscribeFromCameraFact();
     }
     qCDebug(FoxFourCameraControlLog) << "camera swiched successfully";
+    ctrl->_requestStreamInfo(0);
     ctrl->_cameraIndex += 1;
     if (ctrl->_cameraIndex > 2 ) {
         ctrl->_cameraIndex = 1;
