@@ -555,10 +555,9 @@ Item {
         ctx.rotate(-rollDeg * Math.PI / 180)
 
         // Horizon line + conformal heading ticks, one stroke
-        const halfHfov = deg2rad((_videoManager ? _videoManager.hfov : 90) / 2)
-        console.log(halfHfov)
+        const halfHfov = deg2rad((_videoManager && _videoManager.hfov > 5 ? _videoManager.hfov : 103) / 2)
         const fDisp = (width / 2) / Math.tan(halfHfov)
-        const fHDisp = (height / 2) / Math.tan(halfHfov)
+        const fHDisp = fDisp * (width/height)
         var pitchToY = function (relDeg) {
             return fHDisp * Math.tan(deg2rad(relDeg))
         }
@@ -566,11 +565,10 @@ Item {
         var yh = pitchToY(pitchDeg)
         ctx.lineWidth = majorLineWidth
         ctx.beginPath()
-        ctx.moveTo(0, yh)
+        ctx.moveTo(-width, yh)
         ctx.lineTo(width, yh)
-
         const halfSpan = Math.ceil(rad2deg(Math.atan(0.5 * Math.tan(halfHfov))))
-        if (!isNaN(headingDeg) && _videoManager) {
+        if (!isNaN(headingDeg)) {
             const left = headingDeg - halfSpan
             const first = Math.floor(left / _root.tickStep) * tickStep
             for( let b = first; b < headingDeg + halfSpan + _root.tickStep; b += tickStep) {
