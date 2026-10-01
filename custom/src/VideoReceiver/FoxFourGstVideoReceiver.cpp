@@ -229,6 +229,9 @@ void FoxFourGstVideoReceiver::start(uint32_t timeout)
                      "caps", klvCaps,
                      "emit-signals", TRUE,
                      "sync", FALSE,
+                     "async", FALSE,
+                     "max-buffers", 5,
+                     "drop", TRUE,
                      nullptr);
         gst_caps_unref(klvCaps);
         g_signal_connect(_klvAppSink, "new-sample", G_CALLBACK(FoxFourGstVideoReceiver::_onKlvSample), this);
@@ -237,7 +240,6 @@ void FoxFourGstVideoReceiver::start(uint32_t timeout)
         // END KLV READER INSERTION
         // ====================================================================
 
-        _pipeline = gst_pipeline_new("receiver");
 
 
         g_object_set(_recorderValve,
@@ -283,12 +285,11 @@ void FoxFourGstVideoReceiver::start(uint32_t timeout)
 
         GstPad *srcPad = nullptr;
         (void) gst_element_foreach_src_pad(_source, grabFirstSrcPad, &srcPad);
+        (void) g_signal_connect(_source, "pad-added", G_CALLBACK(_onNewPad), this);
 
         if (srcPad) {
             _onNewSourcePad(srcPad);
             gst_clear_object(&srcPad);
-        } else {
-            (void) g_signal_connect(_source, "pad-added", G_CALLBACK(_onNewPad), this);
         }
 
         if (!gst_element_link_many(_tee, decoderQueue, _decoderValve, nullptr)) {
@@ -338,6 +339,8 @@ void FoxFourGstVideoReceiver::start(uint32_t timeout)
             gst_clear_object(&decoderQueue);
             gst_clear_object(&_tee);
             gst_clear_object(&_source);
+            gst_clear_object(&_klvAppSink);
+            gst_clear_object(&_klvQueue);
         }
 
         emit onStartComplete(STATUS_FAIL);
@@ -472,6 +475,8 @@ void FoxFourGstVideoReceiver::stop()
 
         _recorderValve = nullptr;
         _decoderValve = nullptr;
+        _klvQueue = nullptr;
+        _klvAppSink = nullptr;
         _tee = nullptr;
         _source = nullptr;
 
@@ -906,8 +911,6 @@ GstElement* FoxFourGstVideoReceiver::_makeFileSink(const QString& videoFile, FIL
     GstPad* parserSrcPad = nullptr;
     GstPad* parserSinkPad = nullptr;
     GstPad *ghostpad = nullptr;
-    GstPad *teeKlvPad = nullptr;
-    GstPad *klvQueueSinkPad = nullptr;
 
     do {
         if (!isValidFileFormat(format)) {
@@ -965,18 +968,6 @@ GstElement* FoxFourGstVideoReceiver::_makeFileSink(const QString& videoFile, FIL
             qCCritical(FoxFourGstVideoReceiverLog) << "gst_bin_new('sinkbin') failed";
             break;
         }
-
-        teeKlvPad = gst_element_request_pad_simple(_tee,"src_%u");
-        klvQueueSinkPad = gst_element_get_static_pad(_klvQueue, "sink");
-
-        if (gst_pad_link(teeKlvPad, klvQueueSinkPad) != GST_PAD_LINK_OK) {
-            qCCritical(FoxFourGstVideoReceiverLog) << "Failed to link Tee to KLV data lane branch";
-            gst_object_unref(klvQueueSinkPad);
-            gst_object_unref(teeKlvPad);
-            break;
-        }
-        gst_object_unref(klvQueueSinkPad);
-        gst_object_unref(teeKlvPad);
 
         // splitmuxsink's video sink pad is a request pad — request once during construction
         // and ghost it as "sink" so the existing recorderValve→fileSink link works unchanged.
@@ -1051,11 +1042,59 @@ GstElement* FoxFourGstVideoReceiver::_makeFileSink(const QString& videoFile, FIL
 
 void FoxFourGstVideoReceiver::_onNewSourcePad(GstPad *pad)
 {
-    // FIXME: check for caps - if this is not video stream (and preferably - one of these which we have to support) then simply skip it
-    if (!gst_element_link(_source, _tee)) {
-        qCCritical(FoxFourGstVideoReceiverLog) << "Unable to link source";
+    GstCaps *caps = gst_pad_get_current_caps(pad);
+    if (!caps) {
+        caps = gst_pad_query_caps(pad, nullptr);
+    }
+    const bool isKlv = caps && !gst_caps_is_empty(caps) && !gst_caps_is_any(caps) &&
+                       gst_structure_has_name(gst_caps_get_structure(caps, 0), "meta/x-klv");
+    gst_clear_caps(&caps);
+
+    if (isKlv) {
+        if (!_klvQueue) {
+            _klvQueue   = gst_element_factory_make("queue", "klv_read_queue");
+            _klvAppSink = gst_element_factory_make("appsink", "klv_appsink");
+            gst_bin_add_many(GST_BIN(_pipeline), _klvQueue, _klvAppSink, nullptr);
+            gst_element_link(_klvQueue, _klvAppSink);
+            gst_element_sync_state_with_parent(_klvAppSink);
+            gst_element_sync_state_with_parent(_klvQueue);
+        }
+        GstPad *klvSink = gst_element_get_static_pad(_klvQueue, "sink");
+        if (klvSink && !gst_pad_is_linked(klvSink)) {
+            if (gst_pad_link(pad, klvSink) != GST_PAD_LINK_OK) {
+                qCCritical(FoxFourGstVideoReceiverLog) << "Failed to link KLV pad";
+            } else {
+                qCDebug(FoxFourGstVideoReceiverLog) << "KLV stream linked";
+            }
+        }
+        gst_clear_object(&klvSink);
+        return;   // don't treat KLV as the video pad
+    }
+
+            // Video pad: link this specific pad to the tee (instead of gst_element_link(_source, _tee))
+    GstPad *teeSink = gst_element_get_static_pad(_tee, "sink");
+    if (!teeSink) {
+        qCCritical(FoxFourGstVideoReceiverLog) << "Tee has no sink pad";
         return;
     }
+    if (gst_pad_is_linked(teeSink)) {
+        qCDebug(FoxFourGstVideoReceiverLog) << "Tee already linked, ignoring extra source pad";
+        gst_clear_object(&teeSink);
+        return;
+    }
+    const GstPadLinkReturn ret = gst_pad_link(pad, teeSink);
+    gst_clear_object(&teeSink);
+    if (ret != GST_PAD_LINK_OK) {
+        qCCritical(FoxFourGstVideoReceiverLog) << "Unable to link source:" << gst_pad_link_get_name(ret);
+        return;
+    }
+    // GstPad *teeSink = gst_element_get_static_pad(_tee, "sink");
+    // if (gst_pad_is_linked(teeSink) || gst_pad_link(pad, teeSink) != GST_PAD_LINK_OK) {
+    //     gst_clear_object(&teeSink);
+    //     qCCritical(FoxFourGstVideoReceiverLog) << "Unable to link source";
+    //     return;
+    // }
+    gst_clear_object(&teeSink);
 
     if (!_streaming) {
         _streaming = true;
@@ -1828,7 +1867,7 @@ quint64 FoxFourGstVideoReceiver::_parseKlvTimestamp(guint8* data, gsize size, qi
     }
 
             // Traverse the payload buffer explicitly searching for Tag 2 (Timestamp)
-    while (i < size - 2) {
+    while (i + 2 <= size) {
         uint8_t tag = data[i++];
         uint8_t len = data[i++];
 
