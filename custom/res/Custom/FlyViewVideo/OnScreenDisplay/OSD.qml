@@ -32,12 +32,97 @@ Item {
         shadowBlur:             _style.shadowBlur
     }
 
-    OSDLadder {
+    Grid {
+        id: rec
         x: 200
         y: 200
-        width: 300
-        height: 300
-        orientation: Qt.Horizontal
+        width: 800
+        height: 800
+        columns: 2
+        rows: 2
+        spacing: 4
+        property real dummy: 0
+        Timer {
+            repeat: true
+            running: true
+            interval: 100
+            onTriggered: rec.dummy += 0.5
+        }
+        Rectangle{
+            width: 300
+            height: 300
+            color: "black"
+            OSDLadder {
+                anchors.fill: parent
+                orientation: Qt.Vertical
+                mirrored: true
+                value: rec.dummy
+                header: "AVS"
+                footer: "M/S"
+                currentValuePos: 0.1
+            }
+            Label {
+                anchors.centerIn: parent
+                text: qsTr("Vert+M")
+                color: "white"
+            }
+        }
+        Rectangle{
+            width: 300
+            height: 300
+            color: "black"
+            OSDLadder {
+                anchors.fill: parent
+                orientation: Qt.Horizontal
+                // mirrored: true
+                value: rec.dummy
+                header: "AVS"
+                footer: "M/S"
+            }
+            Label {
+                anchors.centerIn: parent
+                text: qsTr("Hor")
+                color: "white"
+            }
+        }
+        Rectangle{
+            width: 300
+            height: 300
+            color: "black"
+            OSDLadder {
+                anchors.fill: parent
+                orientation: Qt.Horizontal
+                mirrored: true
+                value: rec.dummy
+                header: "AVS"
+                footer: "M/S"
+            }
+            Label {
+                anchors.centerIn: parent
+                text: qsTr("hor")
+                color: "white"
+            }
+        }
+        Rectangle{
+            width: 300
+            height: 300
+            color: "black"
+            OSDLadder {
+                anchors.fill: parent
+                orientation: Qt.Vertical
+                // mirrored: true
+                value: rec.dummy
+                header: "AVS"
+                footer: "M/S"
+            }
+            Label {
+                anchors.centerIn: parent
+                text: qsTr("Vert")
+                color: "white"
+            }
+        }
     }
+
+
 
 }
