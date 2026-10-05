@@ -3,10 +3,10 @@ import QtQuick
 import QGroundControl
 import QGroundControl.Controls
 
-Item {
+QtObject {
     //general
-    property real   _minorRatio:        0.7
-    property color  color:              "lightgreen"
+    property real   _subRatio:          0.8
+    property color  color:              Qt.rgba(100 / 255, 1,0,1)
     property color  boxColor:           Qt.rgba(0,0,0,0.8)
     //shadow
     property color  shadowColor:        Qt.rgba(0,0,0,0.45)
@@ -14,11 +14,10 @@ Item {
     property real   shadowBlur:         4
     //font
     property real   majorFontSize:      ScreenTools.largeFontPointSize * 1.5
-    property real   minorFontSize:      majorFontSize * _minorRatio
+    property real   defaultFontSize:    majorFontSize * _subRatio
+    property real   minorFontSize:      defaultFontSize * _subRatio
     property real   fontPadding:        minorFontSize
-    //lines
+    //lines and ticks
     property real   majorLineWidth:     3
-    property real   majorTickLength:    majorFontSize
-    property real   minorTickLength:    minorFontSize
-    property real   minorLineWidth:     majorLineWidth * _minorRatio
+    property real   minorLineWidth:     majorLineWidth * _subRatio
 }

@@ -18,12 +18,19 @@ Canvas {
         ctx.lineJoin    = "round"
         ctx.strokeStyle = style.color
         ctx.lineWidth = style.majorLineWidth
-        setFont(ctx, false)
+        _setFont(ctx, style.defaultFontSize)
         return ctx
     }
 
-    function setFont(ctx, large) {
-        ctx.font      = "bold " + (large ? style.majorFontSize : style.minorFontSize) + "px sans-serif"
+    function _normToCoord(point) {
+        return Qt.vector2d(point.x * width, point.y * height)
+    }
+    function _coordToNorm(point) {
+        return Qt.vector2d(point.x / width, point.y / height)
+    }
+
+    function _setFont(ctx, size) {
+        ctx.font      = "bold " + size + "px sans-serif"
         ctx.fillStyle = style.color
     }
 }
