@@ -32,26 +32,62 @@ Item {
         shadowBlur:             _style.shadowBlur
     }
 
+    // OSDLadder {
+    //     anchors.fill: parent
+    //     orientation: Qt.Horizontal
+    //     tickSpacing: width / 80
+    //     minorTickLength: 10
+    //     majorTickLength: 15
+    //     // height: 80
+    //     mirrored: true
+    //     value: 10
+    //     header: "AVS"
+    //     footer: "M/S"
+    //     namedTicks: [{name:"ABC",value:20},{name:"DEF",value:10}]
+    //     sectors: [{from:10,to:15,color:"red"}, {from:16,to:18,color:"green"}]
+    //     targetValue: 0
+    // }
+
     Grid {
         id: rec
-        x: 200
-        y: 200
-        width: 800
-        height: 800
+        anchors.centerIn: parent
         columns: 2
         rows: 2
         spacing: 4
-        property real dummy: 0
+        property real dummy: 6
         Timer {
             repeat: true
             running: true
             interval: 100
-            onTriggered: rec.dummy += 0.5
+            // onTriggered: rec.dummy += 0.1
         }
+
         Rectangle{
-            width: 300
-            height: 300
-            color: "black"
+            width: 400
+            height: 400
+            color: Qt.rgba(0,0,0,0.0)
+            OSDLadder {
+                anchors.fill: parent
+                orientation: Qt.Horizontal
+                mirrored: true
+                value: rec.dummy
+                header: "AVS"
+                footer: "M/S"
+                namedTicks: [{name:"ABC",value:10},{name:"DEF",value:11}]
+                sectors: [{name:"LOW",from:10,to:15,color:"red"}, {name:"HI",from:16,to:18,color:"green"}]
+                targetValue: 9
+            }
+            Label {
+                anchors.centerIn: parent
+                text: qsTr("Hor+M")
+                color: "white"
+            }
+        }
+
+        Rectangle{
+            width: 400
+            height: 400
+            color: Qt.rgba(0,0,0,0.5)
             OSDLadder {
                 anchors.fill: parent
                 orientation: Qt.Vertical
@@ -59,7 +95,10 @@ Item {
                 value: rec.dummy
                 header: "AVS"
                 footer: "M/S"
-                currentValuePos: 0.1
+                namedTicks: [{name:"ABC",value:10},{name:"DEF",value:11}]
+                sectors: [{name:"LOW",from:10,to:15,color:"red"}, {name:"HI",from:16,to:18,color:"green"}]
+                targetValue: 9
+
             }
             Label {
                 anchors.centerIn: parent
@@ -68,9 +107,9 @@ Item {
             }
         }
         Rectangle{
-            width: 300
-            height: 300
-            color: "black"
+            width: 400
+            height: 400
+            color: Qt.rgba(0,0,0,0.5)
             OSDLadder {
                 anchors.fill: parent
                 orientation: Qt.Horizontal
@@ -78,6 +117,9 @@ Item {
                 value: rec.dummy
                 header: "AVS"
                 footer: "M/S"
+                namedTicks: [{name:"ABC",value:10},{name:"DEF",value:11}]
+                sectors: [{name:"LOW",from:10,to:15,color:"red"}, {name:"HI",from:16,to:18,color:"green"}]
+                targetValue: 9
             }
             Label {
                 anchors.centerIn: parent
@@ -86,27 +128,9 @@ Item {
             }
         }
         Rectangle{
-            width: 300
-            height: 300
-            color: "black"
-            OSDLadder {
-                anchors.fill: parent
-                orientation: Qt.Horizontal
-                mirrored: true
-                value: rec.dummy
-                header: "AVS"
-                footer: "M/S"
-            }
-            Label {
-                anchors.centerIn: parent
-                text: qsTr("hor")
-                color: "white"
-            }
-        }
-        Rectangle{
-            width: 300
-            height: 300
-            color: "black"
+            width: 400
+            height: 400
+            color: Qt.rgba(0,0,0,0.5)
             OSDLadder {
                 anchors.fill: parent
                 orientation: Qt.Vertical
@@ -114,6 +138,9 @@ Item {
                 value: rec.dummy
                 header: "AVS"
                 footer: "M/S"
+                namedTicks: [{name:"ABC",value:10},{name:"DEF",value:11}]
+                sectors: [{name:"LOW",from:10,to:15,color:"red"}, {name:"HI",from:16,to:18,color:"green"}]
+                targetValue: 9
             }
             Label {
                 anchors.centerIn: parent
@@ -122,7 +149,4 @@ Item {
             }
         }
     }
-
-
-
 }
