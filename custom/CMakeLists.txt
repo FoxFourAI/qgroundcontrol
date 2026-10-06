@@ -80,6 +80,9 @@ qgc_set_qt_resource_alias(
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDCanvas.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDLadder.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDStyle.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDCompass.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDRoll.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/ValueHistory.qml
     )
 
 qt_add_qml_module(FoxFourModule
@@ -102,8 +105,12 @@ qt_add_qml_module(FoxFourModule
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDCanvas.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDLadder.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDStyle.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDCompass.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDRoll.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/ValueHistory.qml
     NO_PLUGIN
     SOURCES
+
 )
 
 # ============================================================================

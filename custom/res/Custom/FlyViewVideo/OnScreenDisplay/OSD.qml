@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Effects
 
 import QGroundControl
+import QGroundControl.Controls
 
 Item {
     id: _root
@@ -22,131 +23,64 @@ Item {
     property var activeGroup:       _activeVehicle ? _activeVehicle.vehicle : null
     // status grid for telemetry
     property var statusGrid:        null
+    property bool debug: false
+    property real dummy: 0
+    property real incr: 1
 
     layer.enabled: true
     layer.effect: MultiEffect {
-        shadowEnabled:          true
-        shadowColor:            _style.shadowColor
+        shadowEnabled: true
+        shadowColor: _style.shadowColor
         shadowHorizontalOffset: _style.shadowOffset
-        shadowVerticalOffset:   _style.shadowOffset
-        shadowBlur:             _style.shadowBlur
+        shadowVerticalOffset: _style.shadowOffset
+        shadowBlur: _style.shadowBlur
     }
 
-    // OSDLadder {
-    //     anchors.fill: parent
-    //     orientation: Qt.Horizontal
-    //     tickSpacing: width / 80
-    //     minorTickLength: 10
-    //     majorTickLength: 15
-    //     // height: 80
-    //     mirrored: true
-    //     value: 10
-    //     header: "AVS"
-    //     footer: "M/S"
-    //     namedTicks: [{name:"ABC",value:20},{name:"DEF",value:10}]
-    //     sectors: [{from:10,to:15,color:"red"}, {from:16,to:18,color:"green"}]
-    //     targetValue: 0
-    // }
-
-    Grid {
-        id: rec
+    Rectangle {
         anchors.centerIn: parent
-        columns: 2
-        rows: 2
-        spacing: 4
-        property real dummy: 6
-        Timer {
-            repeat: true
-            running: true
-            interval: 100
-            // onTriggered: rec.dummy += 0.1
-        }
-
-        Rectangle{
-            width: 400
-            height: 400
-            color: Qt.rgba(0,0,0,0.0)
-            OSDLadder {
-                anchors.fill: parent
-                orientation: Qt.Horizontal
-                mirrored: true
-                value: rec.dummy
-                header: "AVS"
-                footer: "M/S"
-                namedTicks: [{name:"ABC",value:10},{name:"DEF",value:11}]
-                sectors: [{name:"LOW",from:10,to:15,color:"red"}, {name:"HI",from:16,to:18,color:"green"}]
-                targetValue: 9
-            }
-            Label {
-                anchors.centerIn: parent
-                text: qsTr("Hor+M")
-                color: "white"
-            }
-        }
-
-        Rectangle{
-            width: 400
-            height: 400
-            color: Qt.rgba(0,0,0,0.5)
-            OSDLadder {
-                anchors.fill: parent
-                orientation: Qt.Vertical
-                mirrored: true
-                value: rec.dummy
-                header: "AVS"
-                footer: "M/S"
-                namedTicks: [{name:"ABC",value:10},{name:"DEF",value:11}]
-                sectors: [{name:"LOW",from:10,to:15,color:"red"}, {name:"HI",from:16,to:18,color:"green"}]
-                targetValue: 9
-
-            }
-            Label {
-                anchors.centerIn: parent
-                text: qsTr("Vert+M")
-                color: "white"
-            }
-        }
-        Rectangle{
-            width: 400
-            height: 400
-            color: Qt.rgba(0,0,0,0.5)
-            OSDLadder {
-                anchors.fill: parent
-                orientation: Qt.Horizontal
-                // mirrored: true
-                value: rec.dummy
-                header: "AVS"
-                footer: "M/S"
-                namedTicks: [{name:"ABC",value:10},{name:"DEF",value:11}]
-                sectors: [{name:"LOW",from:10,to:15,color:"red"}, {name:"HI",from:16,to:18,color:"green"}]
-                targetValue: 9
-            }
-            Label {
-                anchors.centerIn: parent
-                text: qsTr("Hor")
-                color: "white"
-            }
-        }
-        Rectangle{
-            width: 400
-            height: 400
-            color: Qt.rgba(0,0,0,0.5)
-            OSDLadder {
-                anchors.fill: parent
-                orientation: Qt.Vertical
-                // mirrored: true
-                value: rec.dummy
-                header: "AVS"
-                footer: "M/S"
-                namedTicks: [{name:"ABC",value:10},{name:"DEF",value:11}]
-                sectors: [{name:"LOW",from:10,to:15,color:"red"}, {name:"HI",from:16,to:18,color:"green"}]
-                targetValue: 9
-            }
-            Label {
-                anchors.centerIn: parent
-                text: qsTr("Vert")
-                color: "white"
-            }
-        }
+        width: 20
+        height: 20
     }
+
+    OSDCompass {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: _style.majorFontSize * 2
+        width: parent.width / 7
+        height: width / 2
+        onWidthChanged: requestPaint()
+        onHeightChanged: requestPaint()
+        value: activeGroup.heading.value
+    }
+
+    OSDLadder {
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.left: parent.left
+        anchors.leftMargin: parent.width / 10
+        value: activeGroup.airSpeed.value
+        targetValue: activeGroup.airSpeedSetpoint.value
+        height: parent.height * 0.66
+        from: 0
+        sectors: [{from:0, to: 3, color:"red"},{from:3, to:5, color:"yellow"}]
+        header: qsTr("AS")
+        footer: qsTr("GS %1").arg(activeGroup.groundSpeed.value.toFixed(0))
+    }
+
+    OSDLadder {
+        mirrored: true
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.right: parent.right
+        anchors.rightMargin: parent.width / 10
+        tickStep: 10
+        majorEvery: 20
+        tickSpacing: height / 10
+        height: parent.height * 0.66
+        value: activeGroup.altitudeAMSL.value
+        targetValue: activeGroup.altitudeTuningSetpoint.value
+        header: qsTr("ASL")
+        footer: qsTr("AGL %1").arg(activeGroup.altitudeRelative.value.toFixed(1))
+    }
+
+
+
 }

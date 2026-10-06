@@ -18,7 +18,7 @@ Canvas {
         ctx.lineJoin    = "round"
         ctx.strokeStyle = style.color
         ctx.lineWidth = style.majorLineWidth
-        _setFont(ctx, style.defaultFontSize)
+        _setFontSize(ctx, style.defaultFontSize)
         return ctx
     }
 
@@ -29,7 +29,7 @@ Canvas {
         return Qt.vector2d(point.x / width, point.y / height)
     }
 
-    function _setFont(ctx, size) {
+    function _setFontSize(ctx, size) {
         ctx.font      = "bold " + size + "px sans-serif"
         ctx.fillStyle = style.color
     }

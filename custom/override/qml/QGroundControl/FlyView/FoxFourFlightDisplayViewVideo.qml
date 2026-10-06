@@ -12,7 +12,7 @@ Item {
     clip:   true
 
     property bool  useSmallFont: true
-    property alias osdVisible: osd.visible
+    property alias osdVisible: osd1.visible
     property var statusGrid: null
     property double _ar:                (cameraLoader.visible && cameraLoader.status === Loader.Ready)
                                             ? cameraLoader.item.implicitWidth / cameraLoader.item.implicitHeight
@@ -248,6 +248,6 @@ Item {
         anchors.centerIn:   parent
         width: videoBackground.getWidth()
         height: videoBackground.getHeight()
-        visible: true
+        visible: false
     }
 }
