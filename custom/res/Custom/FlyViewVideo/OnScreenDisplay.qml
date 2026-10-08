@@ -808,6 +808,10 @@ Item {
         const halfHfov = Math.atan(Math.tan(deg2rad(baseHfov / 2)) / Math.max(1e-3, zoomFactor))
         const fDisp = (width / 2) / Math.tan(halfHfov)
         const fHDisp = fDisp * (width/height)
+        var headingToX = function (relHead) {
+            return fDisp * Math.tan(relHead * Math.PI / 180)
+        }
+
         var pitchToY = function (relDeg) {
             return fHDisp * Math.tan(deg2rad(relDeg))
         }

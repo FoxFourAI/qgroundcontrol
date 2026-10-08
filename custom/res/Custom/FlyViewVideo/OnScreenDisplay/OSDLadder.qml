@@ -5,7 +5,9 @@ import FoxFour.Widgets 1.0
 OSDCanvas {
     id: _root
     implicitWidth: style.currentValueFontSize * 5 + style.majorFontSize * 2
-    implicitHeight: implicitHeight
+    implicitHeight: style.currentValueFontSize * 5 + style.majorFontSize * 2
+    width: style.currentValueFontSize * 5 + style.majorFontSize * 2
+    height: style.currentValueFontSize * 5 + style.majorFontSize * 2
     property var value
     //named ticks, sectors and target value
     //{name, value}
