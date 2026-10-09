@@ -12,7 +12,7 @@ Item {
     clip:   true
 
     property bool  useSmallFont: true
-    property alias osdVisible: osd1.visible
+    property alias osdVisible: osd.active
     property var statusGrid: null
     property double _ar:                (cameraLoader.visible && cameraLoader.status === Loader.Ready)
                                             ? cameraLoader.item.implicitWidth / cameraLoader.item.implicitHeight
@@ -235,19 +235,11 @@ Item {
             property int zoom: 0
         }
     }
+
     OSD {
-        id: osd1
+        id: osd
         anchors.centerIn: parent
         width: videoBackground.getWidth()
         height: videoBackground.getHeight()
-    }
-
-    OnScreenDisplay{
-        id: osd
-        statusGrid: root.statusGrid
-        anchors.centerIn:   parent
-        width: videoBackground.getWidth()
-        height: videoBackground.getHeight()
-        visible: false
     }
 }

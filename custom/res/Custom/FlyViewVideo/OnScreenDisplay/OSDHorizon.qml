@@ -21,11 +21,12 @@ Item{
 
     clip:true
     OSDLadder {
-        style.majorTickLength: _root.spacing
-        style.minorTickLength: style.majorTickLength * 0.8
+        style: _root.style
         anchors.centerIn: parent
         width: playerSize.width
         height: playerSize.height
+        property real pitchMajorTickLength: width / 20
+        property real pitchMinorTickLength: pitchMajorTickLength * 0.8
         from: -90
         to: 90
         mirrored: true
@@ -36,14 +37,29 @@ Item{
             //rotating ny roll
             const cx = width / 2
             const cy = height / 2
-
+            const vertTranslate = _fVertDisp * Math.tan(pitch * Math.PI / 180)
             ctx.translate(cx, cy)
+
+            //draw bird indicator
+            ctx.beginPath()
+            ctx.moveTo( -(spacing - style.fontPadding) / 2, 0)
+            ctx.lineTo(-style.minorFontSize, 0)
+            ctx.lineTo(0, style.minorFontSize)
+            ctx.lineTo(style.minorFontSize, 0)
+            ctx.lineTo((spacing - style.fontPadding) / 2, 0)
+            ctx.stroke()
+
+
             ctx.rotate((360 - _root.roll) * Math.PI / 180)
+            ctx.setLineDash([_root.style.majorLineWidth])
+            ctx.beginPath()
+            ctx.moveTo(0, 0)
+            ctx.lineTo(0, vertTranslate)
+            ctx.stroke()
+            ctx.setLineDash([])
             ctx.translate(-cx, -cy)
 
             //applying style to draw the pitch
-            style.majorTickLength = width / 20
-            style.minorTickLength = style.majorTickLength * 0.8
             from = -90
             to = 90
             majorEvery = 10
@@ -64,6 +80,7 @@ Item{
             tickStep = 10
 
             ctx.setLineDash([])
+            ctx.translate(0, vertTranslate)
             ladderStart = Qt.vector2d(0, 0.5)
             ladderEnd = Qt.vector2d(1, 0.5)
             drawHeading(ctx,ladderStart, ladderEnd)
@@ -165,8 +182,11 @@ Item{
             // Find the first tick aligned to tickStep
             const firstTickIndex = Math.floor(visibleMin / tickStep)
             const lastTickIndex = Math.ceil(visibleMax / tickStep)
+            const tipUp = normalizedDir.times(style.defaultFontSize / 2)
+            const tipDown = tipUp.times(-1)
+            const majorDashPattern = [pitchMajorTickLength / 17]
+            const minorDashPattern = [pitchMinorTickLength / 14]
             ctx.textBaseLine = "middle"
-            console.log("first:", firstTickIndex, "last:", lastTickIndex, "")
             for (let i = firstTickIndex; i <= lastTickIndex; i++ ) {
                 const val = i * tickStep
                 if (val < from || val > to)
@@ -176,22 +196,18 @@ Item{
                 const tickOffset = Qt.vector2d(0, -_fVertDisp * Math.tan(rel * Math.PI / 180))
 
                 const isMajor = (val % majorEvery === 0)
-                const currentTickLength = isMajor ? style.majorTickLength : style.minorTickLength
+                const currentTickLength = isMajor ? pitchMajorTickLength : pitchMinorTickLength
                 const tickLengthOffset = spaceOffset.plus(normal.times(currentTickLength))
                 if (val == 0) {
                     continue
                 }
 
-                const tip = normalizedDir.times(
-                              val > 0
-                              ? -style.defaultFontSize / 2
-                              : style.defaultFontSize / 2
-                              )
+                const tip = val > 0 ? tipDown : tipUp
 
                 if (val > 0) {
                     ctx.setLineDash([])
                 } else {
-                    ctx.setLineDash([_root.style.majorLineWidth])
+                    ctx.setLineDash(currentTickLength === pitchMajorTickLength ? majorDashPattern : minorDashPattern)
                 }
 
                 ctx.beginPath()

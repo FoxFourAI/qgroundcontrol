@@ -124,6 +124,59 @@ Item {
                         text: parent.fact.shortDescription
                     }
                 }
+
+                SettingsGroupLayout {
+                    id: hudGroup
+                    property bool showFull: control._settings.hudVisible.value
+                    heading: qsTr("HUD")
+                    FactCheckBoxSlider{
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.hudVisible
+                    }
+                    LabelledFactTextField {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        label: fact.label
+                        fact: control._settings.hudColor
+                    }
+                    FactCheckBoxSlider {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.hudShadow
+                    }
+                    FactCheckBoxSlider {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.hudCompass
+                    }
+                    FactCheckBoxSlider {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.hudRoll
+                    }
+                    FactCheckBoxSlider {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.hudSpeed
+                    }
+                    FactCheckBoxSlider {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.hudAltitude
+                    }
+                    FactCheckBoxSlider {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.hudHorizon
+                    }
+                }
             }
 
             SettingsGroupLayout {

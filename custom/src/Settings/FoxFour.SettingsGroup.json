@@ -107,6 +107,8 @@
             "shortDesc": "Opacity of the HUD",
             "type": "float",
             "default": 1,
+            "min":0,
+            "max":1,
             "label": "Opacity",
             "keywords":"HUD opacity"
         },
@@ -114,7 +116,7 @@
             "name": "hudColor",
             "shortDesc": "Color of the HUD",
             "type": "string",
-            "default": "#",
+            "default": "#00FF00FF",
             "label": "Color",
             "keywords":"HUD color"
         },

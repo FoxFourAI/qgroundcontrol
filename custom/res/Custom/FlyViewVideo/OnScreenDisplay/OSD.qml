@@ -9,10 +9,11 @@ Item {
     id: _root
 
     // style
-    OSDStyle {
-        id: _style
-        color: _settings.hudColor.value
+    property OSDStyle _style: OSDStyle{
+        color:_settings.hudColor.value
+
     }
+
     FactPanelController { id: controller
         onMissingParametersAvailable: {
             if(parameterExists(-1, "AIRSPEED_MIN")) {
@@ -22,7 +23,7 @@ Item {
 
         }
     }
-
+    visible: active && _settings.hudVisible.value
     // settings
     property var _settingsManager:  QGroundControl.settingsManager
     property var _settings:         _settingsManager.foxFourSettings
@@ -32,10 +33,11 @@ Item {
     property var _videoManager:     QGroundControl.videoManager
     property var activeGroup:       _activeVehicle ? _activeVehicle.vehicle : null
     // status grid for telemetry
+    property bool active: true
     property var statusGrid:        null
-    property bool debug: false
+    property bool debug: true
     property real dummy: 0
-    property real incr: 1
+    property real incr: 100
 
     layer.enabled: _settings.hudShadow.value
     layer.effect: MultiEffect {
@@ -45,9 +47,9 @@ Item {
         shadowVerticalOffset: _style.shadowOffset
         shadowBlur: _style.shadowBlur
     }
-    opacity: _settings.hudOpacity.value
 
     OSDCompass {
+        id: compass
         visible:_settings.hudCompass.value
         style: _style
         anchors.horizontalCenter: parent.horizontalCenter
@@ -61,6 +63,7 @@ Item {
     }
 
     OSDRoll{
+        id: roll
         visible:_settings.hudRoll.value
         anchors.top: parent.top
         style: _style
@@ -81,8 +84,8 @@ Item {
     }
 
     OSDLadder {
-        visible:_settings.hudSpeed.value
         id: spdTape
+        visible:_settings.hudSpeed.value
         style: _style
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
@@ -115,6 +118,7 @@ Item {
     }
 
     OSDHorizon {
+        id:horizon
         visible:_settings.hudHorizon.value
         playerSize: Qt.size(_root.width,_root.height)
         style: _style

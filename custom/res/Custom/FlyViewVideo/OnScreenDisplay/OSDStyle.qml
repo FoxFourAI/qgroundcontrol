@@ -22,6 +22,6 @@ QtObject {
     //lines
     property real   majorLineWidth:     3
     property real   minorLineWidth:     majorLineWidth * _subRatio
-    property real   majorTickLength:    majorFontSize
-    property real   minorTickLength:    minorFontSize
+    property real   majorTickLength:    majorFontSize * 0.5
+    property real   minorTickLength:    majorTickLength * _subRatio
 }

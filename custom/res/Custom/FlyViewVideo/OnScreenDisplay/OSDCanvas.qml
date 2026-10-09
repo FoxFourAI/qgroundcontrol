@@ -5,9 +5,19 @@ Canvas {
 
     property OSDStyle style: OSDStyle {}
 
+    onVisibleChanged: requestPaint()
+    onStyleChanged: {
+        requestPaint()
+    }
+
+    Connections {
+        target: style
+        onColorChanged: requestPaint()
+    }
+
     onWidthChanged:              requestPaint()
     onHeightChanged:             requestPaint()
-    onStyleChanged:              requestPaint()
+    // onStyleChanged:              requestPaint()
 
     // Clears the canvas and sets the common style
     function begin() {

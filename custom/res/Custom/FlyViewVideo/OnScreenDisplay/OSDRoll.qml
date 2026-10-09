@@ -9,6 +9,7 @@ OSDCanvas {
     // clip: true
 
     OSDCanvas {
+        style: _root.style
         id: pointer
         anchors.fill: parent
         onPaint: {

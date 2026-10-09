@@ -63,7 +63,7 @@ OSDCanvas {
         ctx.closePath()
         ctx.save()
         ctx.clip()
-        ctx.clearRect(0,0,width,height)
+        ctx.clearRect(0, 0, width, height)
         ctx.restore()
         ctx.lineWidth = style.majorLineWidth
         ctx.stroke()
