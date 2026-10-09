@@ -62,7 +62,6 @@ void CopterConfigurator::_currentTypeChangedCallback()
     if (newType == _currentType) {
         return;
     }
-    qDebug() << "updating current type to " << newType->name();
     _currentType = newType;
     emit currentTypeChanged();
 }
