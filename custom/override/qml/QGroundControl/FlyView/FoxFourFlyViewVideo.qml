@@ -49,7 +49,7 @@ Item {
         id:             videoStreaming
         anchors.fill:   parent
         anchors.topMargin:{
-            if (videoPipState.state === videoPipState.fullState && _root.toolbarOverlap) {
+            if (toolbarVisible && videoPipState.state === videoPipState.fullState && !_root.toolbarOverlap) {
                 return ScreenTools.toolbarHeight
             }
             return 0
