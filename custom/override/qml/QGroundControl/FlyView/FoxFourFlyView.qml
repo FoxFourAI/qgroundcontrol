@@ -89,6 +89,7 @@ Item {
         FlyViewVideo {
             id: videoControl
             pipView: _pipView
+            statusGrid: widgetLayer.statusGrid
         }
 
         PipView {

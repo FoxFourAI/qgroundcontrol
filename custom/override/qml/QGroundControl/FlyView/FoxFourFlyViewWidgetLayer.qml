@@ -35,6 +35,7 @@ Item {
     property real   _layoutMargin:          ScreenTools.defaultFontPixelWidth * 0.75
     property bool   _layoutSpacing:         ScreenTools.defaultFontPixelWidth
     property bool   _showSingleVehicleUI:   true
+    property alias  statusGrid: bottomRightRowLayout.statusGrid
 
     QGCToolInsets {
         id:                     _totalToolInsets

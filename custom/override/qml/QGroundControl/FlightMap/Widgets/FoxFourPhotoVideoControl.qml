@@ -92,7 +92,6 @@ Rectangle {
             Layout.fillWidth:  true
             Layout.preferredHeight: ScreenTools.defaultFontPixelHeight * 7
             spacing:            0
-            visible:            _camera.hasZoom
 
             QGCColoredImage {
                 Layout.alignment:       Qt.AlignHCenter
@@ -114,6 +113,7 @@ Rectangle {
                 Layout.alignment:   Qt.AlignHCenter
                 text:               qsTr("Zoom")
                 font.pointSize:     ScreenTools.smallFontPointSize
+                visible:            _camera.hasZoom
             }
 
             QGCSlider {
@@ -126,6 +126,7 @@ Rectangle {
                 value:              _camera.zoomLevel
                 live:               true
                 onMoved:            _camera.zoomLevel = value
+                visible:            _camera.hasZoom
                 // Connections{
                 //     target:
                 // }
@@ -142,6 +143,7 @@ Rectangle {
                 radius:             width * 0.5
                 border.color:       qgcPal.buttonText
                 border.width:       2
+                visible:            _camera.hasZoom
 
                 QGCColoredImage {
                     height:             parent.height * 0.8
@@ -710,7 +712,7 @@ Rectangle {
 
                         QGCCheckBox{
                             checked:    _foxFourSettings.videoToolBarOverlap.rawValue
-                            visible:    _camera.hasVideoStream
+                            // visible:    _camera.hasVideoStream
                             onClicked:  _foxFourSettings.videoToolBarOverlap.rawValue = checked ? 1 : 0
                         }
 

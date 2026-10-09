@@ -6,7 +6,9 @@ import QGroundControl.Controls
 import QGroundControl.FlyView
 
 RowLayout {
+    property alias statusGrid:  telemetryBar.factValueGrid
     TelemetryValuesBar {
+        id: telemetryBar
         Layout.alignment:       Qt.AlignBottom
         extraWidth:             instrumentPanel.extraValuesWidth
         settingsGroup:          factValueGrid.telemetryBarSettingsGroup

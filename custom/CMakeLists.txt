@@ -75,6 +75,14 @@ qgc_set_qt_resource_alias(
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusRect.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusLabel.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusColors.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSD.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDCanvas.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDLadder.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDStyle.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDCompass.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDRoll.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDHorizon.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/ValueHistory.qml
     )
 
 qt_add_qml_module(FoxFourModule
@@ -92,8 +100,17 @@ qt_add_qml_module(FoxFourModule
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusRect.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusLabel.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusColors.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSD.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDCanvas.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDLadder.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDStyle.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDCompass.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDRoll.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDHorizon.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/ValueHistory.qml
     NO_PLUGIN
     SOURCES
+
 )
 
 # ============================================================================
@@ -105,8 +122,10 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FoxFourPlugin.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoPilotPlugin/FoxFourAutoPilotPlugin.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoPilotPlugin/FoxFourAutoPilotPlugin.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourFirmwarePlugin.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourFirmwarePlugin.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourCopterFirmwarePlugin.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourCopterFirmwarePlugin.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourPlaneFirmwarePlugin.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourPlaneFirmwarePlugin.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourFirmwarePluginFactory.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourFirmwarePluginFactory.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera/FoxFourCameraControl.h
@@ -154,8 +173,6 @@ if(${QGC_ENABLE_GST_VIDEOSTREAMING})
         ${CUSTOM_SOURCES}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/FoxFourGstVideoReceiver.h
         ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/FoxFourGstVideoReceiver.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/KLVMetadata.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/KLVMetadata.cpp
         CACHE INTERNAL "adding custom gstreamer" FORCE
     )
 endif()

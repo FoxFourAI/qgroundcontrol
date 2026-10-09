@@ -96,6 +96,7 @@ CopterType::CopterType(Type type, Vehicle* vehicle, QObject* parent) : CopterSta
             break;
         case Plane:
             _missions.append(new CopterMission(CopterMission::Disable, {}, _vehicle, this));
+            _missions.append(new CopterMission(CopterMission::TerminalAttack, {}, _vehicle, this));
             break;
 
         case Bomber:

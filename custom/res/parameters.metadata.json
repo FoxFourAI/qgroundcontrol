@@ -1,9 +1,9 @@
 {
   "LOG_": {
     "LOG_COMP_BITMASK": {
-      "DisplayName": "Enables Debug mode for the VGM, which saves logs on the SD Card <br/> <br/> 0: do not save any logs; <br/> 1: textual logs of the algorithm onboard; <br/> 2: MavLink messages as well as control reference values; <br/> 4: record video from frontal camera; <br/> 8: record video from navigation camera. <br/> <br/> Parameter is configured as bitmask to allow multiple choices, [more information here](initial-setup/vgm-configuration#log_bitmask)",
+      "DisplayName": "Enables Debug mode for the VGM, which saves logs on the SD Card <br/> <br/> 0: do not save any logs; <br/> 1: textual logs of the algorithm onboard; <br/> 2: MavLink messages as well as control reference values; <br/> 4: record video from frontal camera; <br/> 8: record video from navigation camera. <br/> <br/> Parameter is configured as bitmask to allow multiple choices, [more information here](initial-setup/vgm-configuration#log_comp_bitmask)",
       "User": "F4 Computer",
-      "Description": "Enables Debug mode for the VGM, which saves logs on the SD Card <br/> <br/> 0: do not save any logs; <br/> 1: textual logs of the algorithm onboard; <br/> 2: MavLink messages as well as control reference values; <br/> 4: record video from frontal camera; <br/> 8: record video from navigation camera. <br/> <br/> Parameter is configured as bitmask to allow multiple choices, [more information here](initial-setup/vgm-configuration#log_bitmask)",
+      "Description": "Enables Debug mode for the VGM, which saves logs on the SD Card <br/> <br/> 0: do not save any logs; <br/> 1: textual logs of the algorithm onboard; <br/> 2: MavLink messages as well as control reference values; <br/> 4: record video from frontal camera; <br/> 8: record video from navigation camera. <br/> <br/> Parameter is configured as bitmask to allow multiple choices, [more information here](initial-setup/vgm-configuration#log_comp_bitmask)",
       "Bitmask": {
         "0": "Textual logs of the algorithm onboard",
         "1": "MavLink messages as well as control reference values",
@@ -93,7 +93,8 @@
     "COMP_INSTANCE": {
       "DisplayName": "Instance of onboard computer for component id in MavLink",
       "User": "F4 Computer",
-      "Description": "Instance of onboard computer for component id in MavLink"
+      "Description": "Instance of onboard computer for component id in MavLink",
+      "RebootRequired": "True"
     },
     "COMP_SYSID": {
       "DisplayName": "Sets system ID for VGM and FCU. If set to **-1**, the ID will be calculated from VGM serail number.",
@@ -217,12 +218,12 @@
       }
     },
     "MISSN_GUID_TYPE": {
-      "DisplayName": "Which mission will be triggered upon enabling offboard mode. This parameter changes its value depending on the **GUID_FRAME_TYPE** value. This parameter changes its value depending on the **GUID_FRAME_TYPE** value <br/> <br/> -1: Control disabled <br/> <br/> <br/> GUID_FRAME_TYPE=0 (Copter kamikaze): <br/> 0: hover <br/> 1: terminal attack <br/> 2: tuning <br /> 3: cruise (keep current heading and fly forward with `MISSN_CRUISE_VEL` velocity) <br/> <br/> GUID_FRAME_TYPE=1 (Plane kamikaze): <br/> Not supported in the current version <br/> <br/> GUID_FRAME_TYPE=2 (Copter bomber): <br/> 0: hover <br/> 1: bombing (experimental) <br/> 2: tuning <br/> 3: cruise <br/> 4: supply delivery",
+      "DisplayName": "Which mission will be triggered upon enabling offboard mode. This parameter changes its value depending on the **GUID_FRAME_TYPE** value. This parameter changes its value depending on the **GUID_FRAME_TYPE** value <br/> <br/> -1: Control disabled <br/> <br/> <br/> GUID_FRAME_TYPE=0 (Copter kamikaze): <br/> 0: hover <br/> 1: terminal attack <br/> 2: tuning <br /> 3: cruise (keep current heading and fly forward with `MISSN_CRUISE_VEL` velocity) <br/> 4: Terminal bombing <br/> <br/> GUID_FRAME_TYPE=1 (Plane kamikaze): <br/> Not supported in the current version <br/> <br/> GUID_FRAME_TYPE=2 (Copter bomber): <br/> 0: hover <br/> 1: bombing (experimental) <br/> 2: tuning <br/> 3: cruise <br/> 4: supply delivery <br/> 5: VIO init",
       "User": "F4 Computer",
-      "Description": "Which mission will be triggered upon enabling offboard mode. This parameter changes its value depending on the **GUID_FRAME_TYPE** value. This parameter changes its value depending on the **GUID_FRAME_TYPE** value <br/> <br/> -1: Control disabled <br/> <br/> <br/> GUID_FRAME_TYPE=0 (Copter kamikaze): <br/> 0: hover <br/> 1: terminal attack <br/> 2: tuning <br /> 3: cruise (keep current heading and fly forward with `MISSN_CRUISE_VEL` velocity) <br/> <br/> GUID_FRAME_TYPE=1 (Plane kamikaze): <br/> Not supported in the current version <br/> <br/> GUID_FRAME_TYPE=2 (Copter bomber): <br/> 0: hover <br/> 1: bombing (experimental) <br/> 2: tuning <br/> 3: cruise <br/> 4: supply delivery",
+      "Description": "Which mission will be triggered upon enabling offboard mode. This parameter changes its value depending on the **GUID_FRAME_TYPE** value. This parameter changes its value depending on the **GUID_FRAME_TYPE** value <br/> <br/> -1: Control disabled <br/> <br/> <br/> GUID_FRAME_TYPE=0 (Copter kamikaze): <br/> 0: hover <br/> 1: terminal attack <br/> 2: tuning <br /> 3: cruise (keep current heading and fly forward with `MISSN_CRUISE_VEL` velocity) <br/> 4: Terminal bombing <br/> <br/> GUID_FRAME_TYPE=1 (Plane kamikaze): <br/> Not supported in the current version <br/> <br/> GUID_FRAME_TYPE=2 (Copter bomber): <br/> 0: hover <br/> 1: bombing (experimental) <br/> 2: tuning <br/> 3: cruise <br/> 4: supply delivery <br/> 5: VIO init",
       "Range": {
-        "low": "0",
-        "high": "4"
+	"low": "0",
+	"high": "5"
       }
     },
     "MISSN_TERM_VEL": {
@@ -256,9 +257,9 @@
       }
     },
     "MISSN_AUTONOMY": {
-      "DisplayName": "VGM autonomy level.<br/>0: manual<br/>1: AutoDesignation <br/>2: RcToggle <br/>[More information here](./inflight-vgm-interaction-kamikaze#switching-between-operation-modes)",
+      "DisplayName": "VGM autonomy level.<br/>0: manual<br/>1: AutoDesignation <br/>2: RcToggle <br/>[More information here](./inflight-vgm-interaction/copter-kamikaze#switching-between-operation-modes)",
       "User": "F4 Computer",
-      "Description": "VGM autonomy level.<br/>0: manual<br/>1: AutoDesignation <br/>2: RcToggle <br/>[More information here](./inflight-vgm-interaction-kamikaze#switching-between-operation-modes)",
+      "Description": "VGM autonomy level.<br/>0: manual<br/>1: AutoDesignation <br/>2: RcToggle <br/>[More information here](./inflight-vgm-interaction/copter-kamikaze#switching-between-operation-modes)",
       "Values": {
         "0": "Manual",
         "1": "AutoDesignation",
@@ -266,9 +267,9 @@
       }
     },
     "MISSN_MODE_CH": {
-      "DisplayName": "Channel number for changing the VGM mode: Navigation, Assistant, Hunt. [More information here](./inflight-vgm-interaction-kamikaze#operation-modes) OR Detector/Tracker model (depends on `MISSN_AUTONOMY`)",
+      "DisplayName": "Channel number for changing the VGM mode: Navigation, Assistant, Hunt. [More information here](./inflight-vgm-interaction/copter-kamikaze#operation-modes) OR Detector/Tracker model (depends on `MISSN_AUTONOMY`)",
       "User": "F4 Computer",
-      "Description": "Channel number for changing the VGM mode: Navigation, Assistant, Hunt. [More information here](./inflight-vgm-interaction-kamikaze#operation-modes) OR Detector/Tracker model (depends on `MISSN_AUTONOMY`)",
+      "Description": "Channel number for changing the VGM mode: Navigation, Assistant, Hunt. [More information here](./inflight-vgm-interaction/copter-kamikaze#operation-modes) OR Detector/Tracker model (depends on `MISSN_AUTONOMY`)",
       "Range": {
         "low": "-1",
         "high": "16"
@@ -423,7 +424,7 @@
       "Units": "kg",
       "Range": {
         "low": "-1",
-        "high": "10"
+        "high": "100"
       }
     },
     "GUID_GAIN_MASS": {
@@ -711,7 +712,7 @@
       "Description": "Terminal guidance vertical velocity integral gain based on pitch error",
       "Range": {
         "low": "0",
-        "high": "100"
+        "high": "10"
       }
     },
     "GUID_K_VX_PTCH": {
@@ -831,15 +832,6 @@
         "high": "100.0"
       }
     },
-    "GUID_POS_DF": {
-      "DisplayName": "N/A",
-      "User": "F4 Computer",
-      "Description": "N/A",
-      "Range": {
-        "low": "0.0",
-        "high": "10.0"
-      }
-    },
     "GUID_POSZ_P": {
       "DisplayName": "N/A",
       "User": "F4 Computer",
@@ -879,7 +871,7 @@
       }
     },
     "GUID_THR_MAX": {
-      "DisplayName": "",
+      "DisplayName": "N/A",
       "User": "F4 Computer",
       "Range": {
         "low": "0",
@@ -887,7 +879,7 @@
       }
     },
     "GUID_PTCH_TRM": {
-      "DisplayName": "",
+      "DisplayName": "N/A",
       "User": "F4 Computer",
       "Range": {
         "low": "0",
@@ -895,7 +887,7 @@
       }
     },
     "GUID_PTCH_FF": {
-      "DisplayName": "",
+      "DisplayName": "N/A",
       "User": "F4 Computer",
       "Range": {
         "low": "0",
@@ -903,7 +895,7 @@
       }
     },
     "GUID_PTCH_P": {
-      "DisplayName": "",
+      "DisplayName": "N/A",
       "User": "F4 Computer",
       "Range": {
         "low": "0",
@@ -911,7 +903,7 @@
       }
     },
     "GUID_PTCH_I": {
-      "DisplayName": "",
+      "DisplayName": "N/A",
       "User": "F4 Computer",
       "Range": {
         "low": "0",
@@ -919,23 +911,7 @@
       }
     },
     "GUID_PTCH_IMX": {
-      "DisplayName": "",
-      "User": "F4 Computer",
-      "Range": {
-        "low": "0",
-        "high": "1"
-      }
-    },
-    "GUID_PTCH_D": {
-      "DisplayName": "",
-      "User": "F4 Computer",
-      "Range": {
-        "low": "0",
-        "high": "5"
-      }
-    },
-    "GUID_PTCH_DF": {
-      "DisplayName": "",
+      "DisplayName": "N/A",
       "User": "F4 Computer",
       "Range": {
         "low": "0",
@@ -943,7 +919,7 @@
       }
     },
     "GUID_PTCH_MAX": {
-      "DisplayName": "",
+      "DisplayName": "N/A",
       "User": "F4 Computer",
       "Range": {
         "low": "0",
@@ -951,7 +927,7 @@
       }
     },
     "GUID_THR_INIT": {
-      "DisplayName": "",
+      "DisplayName": "N/A",
       "User": "F4 Computer",
       "Range": {
         "low": "0",
@@ -959,15 +935,15 @@
       }
     },
     "GUID_THR_P": {
-      "DisplayName": "",
+      "DisplayName": "N/A",
       "User": "F4 Computer",
       "Range": {
         "low": "0",
-        "high": "01"
+        "high": "0.01"
       }
     },
     "GUID_THR_I": {
-      "DisplayName": "",
+      "DisplayName": "N/A",
       "User": "F4 Computer",
       "Range": {
         "low": "0",
@@ -975,7 +951,7 @@
       }
     },
     "GUID_RLL_MAX": {
-      "DisplayName": "",
+      "DisplayName": "N/A",
       "User": "F4 Computer",
       "Range": {
         "low": "0",
@@ -985,9 +961,9 @@
   },
   "CAM_": {
     "CAM_FPS": {
-      "DisplayName": "Framerate of the video",
+      "DisplayName": "Framerate of the frontal camera video",
       "User": "F4 Computer",
-      "Description": "Framerate of the video",
+      "Description": "Framerate of the frontal camera video",
       "Units": "fps",
       "Range": {
         "low": "5",
@@ -995,13 +971,14 @@
       },
       "RebootRequired": "True"
     },
-    "CAM_UDP_PORT": {
-      "DisplayName": "UPD Port to listen for video input",
+    "CAM_FPS_NAV": {
+      "DisplayName": "Framerate of the frontal camera video in `Navigation` VGM operation mode",
       "User": "F4 Computer",
-      "Description": "UPD Port to listen for video input",
+      "Description": "Framerate of the frontal camera video in `Navigation` VGM operation mode",
+      "Units": "fps",
       "Range": {
-        "low": "1000",
-        "high": "10000"
+        "low": "5",
+        "high": "30"
       },
       "RebootRequired": "True"
     },
@@ -1026,13 +1003,13 @@
   },
   "VID_": {
     "VID_OUT_TYPE": {
-      "DisplayName": "Video output format for the targeting camera stream. <br/> 1: RTP Output Stream <br/> 2: MPEG-TS Output Stream <br/> 3: Raspberry Pi analog converter. <br/> **NOTE: analog converter has limited support in the current version. Contact info@foxfour.ai for more information.**",
+      "DisplayName": "Video output format for the targeting camera stream. <br/> 1: RTP Output Stream <br/> 2: MPEG-TS Output Stream <br/> 3: Raspberry Pi analog converter <br/> **NOTE: analog converter has limited support in the current version. Contact info@foxfour.ai for more information.**",
       "User": "F4 Computer",
-      "Description": "Video output format for the targeting camera stream. <br/> 1: RTP Output Stream <br/> 2: MPEG-TS Output Stream <br/> 3: Raspberry Pi analog converter. <br/> **NOTE: analog converter has limited support in the current version. Contact info@foxfour.ai for more information.**",
+      "Description": "Video output format for the targeting camera stream. <br/> 1: RTP Output Stream <br/> 2: MPEG-TS Output Stream <br/> 3: Raspberry Pi analog converter <br/> **NOTE: analog converter has limited support in the current version. Contact info@foxfour.ai for more information.**",
       "Values": {
         "1": "RTP Output Stream",
         "2": "MPEG-TS Output Stream",
-        "3": "Raspberry Pi analog converter."
+        "3": "Raspberry Pi analog converter"
       },
       "RebootRequired": "True"
     },
@@ -1346,16 +1323,6 @@
       },
       "RebootRequired": "True"
     },
-    "VIO_CAM_FLIP": {
-      "DisplayName": "Should be 1 if the VIO camera is physically mounted upside down",
-      "User": "F4 Computer",
-      "Description": "Should be 1 if the VIO camera is physically mounted upside down",
-      "Range": {
-        "low": "0",
-        "high": "1"
-      },
-      "RebootRequired": "True"
-    },
     "VIO_TRG_CH": {
       "DisplayName": "Channel number for triggering VIO",
       "User": "F4 Computer",
@@ -1376,12 +1343,12 @@
       }
     },
     "VIO_AUTO_EKF": {
-      "DisplayName": "Enables automatic switching between EKF SRC1 and SRC2 in ArduPilot. When set to 0, VIO will publish",
+      "DisplayName": "Enables automatic switching between EKF source sets or lanes depending on configuration",
       "User": "F4 Computer",
-      "Description": "Enables automatic switching between EKF SRC1 and SRC2 in ArduPilot. When set to 0, VIO will publish",
+      "Description": "Enables automatic switching between EKF source sets or lanes depending on configuration",
       "Range": {
         "low": "0",
-        "high": "1"
+        "high": "2"
       }
     },
     "VIO_GPS_PRD": {
@@ -1499,6 +1466,24 @@
       },
       "RebootRequired": "True"
     },
+    "VIO_POS_SRC": {
+      "DisplayName": "VIO initialization horizontal position source selection <br/> 0 - ArduPilot EKF <br/> 1 - Raw GPS <br/> 2 - Sine Navigation System (SNS)",
+      "User": "F4 Computer",
+      "Description": "VIO initialization horizontal position source selection <br/> 0 - ArduPilot EKF <br/> 1 - Raw GPS <br/> 2 - Sine Navigation System (SNS)",
+      "Range": {
+        "low": "0",
+        "high": "2"
+      }
+    },
+    "VIO_ALT_SRC": {
+      "DisplayName": "VIO vertical position source selection <br/> 0 - Raw barometric pressure <br/> 1 - ArduPilot EKF altitude estimate",
+      "User": "F4 Computer",
+      "Description": "VIO vertical position source selection <br/> 0 - Raw barometric pressure <br/> 1 - ArduPilot EKF altitude estimate",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      }
+    },
     "VIO_USE_DSP": {
       "DisplayName": "Enable DSP features in VIO (experimental)",
       "User": "F4 Computer",
@@ -1509,16 +1494,76 @@
       },
       "RebootRequired": "True"
     },
-    "VIO_USE_VPS": {
-      "DisplayName": "Enables the Visual Positioning System (VPS). <br/> <br/> 0: disabled; <br/> 1: enabled with BEV navigation output; <br/> 2: enabled with VPS visualization output. <br/> <br/> A reboot is required before the VPS parameter group is shown. [More information here](initial-setup/vps)",
+    "VIO_USE_DEM": {
+      "DisplayName": "Enable the usage of Digital Elevation Maps (DEM) for one-point VIO init",
       "User": "F4 Computer",
-      "Description": "Enables the Visual Positioning System (VPS). <br/> <br/> 0: disabled; <br/> 1: enabled with BEV navigation output; <br/> 2: enabled with VPS visualization output. <br/> <br/> A reboot is required before the VPS parameter group is shown. [More information here](initial-setup/vps)",
+      "Description": "Enable the usage of Digital Elevation Maps (DEM) for one-point VIO init",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      },
+      "RebootRequired": "True"
+    },
+    "VIO_USE_VPS": {
+      "DisplayName": "Enable the Visual Positioning System (VPS). <br/> <br/> 0: disabled; <br/> 1: enabled with BEV navigation output; <br/> 2: enabled with VPS visualization output. <br/> <br/> A reboot is required before the VPS parameter group is shown. [More information here](initial-setup/vps)",
+      "User": "F4 Computer",
+      "Description": "Enable the Visual Positioning System (VPS). <br/> <br/> 0: disabled; <br/> 1: enabled with BEV navigation output; <br/> 2: enabled with VPS visualization output. <br/> <br/> A reboot is required before the VPS parameter group is shown. [More information here](initial-setup/vps)",
       "Values": {
         "0": "Disabled",
         "1": "Enabled with BEV navigation output",
         "2": "Enabled with VPS visualization output."
       },
       "RebootRequired": "True"
+    },
+    "VIO_FED_VEL_MAV": {
+      "DisplayName": "Whether to output `VISION_SPEED_ESTIMATE` MavLink message to the FCU along with the `VISION_POSITION_ESTIMATE`",
+      "User": "F4 Computer",
+      "Description": "Whether to output `VISION_SPEED_ESTIMATE` MavLink message to the FCU along with the `VISION_POSITION_ESTIMATE`",
+      "Range": {
+        "low": "0",
+        "high": "1"
+      },
+      "RebootRequired": "True"
+    },
+    "VIO_VALIDATE_PRD": {
+      "DisplayName": "Period for which VIO stays in the `Validating` state",
+      "User": "F4 Computer",
+      "Description": "Period for which VIO stays in the `Validating` state",
+      "Units": "s",
+      "Range": {
+        "low": "-1",
+        "high": "3600"
+      }
+    },
+    "VIO_VAL_MAX_VEL": {
+      "DisplayName": "Maximum velocity estimated by VIO which is considered sane during validation",
+      "User": "F4 Computer",
+      "Description": "Maximum velocity estimated by VIO which is considered sane during validation",
+      "Units": "m/s",
+      "Range": {
+        "low": "-1",
+        "high": "100"
+      }
+    },
+    "VIO_VAL_MAX_ANG": {
+      "DisplayName": "Maximum orientation error between VIO estimate and the secondary estimator that is considered sane during validation",
+      "User": "F4 Computer",
+      "Description": "Maximum orientation error between VIO estimate and the secondary estimator that is considered sane during validation",
+      "Units": "deg",
+      "Range": {
+        "low": "-1",
+        "high": "360"
+      }
+    },
+    "VIO_VAL_MAX_RATE": {
+      "DisplayName": "Maximum angular velocity estimated by VIO which is considered sane during validation",
+      "User": "F4 Computer",
+      "Description": "Maximum angular velocity estimated by VIO which is considered sane during validation",
+      "Units": "deg/s",
+      "Range": {
+        "low": "-1",
+        "high": "360"
+      }
     }
   },
   "VPS_": {

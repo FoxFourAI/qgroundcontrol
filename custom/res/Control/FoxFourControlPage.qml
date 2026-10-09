@@ -13,6 +13,7 @@ Item {
     property real _spacing: ScreenTools.defaultFontPixelWidth / 2
     property var _settingsManager: QGroundControl.settingsManager
     property var _settings: _settingsManager.foxFourSettings
+    property var _autoPilot: globals.activeVehicle.autopilotPlugin
 
     Image {
         id: foxFourLogo
@@ -123,6 +124,76 @@ Item {
                         text: parent.fact.shortDescription
                     }
                 }
+
+                SettingsGroupLayout {
+                    id: hudGroup
+                    property bool showFull: control._settings.hudVisible.value
+                    heading: qsTr("HUD")
+                    FactCheckBoxSlider{
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.hudVisible
+                    }
+                    LabelledFactTextField {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        label: fact.label
+                        fact: control._settings.hudColor
+                    }
+                    RowLayout{
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        QGCLabel{
+                            Layout.fillWidth: true
+                            text: "Opacity"
+                        }
+                        QGCSlider{
+                            Layout.fillWidth: true
+                            from:0
+                            to:1
+                            stepSize: 0.1
+                            Component.onCompleted: value = _settings.hudOpacity.value
+                            onValueChanged: _settings.hudOpacity.value = value
+                        }
+                    }
+
+                    FactCheckBoxSlider {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.hudShadow
+                    }
+                    FactCheckBoxSlider {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.hudCompass
+                    }
+                    FactCheckBoxSlider {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.hudRoll
+                    }
+                    FactCheckBoxSlider {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.hudSpeed
+                    }
+                    FactCheckBoxSlider {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.hudAltitude
+                    }
+                    FactCheckBoxSlider {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.hudHorizon
+                    }
+                }
             }
 
             SettingsGroupLayout {
@@ -146,6 +217,22 @@ Item {
                     fact: control._settings.mapMatchingPointsCnt
                     textField.numericValuesOnly: true
                 }
+
+
+                SettingsGroupLayout {
+                    heading: qsTr("Detections")
+                    FactCheckBoxSlider {
+                        Layout.fillWidth: true
+                        text: fact.label
+                        fact: control._settings.showDetections
+                    }
+                    QGCButton {
+                        Layout.fillWidth: true
+                        text: qsTr("Clear")
+                        onClicked: _autoPilot.dialectHandler.clearDetections()
+                    }
+                }
+
             }
 
             SettingsGroupLayout {
