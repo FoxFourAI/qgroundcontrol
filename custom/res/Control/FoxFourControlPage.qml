@@ -140,6 +140,23 @@ Item {
                         label: fact.label
                         fact: control._settings.hudColor
                     }
+                    RowLayout{
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        QGCLabel{
+                            Layout.fillWidth: true
+                            text: "Opacity"
+                        }
+                        QGCSlider{
+                            Layout.fillWidth: true
+                            from:0
+                            to:1
+                            stepSize: 0.1
+                            Component.onCompleted: value = _settings.hudOpacity.value
+                            onValueChanged: _settings.hudOpacity.value = value
+                        }
+                    }
+
                     FactCheckBoxSlider {
                         visible: hudGroup.showFull
                         Layout.fillWidth: true

@@ -221,14 +221,9 @@
       "DisplayName": "Which mission will be triggered upon enabling offboard mode. This parameter changes its value depending on the **GUID_FRAME_TYPE** value. This parameter changes its value depending on the **GUID_FRAME_TYPE** value <br/> <br/> -1: Control disabled <br/> <br/> <br/> GUID_FRAME_TYPE=0 (Copter kamikaze): <br/> 0: hover <br/> 1: terminal attack <br/> 2: tuning <br /> 3: cruise (keep current heading and fly forward with `MISSN_CRUISE_VEL` velocity) <br/> 4: Terminal bombing <br/> <br/> GUID_FRAME_TYPE=1 (Plane kamikaze): <br/> Not supported in the current version <br/> <br/> GUID_FRAME_TYPE=2 (Copter bomber): <br/> 0: hover <br/> 1: bombing (experimental) <br/> 2: tuning <br/> 3: cruise <br/> 4: supply delivery <br/> 5: VIO init",
       "User": "F4 Computer",
       "Description": "Which mission will be triggered upon enabling offboard mode. This parameter changes its value depending on the **GUID_FRAME_TYPE** value. This parameter changes its value depending on the **GUID_FRAME_TYPE** value <br/> <br/> -1: Control disabled <br/> <br/> <br/> GUID_FRAME_TYPE=0 (Copter kamikaze): <br/> 0: hover <br/> 1: terminal attack <br/> 2: tuning <br /> 3: cruise (keep current heading and fly forward with `MISSN_CRUISE_VEL` velocity) <br/> 4: Terminal bombing <br/> <br/> GUID_FRAME_TYPE=1 (Plane kamikaze): <br/> Not supported in the current version <br/> <br/> GUID_FRAME_TYPE=2 (Copter bomber): <br/> 0: hover <br/> 1: bombing (experimental) <br/> 2: tuning <br/> 3: cruise <br/> 4: supply delivery <br/> 5: VIO init",
-      "Values": {
-        "-1": "Control disabled",
-        "0": "Hover",
-        "1": "Bombing (experimental)",
-        "2": "Tuning",
-        "3": "Cruise",
-        "4": "Supply delivery",
-        "5": "VIO init"
+      "Range": {
+	"low": "0",
+	"high": "5"
       }
     },
     "MISSN_TERM_VEL": {

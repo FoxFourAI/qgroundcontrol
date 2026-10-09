@@ -13,7 +13,7 @@ Item {
         color:_settings.hudColor.value
 
     }
-
+    opacity: _settings.hudOpacity.value
     FactPanelController { id: controller
         onMissingParametersAvailable: {
             if(parameterExists(-1, "AIRSPEED_MIN")) {
