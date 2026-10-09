@@ -19,7 +19,7 @@ AutoPilotPlugin* FoxFourPlaneFirmwarePlugin::autopilotPlugin(Vehicle *vehicle) c
 
 MavlinkCameraControlInterface *FoxFourPlaneFirmwarePlugin::createCameraControl(const mavlink_camera_information_t *info, Vehicle *vehicle, int compID, QObject *parent) const
 {
-    return new FoxFourCameraControl(info,vehicle,compID,parent);
+    return new FoxFourCameraControl(info, vehicle, compID, parent);
 }
 
 const QVariantList &FoxFourPlaneFirmwarePlugin::toolIndicators(const Vehicle *vehicle)

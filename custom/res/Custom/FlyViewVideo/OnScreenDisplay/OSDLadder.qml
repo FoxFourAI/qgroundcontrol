@@ -400,6 +400,10 @@ OSDCanvas {
     }
 
     onPaint: {
+        if (!visible) {
+            return
+        }
+
         let ctx = begin()
         drawer(ctx)
     }

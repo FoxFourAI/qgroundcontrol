@@ -93,6 +93,78 @@
             "default": false,
             "label": "VGM Direct",
             "keywords":"VGM"
+        },
+        {
+            "name": "hudVisible",
+            "shortDesc": "show HUD on the video",
+            "type": "bool",
+            "default": true,
+            "label": "HUD",
+            "keywords":"HUD"
+        },
+        {
+            "name": "hudOpacity",
+            "shortDesc": "Opacity of the HUD",
+            "type": "float",
+            "default": 1,
+            "label": "Opacity",
+            "keywords":"HUD opacity"
+        },
+        {
+            "name": "hudColor",
+            "shortDesc": "Color of the HUD",
+            "type": "string",
+            "default": "#",
+            "label": "Color",
+            "keywords":"HUD color"
+        },
+        {
+            "name": "hudShadow",
+            "shortDesc": "show shadow",
+            "type": "bool",
+            "default": true,
+            "label": "Shadow",
+            "keywords":"HUD shadow"
+        },
+        {
+            "name": "hudCompass",
+            "shortDesc": "show compass",
+            "type": "bool",
+            "default": true,
+            "label": "Compass",
+            "keywords":"HUD compass"
+        },
+        {
+            "name": "hudRoll",
+            "shortDesc": "show roll indicator",
+            "type": "bool",
+            "default": true,
+            "label": "Roll",
+            "keywords":"HUD roll"
+        },
+        {
+            "name": "hudSpeed",
+            "shortDesc": "show speed ladder",
+            "type": "bool",
+            "default": true,
+            "label": "Speed",
+            "keywords":"HUD speed"
+        },
+        {
+            "name": "hudAltitude",
+            "shortDesc": "show altitude ladder",
+            "type": "bool",
+            "default": true,
+            "label": "Altitude",
+            "keywords":"HUD altitude"
+        },
+        {
+            "name": "hudHorizon",
+            "shortDesc": "show horizon",
+            "type": "bool",
+            "default": true,
+            "label": "Horizon",
+            "keywords":"HUD horizon"
         }
     ]
 }

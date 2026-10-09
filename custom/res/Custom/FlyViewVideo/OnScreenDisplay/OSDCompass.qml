@@ -48,6 +48,10 @@ OSDCanvas {
 
 
     onPaint: {
+        if(!visible) {
+            return
+        }
+
         var ctx = begin()
 
         drawCompass(ctx)

@@ -11,8 +11,8 @@ Item {
     // style
     OSDStyle {
         id: _style
+        color: _settings.hudColor.value
     }
-
     FactPanelController { id: controller
         onMissingParametersAvailable: {
             if(parameterExists(-1, "AIRSPEED_MIN")) {
@@ -37,7 +37,7 @@ Item {
     property real dummy: 0
     property real incr: 1
 
-    layer.enabled: true
+    layer.enabled: _settings.hudShadow.value
     layer.effect: MultiEffect {
         shadowEnabled: true
         shadowColor: _style.shadowColor
@@ -45,8 +45,10 @@ Item {
         shadowVerticalOffset: _style.shadowOffset
         shadowBlur: _style.shadowBlur
     }
+    opacity: _settings.hudOpacity.value
 
     OSDCompass {
+        visible:_settings.hudCompass.value
         style: _style
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
@@ -59,6 +61,7 @@ Item {
     }
 
     OSDRoll{
+        visible:_settings.hudRoll.value
         anchors.top: parent.top
         style: _style
         anchors.topMargin: _style.fontPadding
@@ -78,6 +81,7 @@ Item {
     }
 
     OSDLadder {
+        visible:_settings.hudSpeed.value
         id: spdTape
         style: _style
         anchors.verticalCenter: parent.verticalCenter
@@ -94,6 +98,7 @@ Item {
 
     OSDLadder {
         id: altTape
+        visible:_settings.hudAltitude.value
         style: _style
         mirrored: true
         anchors.verticalCenter: parent.verticalCenter
@@ -110,6 +115,7 @@ Item {
     }
 
     OSDHorizon {
+        visible:_settings.hudHorizon.value
         playerSize: Qt.size(_root.width,_root.height)
         style: _style
         anchors.left: spdTape.right

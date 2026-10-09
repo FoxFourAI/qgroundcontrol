@@ -1088,12 +1088,7 @@ void FoxFourGstVideoReceiver::_onNewSourcePad(GstPad *pad)
         qCCritical(FoxFourGstVideoReceiverLog) << "Unable to link source:" << gst_pad_link_get_name(ret);
         return;
     }
-    // GstPad *teeSink = gst_element_get_static_pad(_tee, "sink");
-    // if (gst_pad_is_linked(teeSink) || gst_pad_link(pad, teeSink) != GST_PAD_LINK_OK) {
-    //     gst_clear_object(&teeSink);
-    //     qCCritical(FoxFourGstVideoReceiverLog) << "Unable to link source";
-    //     return;
-    // }
+
     gst_clear_object(&teeSink);
 
     if (!_streaming) {

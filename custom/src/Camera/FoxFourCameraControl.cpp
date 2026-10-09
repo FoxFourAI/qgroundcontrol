@@ -145,7 +145,7 @@ void FoxFourCameraControl::_zoomResponse(void *resultHandlerData, int /*compId*/
 {
     auto camControl = reinterpret_cast<FoxFourCameraControl*>(resultHandlerData);
     qCDebug(FoxFourCameraControlLog) << "new factor is " << ack.result_param2 / 100.;
-    float newFactor = qMin(camControl->maxZoomLevel(),qMax(camControl->minZoomLevel(),ack.result_param2 / 100));
+    float newFactor = qMin(camControl->maxZoomLevel(), qMax(camControl->minZoomLevel(), ack.result_param2 / 100));
 
     camControl->_zoomLevel = newFactor;
     camControl->emit minZoomLevelChanged();
@@ -206,7 +206,7 @@ void FoxFourCameraControl::setCameraIndex(int index) {
 //-----------------------------------------------------------------------------
 void FoxFourCameraControl::handleStorageInfo(const mavlink_storage_information_t& st) {
     VehicleCameraControl::handleStorageInformation(st);
-    qCDebug(FoxFourCameraControlLog)<<"capacity changed";
+    qCDebug(FoxFourCameraControlLog) << "capacity changed";
     emit storageCapacityChanged(_storageTotal, _storageFree);
     // }
 }

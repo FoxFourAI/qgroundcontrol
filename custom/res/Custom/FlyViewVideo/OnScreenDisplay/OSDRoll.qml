@@ -12,6 +12,10 @@ OSDCanvas {
         id: pointer
         anchors.fill: parent
         onPaint: {
+            if (!visible) {
+                return
+            }
+
             let ctx = begin()
             let r = width / 2 - style.defaultFontSize - style.fontPadding * 2
             let center = Qt.vector2d(width / 2, r)
