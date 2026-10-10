@@ -46,12 +46,12 @@ runs:
           --override "${OVERRIDE}" \
           --default "${DEFAULT}"
 
-    - name: Attest Build with SBOM
-      uses: ./.github/actions/attest-sbom
-      with:
-        subject-path: ${{ steps.src.outputs.path }}
-        subject-name: ${{ inputs.subject-name || inputs.package-name }}
-        scan-path: ${{ inputs.scan-path || format('{0}/build', runner.temp) }}
+    # - name: Attest Build with SBOM
+    #   uses: ./.github/actions/attest-sbom
+    #   with:
+    #     subject-path: ${{ steps.src.outputs.path }}
+    #     subject-name: ${{ inputs.subject-name || inputs.package-name }}
+    #     scan-path: ${{ inputs.scan-path || format('{0}/build', runner.temp) }}
 
     - name: Save artifact
       uses: actions/upload-artifact@v7
