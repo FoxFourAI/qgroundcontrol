@@ -143,7 +143,7 @@ void FoxFourPlugin::cleanup() {
         plugin->cleanup();
     }
 
-
+    // TODO: figure out, why removing interceptor crashes the QGC
     // if (_qmlEngine) {
     //     _qmlEngine->removeUrlInterceptor(reinterpret_cast<QQmlAbstractUrlInterceptor*>(_selector));
     // }
