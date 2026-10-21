@@ -3,7 +3,7 @@ import QtQuick.Layouts
 
 import QGroundControl
 import QGroundControl.Controls
-
+import FoxFour.Widgets 1.0
 RowLayout {
     id:         control
     spacing:    ScreenTools.defaultFontPixelWidth
@@ -246,6 +246,7 @@ RowLayout {
             }
 
             SettingsGroupLayout {
+
                 id:                             f4CompStatusGroup
                 heading: qsTr("F4 Computer status")
                 property var app:               _activeVehicle.autopilotPlugin
@@ -260,13 +261,12 @@ RowLayout {
                         implicitHeight: ScreenTools.defaultFontPixelHeight * 1.2
                         visible: info.totalUsage !== undefined
                         radius: ScreenTools.defaultBorderRadius
-                        Rectangle {
+                        StatusRect {
                             anchors.top: parent.top
                             anchors.bottom: parent.bottom
                             anchors.left: parent.left
                             width: parent.width * parent.info.totalUsage / 100
-                            color: qgcPal.buttonHighlight
-                            radius: ScreenTools.defaultBorderRadius
+                            statusIndex: 0
                         }
                         QGCLabel{
                             text: qsTr("CPU " + parent.info.totalUsage + "%")
@@ -280,13 +280,12 @@ RowLayout {
                         implicitHeight: ScreenTools.defaultFontPixelHeight * 1.2
                         visible: info.total !== undefined
                         radius: ScreenTools.defaultBorderRadius
-                        Rectangle {
+                        StatusRect {
                             anchors.top: parent.top
                             anchors.bottom: parent.bottom
                             anchors.left: parent.left
                             width: parent.width * parent.info.usage / parent.info.total
-                            color: qgcPal.buttonHighlight
-                            radius: ScreenTools.defaultBorderRadius
+                            statusIndex: 0
                         }
                         QGCLabel{
                             text: qsTr("RAM " + parent.info.usage.toFixed(2) + " / " + parent.info.total.toFixed(2) + "GB")
@@ -297,12 +296,52 @@ RowLayout {
                 }
                 Repeater {
                     model: f4CompStatusGroup.computerStatus.storageInfo
-                    delegate: LabelledLabel {
-                        property var storage: modelData
-                        visible: storage.type !== "SSD"
-                        label: storage.type
-                        labelText:qsTr(storage.usage.toFixed(2) + "/"+ storage.total.toFixed(2) + " GB")
+                    delegate: Rectangle {
                         Layout.fillWidth: true
+                        property var storageData: modelData
+                        implicitHeight: ScreenTools.defaultFontPixelHeight * 1.2
+                        visible: storageData.type !== "SSD"
+                        radius: ScreenTools.defaultBorderRadius
+                        StatusRect {
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.left: parent.left
+                            width: parent.width * parent.storageData.usage / parent.storageData.total
+                            statusIndex: {
+                                const available = parent.storageData.total - parent.storageData.usage
+                                let status = 1
+                                if (available <= 6) {
+                                    status ++
+                                }
+                                if (available <= 2) {
+                                    status ++
+                                }
+                                return status
+                            }
+                        }
+
+                        // Rectangle {
+                        //     anchors.top: parent.top
+                        //     anchors.bottom: parent.bottom
+                        //     anchors.left: parent.left
+                        //     width: parent.width * parent.storageData.usage / parent.storageData.total
+                        //     color: {
+                        //         const available = parent.storageData.total - parent.storageData.usage
+                        //         if (available <= 2) {
+                        //             return qgcPal.alertText
+                        //         } ///else if (available <= 6) {
+                        //             return qgcPal.buttonHighlight
+                        //         // }
+                        //         return qgcPal.colorGreen
+                        //     }
+
+                        //     radius: ScreenTools.defaultBorderRadius
+                        // }
+                        QGCLabel{
+                            text: qsTr(parent.storageData.type + ": " + parent.storageData.usage.toFixed(2) + " / " + parent.storageData.total.toFixed(2) + "GB")
+                            font.bold: true
+                            anchors.centerIn: parent
+                        }
                     }
                 }
                 QGCDelayButton {
@@ -329,7 +368,10 @@ RowLayout {
             SettingsGroupLayout {
                 //Layout.fillWidth:   true
                 heading:            qsTr("Vehicle Messages")
-
+                QGCLabel {
+                    text: qsTr("No new vehicle messages")
+                    visible: _activeVehicle.messageCount === 0
+                }
                 Item{
                     Layout.preferredWidth:      ScreenTools.defaultFontPixelWidth * 50
                     height:                     ScreenTools.defaultFontPixelHeight * 20
@@ -366,11 +408,6 @@ RowLayout {
                             }
                         }
                     }
-                }
-
-                QGCLabel {
-                    text: qsTr("No new vehicle messages")
-                    visible: vehicleMessageList.noMessages
                 }
             }
 

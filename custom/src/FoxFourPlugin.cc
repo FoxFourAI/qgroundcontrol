@@ -143,10 +143,6 @@ void FoxFourPlugin::cleanup() {
         plugin->cleanup();
     }
 
-    if (_qmlEngine) {
-        _qmlEngine->removeUrlInterceptor(_selector);
-    }
-
     delete _selector;
 }
 

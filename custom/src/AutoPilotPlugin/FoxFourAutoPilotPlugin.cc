@@ -37,7 +37,6 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent
     _dialectHandler = new VGMDialect(vehicle, this, this);
     _dialectHandler->setupTriggerSignals();
     emit childsCreated();
-    emit mapMatchingCreated();
     auto cameraMgr = vehicle->cameraManager();
     connect(_vehicle->parameterManager(), &ParameterManager::factAdded, this, &FoxFourAutoPilotPlugin::handleFactAdded);
     connect(cameraMgr, &QGCCameraManager::currentCameraChanged, this, [this, cameraMgr]() {
