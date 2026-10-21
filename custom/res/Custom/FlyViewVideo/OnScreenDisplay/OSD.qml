@@ -91,9 +91,15 @@ Item {
         anchors.left: parent.left
         anchors.leftMargin: parent.width / 10
         value: activeGroup.airSpeed.value
-        targetValue: activeGroup.airSpeedSetpoint.value
         height: parent.height * 0.66
         from: 0
+
+        Connections{
+            target: activeGroup.airSpeedSetpoint
+            onValueChanged: {
+                spdTape.targetValue = activeGroup.airSpeed.value + (activeGroup.airSpeed.value - activeGroup.airSpeedSetpoint.value) / 100 //ardupilot joke. see pr #7933
+            }
+        }
 
         header: qsTr("AS")
         footer: qsTr("GS %1").arg(activeGroup.groundSpeed.value.toFixed(0))
@@ -112,7 +118,14 @@ Item {
         tickSpacing: height / 10
         height: parent.height * 0.66
         value: activeGroup.altitudeAMSL.value
-        targetValue: activeGroup.altitudeTuningSetpoint.value
+
+        Connections{
+            target: activeGroup.altitudeTuningSetpoint
+            onValueChanged: {
+                altTape.targetValue = activeGroup.altitudeAMSL.value + (activeGroup.altitudeAMSL.value - activeGroup.altitudeTuningSetpoint.value)
+            }
+        }
+
         header: qsTr("ASL")
         footer: qsTr("AGL %1").arg(activeGroup.altitudeRelative.value.toFixed(1))
     }
@@ -122,6 +135,7 @@ Item {
         visible:_settings.hudHorizon.value
         playerSize: Qt.size(_root.width,_root.height)
         style: _style
+        anchors.verticalCenter: parent.verticalCenter
         anchors.left: spdTape.right
         anchors.right: altTape.left
         anchors.bottom: parent.bottom
