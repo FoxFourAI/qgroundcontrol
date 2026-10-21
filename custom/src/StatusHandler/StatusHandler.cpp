@@ -1,7 +1,7 @@
 #include "StatusHandler.h"
 
 #include "Vehicle.h"
-
+#include "FoxFourAutoPilotPlugin.h"
 StatusHandler::StatusHandler(Vehicle* vehicle, QObject* parent) : QObject(parent), _vehicle(vehicle)
 {
     connect(_vehicle, &Vehicle::mavlinkMessageReceived, this, &StatusHandler::handleMavlinkMessage);
@@ -9,7 +9,8 @@ StatusHandler::StatusHandler(Vehicle* vehicle, QObject* parent) : QObject(parent
 
 void StatusHandler::handleMavlinkMessage(const mavlink_message_t& msg)
 {
-    if (msg.msgid != MAVLINK_MSG_ID_ONBOARD_COMPUTER_STATUS) {
+    int currentCompId = reinterpret_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager()->currentComputerComponent();
+    if (msg.msgid != MAVLINK_MSG_ID_ONBOARD_COMPUTER_STATUS || msg.compid != currentCompId) {
         return;
     }
     mavlink_onboard_computer_status_t decoded;
