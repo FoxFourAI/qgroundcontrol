@@ -17,7 +17,8 @@ Item{
     property real _baseHorFov: (_videoManager && _videoManager.hfov > 5 ? _videoManager.hfov : 103)
     property real _halfHorFov: (_baseHorFov / 2) * Math.PI / 180
     property real _fHorDisp: (playerSize.width / 2) / Math.tan(_halfHorFov)
-    property real _fVertDisp: _fHorDisp * (playerSize.height / playerSize.width)
+    property real _aspect: playerSize.height / playerSize.width
+    property real _fVertDisp: _fHorDisp * _aspect
 
     clip:true
     OSDLadder {
