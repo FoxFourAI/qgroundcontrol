@@ -97,7 +97,7 @@ Item {
         Connections{
             target: activeGroup.airSpeedSetpoint
             onValueChanged: {
-                spdTape.targetValue = activeGroup.airSpeed.value + (activeGroup.airSpeed.value - activeGroup.airSpeedSetpoint.value) / 100 //ardupilot joke. see pr #7933
+                spdTape.targetValue = activeGroup.airSpeed.value + (activeGroup.airSpeed.value - activeGroup.airSpeedSetpoint.value) / 100 //ardupilot joke. see https://github.com/ArduPilot/ardupilot/pull/7933
             }
         }
 
