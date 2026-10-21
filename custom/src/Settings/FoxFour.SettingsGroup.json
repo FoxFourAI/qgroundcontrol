@@ -116,7 +116,7 @@
             "name": "hudColor",
             "shortDesc": "Color of the HUD",
             "type": "string",
-            "default": "#00FF00FF",
+            "default": "#00FF00",
             "label": "Color",
             "keywords":"HUD color"
         },
