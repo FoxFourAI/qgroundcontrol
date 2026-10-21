@@ -7,7 +7,7 @@ import QtQuick.Layouts
 
 import QGroundControl
 import QGroundControl.Controls
-import QGroundControl.FlightMap
+import QGroundControl.FlyView
 import QGroundControl.Logging
 
 /// This provides the smarts behind the guided mode commands, minus the user interface. This way you can change UI
@@ -152,7 +152,7 @@ Item {
     // Note: The '_visualItemsCount - 2' is a hack to not trigger resume mission when a mission ends with an RTL item
     property bool showResumeMission:    _activeVehicle && !_vehicleArmed && _vehicleWasFlying && _missionAvailable && _resumeMissionIndex > 0 && (_resumeMissionIndex < _visualItemsCount - 2)
 
-    property bool guidedUIVisible:          confirmDialog ? confirmDialog.visible : false
+    property bool guidedUIVisible:          confirmDialog.visible
 
     property var    _corePlugin:            QGroundControl.corePlugin
     property var    _corePluginOptions:     QGroundControl.corePlugin.options
@@ -632,7 +632,7 @@ Item {
             if (!_activeVehicle.guidedModeGotoLocation(
                 actionData,
                 _vehicleInFwdFlight /* forwardFlightLoiterRadius */
-                    ? _flyViewSettings.forwardFlightGoToLocationLoiterRad.value
+                    ? _flyViewSettings.forwardFlightGoToLocationLoiterRad.rawValue
                     : 0
             )) {
                 return false

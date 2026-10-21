@@ -278,9 +278,10 @@ int Fact::enumIndex()
                 }
                 index++;
             }
-            // Current value is not in list, add it manually
+            // Current value is not in list, add it manually. Defer the signal since this can
+            // be called from within a QML binding read and a synchronous emit causes binding loops.
             _metaData->addEnumInfo(tr("Unknown: %1").arg(rawValue().toString()), rawValue());
-            emit enumsChanged();
+            QMetaObject::invokeMethod(this, &Fact::enumsChanged, Qt::QueuedConnection);
             return index;
         }
     } else {
@@ -533,7 +534,14 @@ QString Fact::shortDescription() const
 QString Fact::label() const
 {
     if (_metaData) {
-        return _metaData->label();
+        // Fall back for older metadata which is missing a label
+        if (!_metaData->label().isEmpty()) {
+            return _metaData->label();
+        }
+        if (!_metaData->shortDescription().isEmpty()) {
+            return _metaData->shortDescription();
+        }
+        return name();
     } else {
         qCWarning(FactLog) << kMissingMetadata << name();
         return QString();
@@ -926,12 +934,12 @@ FactValueSliderListModel *Fact::valueSliderModel()
 void Fact::_checkForRebootMessaging()
 {
     if (qgcApp()) {
-        if (!QGC::runningUnitTests()) {
-            if (vehicleRebootRequired()) {
-                QGC::showRebootAppMessage(tr("Reboot vehicle for changes to take effect."));
-            } else if (qgcRebootRequired()) {
-                QGC::showRebootAppMessage(tr("Restart application for changes to take effect."));
-            }
+        // showAppMessage() logs during unit tests (and additionally shows the real
+        // dialog in UI test mode), so tests assert this messaging via expectAppMessage()
+        if (vehicleRebootRequired()) {
+            QGC::showRebootVehicleMessage(tr("Reboot vehicle for changes to take effect."));
+        } else if (qgcRebootRequired()) {
+            QGC::showRebootAppMessage(tr("Restart application for changes to take effect."));
         }
     }
 }

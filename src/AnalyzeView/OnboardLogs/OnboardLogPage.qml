@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt.labs.qmlmodels
 
 import QGroundControl
 import QGroundControl.Controls
@@ -10,6 +9,22 @@ AnalyzePage {
     id: onboardLogPage
     pageComponent: pageComponent
     pageDescription: qsTr("Onboard Logs allows you to download binary log files from your vehicle. Click Refresh to get list of available logs.")
+
+    function _updateNavigationBlocked() {
+        if (OnboardLogController.downloadingLogs) {
+            globals.navigationBlockedReason = qsTr("Wait for the log download to complete or cancel it first")
+        } else {
+            globals.navigationBlockedReason = ""
+        }
+    }
+
+    Connections {
+        target: OnboardLogController
+        function onDownloadingLogsChanged() { onboardLogPage._updateNavigationBlocked() }
+    }
+
+    Component.onCompleted: _updateNavigationBlocked()
+    Component.onDestruction: globals.navigationBlockedReason = ""
 
     Component {
         id: pageComponent
@@ -40,6 +55,8 @@ AnalyzePage {
                         model: OnboardLogController.model
 
                         QGCCheckBox {
+                            objectName: "onboardLogCheckbox_" + index
+
                             Binding on checkState {
                                 value: object.selected ? Qt.Checked : Qt.Unchecked
                             }
@@ -62,12 +79,16 @@ AnalyzePage {
                         model: OnboardLogController.model
 
                         QGCLabel {
+                            objectName: "onboardLogDate_" + index
+
                             text: {
                                 if (!object.received) {
                                     return ""
                                 }
 
-                                if (object.time.getUTCFullYear() < 2010) {
+                                // getUTCFullYear() is NaN for an invalid date
+                                const year = object.time.getUTCFullYear()
+                                if (Number.isNaN(year) || year < 2010) {
                                     return qsTr("Date Unknown")
                                 }
 
@@ -89,7 +110,10 @@ AnalyzePage {
                     Repeater {
                         model: OnboardLogController.model
 
-                        QGCLabel { text: object.status }
+                        QGCLabel {
+                            objectName: "onboardLogStatus_" + index
+                            text: object.status
+                        }
                     }
                 }
             }
@@ -100,6 +124,7 @@ AnalyzePage {
                 Layout.fillWidth: false
 
                 QGCButton {
+                    objectName: "onboardLog_refreshButton"
                     Layout.fillWidth: true
                     enabled: !OnboardLogController.requestingList && !OnboardLogController.downloadingLogs
                     text: qsTr("Refresh")
@@ -115,6 +140,7 @@ AnalyzePage {
                 }
 
                 QGCButton {
+                    objectName: "onboardLog_selectAllButton"
                     Layout.fillWidth: true
                     enabled: !OnboardLogController.requestingList && !OnboardLogController.downloadingLogs && (OnboardLogController.model.count > 0)
                     text: OnboardLogController.allLogsSelected ? qsTr("Deselect All") : qsTr("Select All")
@@ -122,24 +148,12 @@ AnalyzePage {
                 }
 
                 QGCButton {
+                    objectName: "onboardLog_downloadButton"
                     Layout.fillWidth: true
-                    enabled: !OnboardLogController.requestingList && !OnboardLogController.downloadingLogs
+                    enabled: !OnboardLogController.requestingList && !OnboardLogController.downloadingLogs && (OnboardLogController.selectedCount > 0)
                     text: qsTr("Download")
 
                     onClicked: {
-                        var logsSelected = false
-                        for (var i = 0; i < OnboardLogController.model.count; i++) {
-                            if (OnboardLogController.model.get(i).selected) {
-                                logsSelected = true
-                                break
-                            }
-                        }
-
-                        if (!logsSelected) {
-                            QGroundControl.showMessageDialog(onboardLogPage, qsTr("Onboard Log"), qsTr("You must select at least one onboard log file to download."))
-                            return
-                        }
-
                         if (ScreenTools.isMobile) {
                             OnboardLogController.download()
                             return
@@ -161,6 +175,7 @@ AnalyzePage {
                 }
 
                 QGCButton {
+                    objectName: "onboardLog_sortButton"
                     Layout.fillWidth: true
                     enabled: !OnboardLogController.requestingList && !OnboardLogController.downloadingLogs && (OnboardLogController.model.count > 1)
                     text: OnboardLogController.sortAscending ? qsTr("Sort Descending") : qsTr("Sort Ascending")
@@ -168,6 +183,22 @@ AnalyzePage {
                 }
 
                 QGCButton {
+                    objectName: "onboardLog_eraseSelectedButton"
+                    Layout.fillWidth: true
+                    visible: OnboardLogController.transport === "ftp"
+                    enabled: !OnboardLogController.requestingList && !OnboardLogController.downloadingLogs && (OnboardLogController.selectedCount > 0)
+                    text: qsTr("Erase Selected")
+                    onClicked: QGroundControl.showMessageDialog(
+                        onboardLogPage,
+                        qsTr("Delete Selected Onboard Log Files"),
+                        qsTr("The selected onboard log files will be erased permanently. Is this really what you want?"),
+                        Dialog.Yes | Dialog.No,
+                        function() { OnboardLogController.eraseSelected() }
+                    )
+                }
+
+                QGCButton {
+                    objectName: "onboardLog_eraseAllButton"
                     Layout.fillWidth: true
                     enabled: !OnboardLogController.requestingList && !OnboardLogController.downloadingLogs && (OnboardLogController.model.count > 0)
                     text: qsTr("Erase All")
@@ -181,6 +212,7 @@ AnalyzePage {
                 }
 
                 QGCButton {
+                    objectName: "onboardLog_cancelButton"
                     Layout.fillWidth: true
                     text: qsTr("Cancel")
                     enabled: OnboardLogController.requestingList || OnboardLogController.downloadingLogs

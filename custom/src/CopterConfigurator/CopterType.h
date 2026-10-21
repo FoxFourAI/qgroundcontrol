@@ -20,13 +20,14 @@ public:
     QList<CopterMission *> missions() const;
     Q_INVOKABLE void setActive() override;
     CopterMission* currentMission();
+    void refresh();
 signals:
     void currentMissionChanged();
     void missionsChanged();
 
 private:
-    void _currentMissionChangedCallback();
     void _update() override;
+    void _currentMissionChangedCallback();
     void _handleFacts(int componentId, Fact* fact);
 private:
     CopterMission * _currentMission = nullptr;

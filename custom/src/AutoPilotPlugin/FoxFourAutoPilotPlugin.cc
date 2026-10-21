@@ -12,27 +12,32 @@
 #include "Camera/FoxFourCameraControl.h"
 #include "ParameterManager.h"
 #include "QGCApplication.h"
+#include "AppMessages.h"
 #include "QGCCameraManager.h"
 #include "QGCCorePlugin.h"
+#include "SettingsManager.h"
+#include "FoxFourSettings.h"
 #include "Vehicle.h"
 #include "QGCFormat.h"
 #include "f4_autonomy/f4_autonomy.h"
+#include "VehicleComponent.h"
 
 QGC_LOGGING_CATEGORY(FoxFourArduPilotLog,"FoxFour.Ardupilot")
 
 FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent)
     : APMAutoPilotPlugin(vehicle, parent) {
+    _onboardComputersMngr = new OnboardComputersManager(vehicle, this);
     _buttonList = new ButtonList(vehicle,this);
     _ekSources = new EKSources(vehicle, this);
-    _onboardComputersMngr = new OnboardComputersManager(vehicle, this);
     _vioGpsComparer = new VioGpsComparer(vehicle, this);
     _mapMatching = new MapMatching(vehicle,this);
     _vioTrajectory = new VioTrajectoryPoints(vehicle,this);
     _configurator = new CopterConfigurator(vehicle,this);
     _computerStatus = new StatusHandler(vehicle, this);
-    qDebug() << "<<<<<<<<<<<<<<<<<<<<<" <<  metaObject()->className();
-    qDebug() << "<<<<<<<<<<<<<<<<<<<<<" <<  _computerStatus->metaObject()->className();
+    _dialectHandler = new VGMDialect(vehicle, this, this);
+    _dialectHandler->setupTriggerSignals();
     emit childsCreated();
+    emit mapMatchingCreated();
     auto cameraMgr = vehicle->cameraManager();
     connect(_vehicle->parameterManager(), &ParameterManager::factAdded, this, &FoxFourAutoPilotPlugin::handleFactAdded);
     connect(cameraMgr, &QGCCameraManager::currentCameraChanged, this, [this, cameraMgr]() {
@@ -76,6 +81,29 @@ void FoxFourAutoPilotPlugin::setServo(int servo, int value) {
 }
 
 OnboardComputersManager* FoxFourAutoPilotPlugin::onboardComputersManager() { return _onboardComputersMngr; }
+
+
+void FoxFourAutoPilotPlugin::_recalcSetupComplete()
+{
+    bool newSetupComplete = true;
+
+    for (const QVariant &componentVariant : vehicleComponents()) {
+        const VehicleComponent *const component = qobject_cast<const VehicleComponent*>(qvariant_cast<const QObject*>(componentVariant));
+        if (component) {
+            if (!component->setupComplete()) {
+                newSetupComplete = false;
+                break;
+            }
+        } else {
+            qCWarning(FoxFourArduPilotLog) << "Incorrectly typed VehicleComponent";
+        }
+    }
+
+    if (_setupComplete != newSetupComplete) {
+        _setupComplete = newSetupComplete;
+        emit setupCompleteChanged();
+    }
+}
 
 void FoxFourAutoPilotPlugin::setIsDropper(int type) {
     bool dropperFlag = type == 2;

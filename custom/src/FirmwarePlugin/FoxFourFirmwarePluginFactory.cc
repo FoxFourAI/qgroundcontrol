@@ -8,44 +8,32 @@
  ****************************************************************************/
 
 #include "FoxFourFirmwarePluginFactory.h"
-#include "FoxFourFirmwarePlugin.h"
-#include "PX4FirmwarePlugin.h"
+
+#include "FoxFourCopterFirmwarePlugin.h"
+#include "FoxFourPlaneFirmwarePlugin.h"
 FoxFourFirmwarePluginFactory FoxFourFirmwarePluginFactoryImp;
 
-FoxFourFirmwarePluginFactory::FoxFourFirmwarePluginFactory(){
+FoxFourFirmwarePluginFactory::FoxFourFirmwarePluginFactory() {}
 
+QList<QGCMAVLinkTypes::FirmwareClass_t> FoxFourFirmwarePluginFactory::supportedFirmwareClasses() const {
+    return {QGCMAVLink::FirmwareClassArduPilot};
 }
 
-QList<QGCMAVLink::FirmwareClass_t> FoxFourFirmwarePluginFactory::supportedFirmwareClasses() const
-{
-    QList<QGCMAVLink::FirmwareClass_t> firmwareClasses;
-    firmwareClasses.append(QGCMAVLink::FirmwareClassPX4);
-    firmwareClasses.append(QGCMAVLink::FirmwareClassArduPilot);
-    return firmwareClasses;
-}
-
-QList<QGCMAVLink::VehicleClass_t> FoxFourFirmwarePluginFactory::supportedVehicleClasses() const
-{
-    QList<QGCMAVLink::VehicleClass_t> vehicleClasses;
-    // vehicleClasses.append(QGCMAVLink::VehicleClassMultiRotor);
-    vehicleClasses=FirmwarePluginFactory::supportedVehicleClasses();
-    return vehicleClasses;
-}
-
-FirmwarePlugin *FoxFourFirmwarePluginFactory::firmwarePluginForAutopilot(MAV_AUTOPILOT autopilotType,[[maybe_unused]] MAV_TYPE vehicleType)
+FirmwarePlugin* FoxFourFirmwarePluginFactory::firmwarePluginForAutopilot(MAV_AUTOPILOT autopilotType,
+                                                                         [[maybe_unused]] MAV_TYPE vehicleType)
 {
     // For now F4 only supported ArduPilot
-
     if (autopilotType == MAV_AUTOPILOT_ARDUPILOTMEGA) {
-        if (!_ardupilotPluginInstance) {
-            _ardupilotPluginInstance = new FoxFourFirmwarePlugin;
-        }
-        return _ardupilotPluginInstance;
-    } else if ( autopilotType == MAV_AUTOPILOT_PX4 ){
-        if(!_px4PluginInstance) {
-            _px4PluginInstance = new PX4FirmwarePlugin;
-        }
-        return _px4PluginInstance;
+            switch (vehicleType) {
+                case MAV_TYPE_FIXED_WING:
+                    return new FoxFourPlaneFirmwarePlugin;
+                    break;
+                case MAV_TYPE_QUADROTOR:
+                    return new FoxFourCopterFirmwarePlugin;
+                    break;
+                default:
+                    return nullptr;
+            }
     }
     return nullptr;
 }

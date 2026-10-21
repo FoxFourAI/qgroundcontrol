@@ -8,9 +8,8 @@ import FoxFour.Widgets 1.0
 Item {
     id: root
     //to prevent empty spaces, resize widget when its needed
-    width: comparer.vioStatus !== -1 ? mainRow.width : 0
+    width: mainRow.width
     anchors.top: parent.top
-    visible: comparer.vioStatus !== -1
     anchors.bottom: parent.bottom
     property var parameterSetter: QGroundControl.corePlugin.parameterSetter
     property var comparer: globals.activeVehicle.autopilotPlugin.vioGpsComparer
@@ -33,10 +32,7 @@ Item {
             width: height
             fillMode: Image.PreserveAspectFit
             color: qgcPal.text
-            source: "qrc:/custom/img/eye-" + comparer.vioStatus + ".svg"
-            Component.onCompleted: {
-
-            }
+            source: "qrc:/custom/img/eye_" + (comparer.parametersReady ? comparer.ekfSrcFact.value : "invalid") + ".svg"
         }
 
         Column {
@@ -58,7 +54,9 @@ Item {
     MouseArea {
         anchors.fill: parent
         onClicked: {
-            mainWindow.showIndicatorDrawer(vioIndicatorPage, root)
+            root.comparer.parametersReady ?
+            mainWindow.showIndicatorDrawer(vioIndicatorPage, root):
+            root.comparer.refreshParameter()
         }
     }
     Component {

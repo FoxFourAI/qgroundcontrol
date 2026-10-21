@@ -11,6 +11,7 @@ import QtQuick
 import QtQuick.Layouts
 
 import QGroundControl
+import QGroundControl.FactControls
 import QGroundControl.Controls
 
 import FoxFour.Widgets 1.0
@@ -21,7 +22,6 @@ Item{
 	property var ekSrc : globals.activeVehicle.autopilotPlugin.ekSources
 	width: mainRow.implicitWidth
 	anchors.top: parent.top
-	visible: ekSrc.visible
 	anchors.bottom: parent.bottom
 	QGCPalette { id: qgcPal; colorGroupEnabled: enabled }
 
@@ -33,13 +33,26 @@ Item{
 		QGCLabel{
 			Layout.alignment: Qt.AlignVCenter
 			text: qsTr("Position Src")
+			MouseArea {
+				anchors.fill: parent
+				onClicked: {
+					if (!ekSrc.parametersReady) {
+						ekSrc.refreshParameters()
+					}
+				}
+			}
 		}
 		QGCComboBox{
 			_showHighlight: ekSrc.dirty
 			Layout.minimumWidth: ScreenTools.defaultFontPixelWidth * 13
-			model: ekSrc.sources 
-			onCurrentIndexChanged: {ekSrc.setSource(currentIndex + 1)}
-			currentIndex: ekSrc.currentSource
+			model: ekSrc.sources
+			visible: ekSrc.parametersReady
+			onCurrentIndexChanged: {
+				if(ekSrc.parametersReady) {
+					ekSrc.ekfSrcFact.value = currentIndex
+				}
+			}
+			currentIndex: ekSrc.ekfSrcFact.value
 		}
 	}
 }

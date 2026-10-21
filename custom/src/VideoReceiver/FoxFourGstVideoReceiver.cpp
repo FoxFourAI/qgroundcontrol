@@ -57,6 +57,25 @@ bool isRecoverableH265PaciError(GstMessage *msg, const GError *error, const gcha
     return factory && (g_strcmp0(GST_OBJECT_NAME(factory), "rtph265depay") == 0);
 }
 
+const char* recordingParserFactory(const GstCaps* caps)
+{
+    if (!caps || gst_caps_is_any(caps) || gst_caps_is_empty(caps)) {
+        return nullptr;
+    }
+
+    for (guint i = 0; i < gst_caps_get_size(caps); ++i) {
+        const GstStructure* structure = gst_caps_get_structure(caps, i);
+        if (gst_structure_has_name(structure, "video/x-h264")) {
+            return "h264parse";
+        }
+        if (gst_structure_has_name(structure, "video/x-h265")) {
+            return "h265parse";
+        }
+    }
+
+    return nullptr;
+}
+
 } // namespace
 
 FoxFourGstVideoReceiver::FoxFourGstVideoReceiver(QObject *parent)
@@ -180,9 +199,55 @@ void FoxFourGstVideoReceiver::start(uint32_t timeout)
             break;
         }
 
+        // ====================================================================
+        // START KLV READER INSERTION
+        // ====================================================================
+        _klvQueue = gst_element_factory_make("queue", "klv_read_queue");
+        if (!_klvQueue) {
+            qCCritical(FoxFourGstVideoReceiverLog) << "gst_element_factory_make('klv_queue') failed";
+            break;
+        }
+
+        // Leaky queue ensures if your UI thread blocks, it drops old telemetry frames
+                // instead of lagging or locking up the live streaming thread.
+        g_object_set(_klvQueue,
+                     "leaky", 2, // leaky=downstream
+                     "max-size-buffers", 5,
+                     "max-size-bytes", 0,
+                     "max-size-time", G_GUINT64_CONSTANT(0),
+                     nullptr);
+
+        _klvAppSink = gst_element_factory_make("appsink", "klv_appsink");
+        if (!_klvAppSink) {
+            qCCritical(FoxFourGstVideoReceiverLog) << "gst_element_factory_make('klv_appsink') failed";
+            break;
+        }
+
+        // Enforce KLV metadata type safety on the appsink
+        GstCaps* klvCaps = gst_caps_new_empty_simple("meta/x-klv");
+        g_object_set(_klvAppSink,
+                     "caps", klvCaps,
+                     "emit-signals", TRUE,
+                     "sync", FALSE,
+                     "async", FALSE,
+                     "max-buffers", 5,
+                     "drop", TRUE,
+                     nullptr);
+        gst_caps_unref(klvCaps);
+        g_signal_connect(_klvAppSink, "new-sample", G_CALLBACK(FoxFourGstVideoReceiver::_onKlvSample), this);
+
+        // ====================================================================
+        // END KLV READER INSERTION
+        // ====================================================================
+
+
+
         g_object_set(_recorderValve,
                      "drop", TRUE,
                      nullptr);
+        // Preserve stream-start/caps/segment events while buffers are dropped. When recording
+        // starts later, the newly linked parser receives the negotiated codec configuration.
+        gst_util_set_object_arg(G_OBJECT(_recorderValve), "drop-mode", "forward-sticky-events");
 
         _pipeline = gst_pipeline_new("receiver");
         if (!_pipeline) {
@@ -214,18 +279,17 @@ void FoxFourGstVideoReceiver::start(uint32_t timeout)
             break;
         }
 
-        gst_bin_add_many(GST_BIN(_pipeline), _source, _tee, decoderQueue, _decoderValve, recorderQueue, _recorderValve, nullptr);
+        gst_bin_add_many(GST_BIN(_pipeline), _source, _tee, decoderQueue, _decoderValve, recorderQueue, _recorderValve, _klvQueue, _klvAppSink, nullptr);
 
         pipelineUp = true;
 
         GstPad *srcPad = nullptr;
         (void) gst_element_foreach_src_pad(_source, grabFirstSrcPad, &srcPad);
+        (void) g_signal_connect(_source, "pad-added", G_CALLBACK(_onNewPad), this);
 
         if (srcPad) {
             _onNewSourcePad(srcPad);
             gst_clear_object(&srcPad);
-        } else {
-            (void) g_signal_connect(_source, "pad-added", G_CALLBACK(_onNewPad), this);
         }
 
         if (!gst_element_link_many(_tee, decoderQueue, _decoderValve, nullptr)) {
@@ -235,6 +299,12 @@ void FoxFourGstVideoReceiver::start(uint32_t timeout)
 
         if (!gst_element_link_many(_tee, recorderQueue, _recorderValve, nullptr)) {
             qCCritical(FoxFourGstVideoReceiverLog) << "Unable to link recorder queue";
+            break;
+        }
+
+        // Link the queue to your appsink natively
+        if (!gst_element_link(_klvQueue, _klvAppSink)) {
+            qCCritical(FoxFourGstVideoReceiverLog) << "Failed to link KLV queue to appsink";
             break;
         }
 
@@ -269,6 +339,8 @@ void FoxFourGstVideoReceiver::start(uint32_t timeout)
             gst_clear_object(&decoderQueue);
             gst_clear_object(&_tee);
             gst_clear_object(&_source);
+            gst_clear_object(&_klvAppSink);
+            gst_clear_object(&_klvQueue);
         }
 
         emit onStartComplete(STATUS_FAIL);
@@ -403,6 +475,8 @@ void FoxFourGstVideoReceiver::stop()
 
         _recorderValve = nullptr;
         _decoderValve = nullptr;
+        _klvQueue = nullptr;
+        _klvAppSink = nullptr;
         _tee = nullptr;
         _source = nullptr;
 
@@ -555,40 +629,73 @@ void FoxFourGstVideoReceiver::startRecording(const QString &videoFile, FILE_FORM
 
     qCDebug(FoxFourGstVideoReceiverLog) << "New video file:" << videoFile << _uri;
 
-    _fileSink = _makeFileSink(videoFile, format);
-    if (!_fileSink) {
-        qCCritical(FoxFourGstVideoReceiverLog) << "_makeFileSink() failed" << _uri;
-        emit onStartRecordingComplete(STATUS_FAIL);
-        return;
-    }
-
-    _removingRecorder = false;
-
-    (void) gst_object_ref(_fileSink);
-
-    gst_bin_add(GST_BIN(_pipeline), _fileSink);
-
-    if (!gst_element_link(_recorderValve, _fileSink)) {
-        qCCritical(FoxFourGstVideoReceiverLog) << "Failed to link valve and file sink" << _uri;
-        emit onStartRecordingComplete(STATUS_FAIL);
-        return;
-    }
-
-    (void) gst_element_sync_state_with_parent(_fileSink);
-
-    GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "pipeline-with-filesink");
-
-    // Install a probe on the recording branch to drop buffers until we hit our first keyframe
-    // When we hit our first keyframe, we can offset the timestamps appropriately according to the first keyframe time
-    // This will ensure the first frame is a keyframe at t=0, and decoding can begin immediately on playback
-    GstPad *probepad = gst_element_get_static_pad(_recorderValve, "src");
+    GstPad* probepad = gst_element_get_static_pad(_recorderValve, "src");
     if (!probepad) {
         qCCritical(FoxFourGstVideoReceiverLog) << "gst_element_get_static_pad() failed" << _uri;
         emit onStartRecordingComplete(STATUS_FAIL);
         return;
     }
 
+    const auto failRecordingStart = [this, &probepad]() {
+        gst_clear_object(&probepad);
+        if (_fileSink) {
+            (void) gst_element_set_state(_fileSink, GST_STATE_NULL);
+            // Safe before and after a successful link. Removing a still-linked bin leaves the
+            // valve's src pad attached to a finalized peer and breaks every later retry.
+            gst_element_unlink(_recorderValve, _fileSink);
+            GstObject* parent = gst_element_get_parent(_fileSink);
+            if (parent) {
+                (void) gst_bin_remove(GST_BIN(parent), _fileSink);
+                gst_clear_object(&parent);
+            }
+            gst_clear_object(&_fileSink);
+        }
+        emit onStartRecordingComplete(STATUS_FAIL);
+    };
+
+    // forward-sticky-events preserves the exact negotiated caps while the valve is closed. Fall
+    // back to a proxied caps query during the narrow startup window before negotiation completes.
+    GstCaps* inputCaps = gst_pad_get_current_caps(probepad);
+    if (!inputCaps) {
+        inputCaps = gst_pad_query_caps(probepad, nullptr);
+    }
+    _fileSink = _makeFileSink(videoFile, format, inputCaps);
+    gst_clear_caps(&inputCaps);
+    if (!_fileSink) {
+        qCCritical(FoxFourGstVideoReceiverLog) << "_makeFileSink() failed" << _uri;
+        failRecordingStart();
+        return;
+    }
+
+    _removingRecorder = false;
+
+    if (!gst_bin_add(GST_BIN(_pipeline), _fileSink)) {
+        qCCritical(FoxFourGstVideoReceiverLog) << "gst_bin_add(file sink) failed" << _uri;
+        failRecordingStart();
+        return;
+    }
+    (void) gst_object_ref(_fileSink);  // Keep a reference in addition to the pipeline's ownership.
+
+    if (!gst_element_link(_recorderValve, _fileSink)) {
+        qCCritical(FoxFourGstVideoReceiverLog) << "Failed to link valve and file sink" << _uri;
+        failRecordingStart();
+        return;
+    }
+
+    if (!gst_element_sync_state_with_parent(_fileSink)) {
+        qCCritical(FoxFourGstVideoReceiverLog) << "gst_element_sync_state_with_parent(file sink) failed" << _uri;
+        failRecordingStart();
+        return;
+    }
+
+    GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "pipeline-with-filesink");
+
     _keyframeWatchId = gst_pad_add_probe(probepad, GST_PAD_PROBE_TYPE_BUFFER, _keyframeWatch, this, nullptr);
+    if (_keyframeWatchId == 0) {
+        qCCritical(FoxFourGstVideoReceiverLog) << "gst_pad_add_probe(_keyframeWatch) failed" << _uri;
+        failRecordingStart();
+        return;
+    }
     gst_clear_object(&probepad);
 
     g_object_set(_recorderValve,
@@ -793,18 +900,32 @@ GstElement *FoxFourGstVideoReceiver::_makeDecoder()
     return decoder;
 }
 
-GstElement *FoxFourGstVideoReceiver::_makeFileSink(const QString &videoFile, FILE_FORMAT format)
+GstElement* FoxFourGstVideoReceiver::_makeFileSink(const QString& videoFile, FILE_FORMAT format,
+                                                   const GstCaps* inputCaps)
 {
     GstElement *fileSink = nullptr;
     GstElement *splitmux = nullptr;
+    GstElement* parser = nullptr;
     GstElement *bin = nullptr;
     GstPad *videopad = nullptr;
+    GstPad* parserSrcPad = nullptr;
+    GstPad* parserSinkPad = nullptr;
     GstPad *ghostpad = nullptr;
 
     do {
         if (!isValidFileFormat(format)) {
             qCCritical(FoxFourGstVideoReceiverLog) << "Unsupported file format";
             break;
+        }
+
+        const char* parserFactory = recordingParserFactory(inputCaps);
+        if (parserFactory) {
+            parser = gst_element_factory_make(parserFactory, nullptr);
+            if (!parser) {
+                qCCritical(FoxFourGstVideoReceiverLog) << "gst_element_factory_make() failed for" << parserFactory;
+                break;
+            }
+            g_object_set(parser, "config-interval", -1, nullptr);
         }
 
         // splitmuxsink owns its own muxer + filesink internally, handles request-pad
@@ -857,13 +978,41 @@ GstElement *FoxFourGstVideoReceiver::_makeFileSink(const QString &videoFile, FIL
             break;
         }
 
+        GstElement* binParser = nullptr;
+        if (parser) {
+            if (!gst_bin_add(GST_BIN(bin), parser)) {
+                qCCritical(FoxFourGstVideoReceiverLog) << "gst_bin_add(parser) failed";
+                break;
+            }
+            binParser = parser;
+            parser = nullptr;  // bin now owns it
+        }
+
         if (!gst_bin_add(GST_BIN(bin), splitmux)) {
             qCCritical(FoxFourGstVideoReceiverLog) << "gst_bin_add(splitmuxsink) failed";
             break;
         }
         splitmux = nullptr;  // bin now owns it
 
-        ghostpad = gst_ghost_pad_new("sink", videopad);
+        GstPad* ghostTarget = videopad;
+        if (binParser) {
+            parserSrcPad = gst_element_get_static_pad(binParser, "src");
+            parserSinkPad = gst_element_get_static_pad(binParser, "sink");
+            if (!parserSrcPad || !parserSinkPad) {
+                qCCritical(FoxFourGstVideoReceiverLog) << "gst_element_get_static_pad(parser) failed";
+                break;
+            }
+
+            const GstPadLinkReturn linkResult = gst_pad_link(parserSrcPad, videopad);
+            if (linkResult != GST_PAD_LINK_OK) {
+                qCCritical(FoxFourGstVideoReceiverLog)
+                << "Failed to link parser and splitmuxsink:" << gst_pad_link_get_name(linkResult);
+                break;
+            }
+            ghostTarget = parserSinkPad;
+        }
+
+        ghostpad = gst_ghost_pad_new("sink", ghostTarget);
         if (!ghostpad) {
             qCCritical(FoxFourGstVideoReceiverLog) << "gst_ghost_pad_new() failed";
             break;
@@ -880,21 +1029,67 @@ GstElement *FoxFourGstVideoReceiver::_makeFileSink(const QString &videoFile, FIL
     } while(0);
 
     gst_clear_object(&ghostpad);
+    gst_clear_object(&parserSinkPad);
+    gst_clear_object(&parserSrcPad);
     // No release_request_pad: on success splitmux is already NULL (owned by bin), and on failure the
     // bin/splitmux unref below finalizes splitmuxsink, which reclaims its "video" request pad itself.
     gst_clear_object(&videopad);
     gst_clear_object(&splitmux);
+    gst_clear_object(&parser);
     gst_clear_object(&bin);
     return fileSink;
 }
 
 void FoxFourGstVideoReceiver::_onNewSourcePad(GstPad *pad)
 {
-    // FIXME: check for caps - if this is not video stream (and preferably - one of these which we have to support) then simply skip it
-    if (!gst_element_link(_source, _tee)) {
-        qCCritical(FoxFourGstVideoReceiverLog) << "Unable to link source";
+    GstCaps *caps = gst_pad_get_current_caps(pad);
+    if (!caps) {
+        caps = gst_pad_query_caps(pad, nullptr);
+    }
+    const bool isKlv = caps && !gst_caps_is_empty(caps) && !gst_caps_is_any(caps) &&
+                       gst_structure_has_name(gst_caps_get_structure(caps, 0), "meta/x-klv");
+    gst_clear_caps(&caps);
+
+    if (isKlv) {
+        if (!_klvQueue) {
+            _klvQueue   = gst_element_factory_make("queue", "klv_read_queue");
+            _klvAppSink = gst_element_factory_make("appsink", "klv_appsink");
+            gst_bin_add_many(GST_BIN(_pipeline), _klvQueue, _klvAppSink, nullptr);
+            gst_element_link(_klvQueue, _klvAppSink);
+            gst_element_sync_state_with_parent(_klvAppSink);
+            gst_element_sync_state_with_parent(_klvQueue);
+        }
+        GstPad *klvSink = gst_element_get_static_pad(_klvQueue, "sink");
+        if (klvSink && !gst_pad_is_linked(klvSink)) {
+            if (gst_pad_link(pad, klvSink) != GST_PAD_LINK_OK) {
+                qCCritical(FoxFourGstVideoReceiverLog) << "Failed to link KLV pad";
+            } else {
+                qCDebug(FoxFourGstVideoReceiverLog) << "KLV stream linked";
+            }
+        }
+        gst_clear_object(&klvSink);
+        return;   // don't treat KLV as the video pad
+    }
+
+            // Video pad: link this specific pad to the tee (instead of gst_element_link(_source, _tee))
+    GstPad *teeSink = gst_element_get_static_pad(_tee, "sink");
+    if (!teeSink) {
+        qCCritical(FoxFourGstVideoReceiverLog) << "Tee has no sink pad";
         return;
     }
+    if (gst_pad_is_linked(teeSink)) {
+        qCDebug(FoxFourGstVideoReceiverLog) << "Tee already linked, ignoring extra source pad";
+        gst_clear_object(&teeSink);
+        return;
+    }
+    const GstPadLinkReturn ret = gst_pad_link(pad, teeSink);
+    gst_clear_object(&teeSink);
+    if (ret != GST_PAD_LINK_OK) {
+        qCCritical(FoxFourGstVideoReceiverLog) << "Unable to link source:" << gst_pad_link_get_name(ret);
+        return;
+    }
+
+    gst_clear_object(&teeSink);
 
     if (!_streaming) {
         _streaming = true;
@@ -1366,13 +1561,6 @@ gboolean FoxFourGstVideoReceiver::_onBusMessage([[maybe_unused]] GstBus * bus, G
             }
             gst_object_unref(pipelineRef);
         }
-
-        // GPU-side ERROR handling (cached-device drop) runs in HwBuffers::dispatchBusMessage above.
-        // _scheduleReconnect calls stop() then queues a backoff retry if autoReconnect is on.
-        pThis->_worker->dispatch([pThis]() {
-            qCDebug(FoxFourGstVideoReceiverLog) << "Stopping because of error";
-            pThis->_scheduleReconnect("pipeline error");
-        });
         break;
     }
     case GST_MESSAGE_WARNING: {
@@ -1632,6 +1820,65 @@ GstPadProbeReturn FoxFourGstVideoReceiver::_keyframeWatch(GstPad *pad, GstPadPro
     emit pThis->recordingStarted(pThis->recordingOutput());
 
     return GST_PAD_PROBE_REMOVE;
+}
+
+GstFlowReturn FoxFourGstVideoReceiver::_onKlvSample(GstElement* sink, gpointer user_data) {
+    auto* self = static_cast<FoxFourGstVideoReceiver*>(user_data);
+
+    // Use g_signal_emit_by_name to pull the sample dynamically
+    // without invoking gst_app_sink_pull_sample directly
+    GstSample* sample = nullptr;
+    g_signal_emit_by_name(sink, "pull-sample", &sample);
+
+    if (!sample) return GST_FLOW_OK;
+
+    GstBuffer* buffer = gst_sample_get_buffer(sample);
+    GstMapInfo map;
+
+    if (buffer && gst_buffer_map(buffer, &map, GST_MAP_READ)) {
+        quint64 ts = self->_parseKlvTimestamp(map.data, map.size, GST_BUFFER_PTS(buffer));
+        if (ts != 0) {
+            self->_latestTimestamp = ts;
+            self->emit timestampReceived(ts);
+        }
+        gst_buffer_unmap(buffer, &map);
+    }
+
+    gst_sample_unref(sample);
+    return GST_FLOW_OK;
+}
+
+quint64 FoxFourGstVideoReceiver::_parseKlvTimestamp(guint8* data, gsize size, qint64 pts) {
+    size_t i = 0;
+
+    // Bypass MISB Universal Key headers if present
+    if (size > 16 && data[0] == 0x06 && data[1] == 0x0E) {
+        i += 16;
+        if (data[i] & 0x80) {
+            i += (data[i] & 0x7F) + 1;
+        } else {
+            i += 1;
+        }
+    }
+
+            // Traverse the payload buffer explicitly searching for Tag 2 (Timestamp)
+    while (i + 2 <= size) {
+        uint8_t tag = data[i++];
+        uint8_t len = data[i++];
+
+        if (tag == 2 && len == 8 && (i + 8 <= size)) {
+            quint64 timestampUs = 0;
+            for (int b = 0; b < 8; ++b) {
+                timestampUs = (timestampUs << 8) | data[i + b];
+            }
+
+            // Log target timestamp or send upstream to QGC telemetry UI
+            qCDebug(FoxFourGstVideoReceiverLog) << "KLV Unix Epic Us:" << timestampUs << "Matching Video PTS:" << pts;
+            return timestampUs;
+        }
+        i += len;
+    }
+    return 0;
 }
 
 FoxFourGstVideoWorker::FoxFourGstVideoWorker(QObject *parent)

@@ -44,4 +44,38 @@ protected:
     /// present) are skipped silently. When non-empty, \a vehicleName is
     /// prepended to failure messages.
     void clickThroughAllComponents(Vehicle *vehicle, const QString &vehicleName = QString());
+
+    /// Run clickThroughAllComponents() in English and then again with the
+    /// Chinese translations loaded. Guards against section filtering that
+    /// compares translated strings rendering blank pages (issue #14929).
+    void clickThroughAllComponentsAllLocales(Vehicle *vehicle, const QString &vehicleName = QString());
+
+    /// Verify the currently loaded config panel actually renders visible
+    /// content (at least one visible text/control/image item), not just that
+    /// the loader has an item. Catches blank-page regressions.
+    void verifyPanelContentVisible(const QString &context);
+
+    /// Wait for _refreshParams() traffic to settle so link teardown doesn't cut
+    /// off in-flight PARAM_REQUEST_READs (which can log warnings that fail
+    /// strict mode). Fails the test if traffic is still active after 10s;
+    /// callers must check QTest::currentTestFailed() after calling.
+    void waitForParamRefreshQuiet(Vehicle *vehicle);
+
+    /// Navigate from the Fly view to the APM Sensors page and wait for the
+    /// calibration indicator buttons to appear.
+    void navigateToAPMSensorsPage();
+
+    /// Verify the two APM Sensors calibration indicator buttons reflect the
+    /// expected green/orange state.
+    void verifyAPMCalIndicators(bool compassGreen, bool accelGreen, const char *context);
+
+    /// Run a complete full accelerometer calibration from the APM Sensors page
+    /// by clicking Next for each of the six poses as MockLink drives the
+    /// ACCELCAL_VEHICLE_POS handshake, then dismiss the post-cal dialog.
+    void runAPMFullAccelCal();
+
+    /// Run a complete onboard compass calibration from the APM Sensors page as
+    /// MockLink drives the MAG_CAL_PROGRESS/MAG_CAL_REPORT protocol, then
+    /// dismiss the compass results dialog. Accel cal must already be complete.
+    void runAPMCompassCal();
 };

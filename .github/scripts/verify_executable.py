@@ -63,12 +63,37 @@ def _setup_gstreamer_env(build_dir: Path) -> None:
 
     lib_dir = str(gst_root / "lib")
     if platform.system() == "Darwin":
-        existing = os.environ.get("DYLD_LIBRARY_PATH", "")
-        os.environ["DYLD_LIBRARY_PATH"] = f"{lib_dir}:{existing}" if existing else lib_dir
+        existing = os.environ.get("DYLD_FALLBACK_LIBRARY_PATH", "")
+        default = f"{os.path.expanduser('~')}/lib:/usr/local/lib:/usr/lib"
+        os.environ["DYLD_FALLBACK_LIBRARY_PATH"] = ":".join(
+        p for p in (lib_dir, existing or default) if p
+        )
     elif platform.system() == "Windows":
         bin_dir = str(gst_root / "bin")
         existing = os.environ.get("PATH", "")
         os.environ["PATH"] = f"{bin_dir};{existing}" if existing else bin_dir
+
+
+def _verify_archs(binary_path: Path, expected: str) -> None:
+    """Fail if the Mach-O binary's architectures differ from the expected set."""
+    result = subprocess.run(
+        ["lipo", "-archs", str(binary_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        gh_error(f"lipo -archs failed for {binary_path}: {result.stderr.strip()}")
+        sys.exit(1)
+    actual = set(result.stdout.split())
+    wanted = set(expected.split())
+    if actual != wanted:
+        gh_error(
+            f"Architecture mismatch for {binary_path}: "
+            f"expected {sorted(wanted)}, got {sorted(actual)}"
+        )
+        sys.exit(1)
+    print(f"Verified architectures: {' '.join(sorted(actual))}")
 
 
 def main() -> None:
@@ -78,6 +103,7 @@ def main() -> None:
     parser.add_argument("--build-dir", default="")
     parser.add_argument("--type", default="binary", dest="exe_type")
     parser.add_argument("--timeout", default="60")
+    parser.add_argument("--expect-archs", default="")
     args = parser.parse_args()
 
     binary_path = Path(args.binary_path)
@@ -89,6 +115,9 @@ def main() -> None:
 
     if args.build_dir:
         _setup_gstreamer_env(Path(args.build_dir))
+
+    if args.expect_archs and platform.system() == "Darwin":
+        _verify_archs(binary_path, args.expect_archs)
 
     binary_name = binary_path.name
     run_binary = binary_name
@@ -118,7 +147,12 @@ def main() -> None:
     if headless:
         cmd.append("--headless")
 
-    result = subprocess.run(cmd, cwd=str(work_dir), check=False)
+    result = subprocess.run(cmd, cwd=str(work_dir), check=False, capture_output=True, text=True, env=os.environ)
+
+    print("Exit Code:", result.returncode)
+    print("STDERR:", result.stderr) # <-- This will likely show why it failed
+    print("STDOUT:", result.stdout)
+
     sys.exit(result.returncode)
 
 

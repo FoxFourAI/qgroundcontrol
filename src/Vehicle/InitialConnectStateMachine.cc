@@ -464,7 +464,7 @@ void InitialConnectStateMachine::_requestParameters(SkippableAsyncState* state)
     MandatoryParameters* mp = reinterpret_cast<FoxFourPlugin*>(QGCCorePlugin::instance())->mandatoryParameters();
     Vehicle* activeVehicle = vehicle();
     bool minimalMode = SettingsManager::instance()->foxFourSettings()->minimalMode()->rawValue().toBool();
-
+    qDebug() << "minimal mode is set to " << minimalMode;
     if (minimalMode) {
         // vgm update
         auto vgmParams = mp->rawParameters()[MandatoryParameters::ComponentType::VGM];

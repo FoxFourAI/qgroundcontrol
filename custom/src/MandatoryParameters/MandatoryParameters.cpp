@@ -72,6 +72,10 @@ void MandatoryParameters::_loadParameters() {
         _parameters[ComponentType(compType)] = settings.value(componentNames[compType] + "List").toStringList();
     }
     settings.endGroup();
+
+    if (_parameters.isEmpty()) {
+        loadDefaultParameters();
+    }
 }
 
 const QString MandatoryParameters::_groupKey = "mandatoryParams";

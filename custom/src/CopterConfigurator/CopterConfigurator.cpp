@@ -25,12 +25,21 @@ const QString CopterConfigurator::_frameTypeFact{"GUID_FRAME_TYPE"};
 const QString CopterConfigurator::_missnFact{"MISSN_GUID_TYPE"};
 
 void CopterConfigurator::refresh() {
-    if (_componentId == 0) {
-        _componentId = qobject_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager()->currentComputerComponent();
-    }
-    _vehicle->parameterManager()->refreshParameter(_componentId,_frameTypeFact, false);
-    _vehicle->parameterManager()->refreshParameter(_componentId,_missnFact, false);
+    int componentId = qobject_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager()->currentComputerComponent();
+    _vehicle->parameterManager()->refreshParameter(componentId,_frameTypeFact, false);
+    _vehicle->parameterManager()->refreshParameter(componentId,_missnFact, false);
 
+    for (auto *type:_types) {
+        type->refresh();
+    }
+
+}
+
+void CopterConfigurator::clear()
+{
+   for (auto *type: _types) {
+       type->setStatus(CopterType::Status::Disable);
+   }
 }
 
 QList<CopterType*> CopterConfigurator::copterTypes() const
@@ -54,7 +63,6 @@ void CopterConfigurator::_currentTypeChangedCallback()
         return;
     }
     _currentType = newType;
-    qDebug() << "current Type changes";
     emit currentTypeChanged();
 }
 

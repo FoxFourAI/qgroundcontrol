@@ -35,9 +35,12 @@ FlightMap {
     property real   _toolsMargin:               ScreenTools.defaultFontPixelWidth * 0.75
     property var    _flyViewSettings:           QGroundControl.settingsManager.flyViewSettings
     property bool   _keepMapCenteredOnVehicle:  _flyViewSettings.keepMapCenteredOnVehicle.rawValue
-    property bool   _showGPSrawTrajectory:      QGroundControl.settingsManager.foxFourSettings.showGPSTrajectory.rawValue
+    property var    _foxFourSettings:           QGroundControl.settingsManager.foxFourSettings
+    property bool   _disableVehicleTracking:    _foxFourSettings.disableVehicleTracking.rawValue
+    property bool   _showGPSrawTrajectory:      _foxFourSettings.showGPSTrajectory.rawValue
+    property bool   _showDetections:            _foxFourSettings.showDetections.rawValue
 
-    property bool   _disableVehicleTracking:    false
+    property bool   _vehicleTracking:           true
     property bool   _keepVehicleCentered:       pipMode ? true : false
     property bool   _saveZoomLevelSetting:      true
 
@@ -55,6 +58,17 @@ FlightMap {
 
     onPipModeChanged: _adjustMapZoomForPipMode()
 
+    QGCButton {
+        id: goToVehicle
+        anchors.verticalCenter:parent.verticalCenter
+        anchors.left: parent.left
+        anchors.leftMargin: ScreenTools.defaultFontPixelWidth
+        text: qsTr("Go to Vehicle")
+        visible: _activeVehicle && recenterNeeded() && _disableVehicleTracking
+        onClicked: moveMapToVehicle()
+        z: 100
+    }
+
     onVisibleChanged: {
         if (visible) {
             // Synchronize center position with Plan View
@@ -69,10 +83,14 @@ FlightMap {
     }
     onCenterChanged: {
         QGroundControl.flightMapPosition = _root.center
+        if (_disableVehicleTracking && _activeVehicle) {
+            goToVehicle.visible = recenterNeeded()
+        }
+        updateCanvases();
     }
 
     // We track whether the user has panned or not to correctly handle automatic map positioning
-    onMapPanStart:  _disableVehicleTracking = true
+    onMapPanStart:  _vehicleTracking = false
     onMapPanStop:   panRecenterTimer.restart()
 
     function pointInRect(point, rect) {
@@ -159,31 +177,35 @@ FlightMap {
         return false
     }
 
-    function updateMapToVehiclePosition() {
+    function moveMapToVehicle() {
         if (animateLat.running || animateLong.running) {
             return
         }
-        // We let FlightMap handle first vehicle position
-        if (!_keepMapCenteredOnVehicle && firstVehiclePositionReceived && _activeVehicleCoordinate.isValid && !_disableVehicleTracking) {
-            if (_keepVehicleCentered) {
-                _root.center = _activeVehicleCoordinate
-            } else {
-                if (firstVehiclePositionReceived && recenterNeeded()) {
-                    // Move the map such that the vehicle is centered within the inset area
-                    var vehiclePoint = _root.fromCoordinate(_activeVehicleCoordinate, false /* clipToViewport */)
-                    var centerInsetRect = _insetCenterRect()
-                    var centerInsetPoint = Qt.point(centerInsetRect.x + centerInsetRect.width / 2, centerInsetRect.y + centerInsetRect.height / 2)
-                    var centerOffset = Qt.point((_root.width / 2) - centerInsetPoint.x, (_root.height / 2) - centerInsetPoint.y)
-                    var vehicleOffsetPoint = Qt.point(vehiclePoint.x + centerOffset.x, vehiclePoint.y + centerOffset.y)
-                    var vehicleOffsetCoord = _root.toCoordinate(vehicleOffsetPoint, false /* clipToViewport */)
-                    animatedMapRecenter(_root.center, vehicleOffsetCoord)
-                }
+        if (_keepVehicleCentered) {
+            _root.center = _activeVehicleCoordinate
+        } else {
+            if (firstVehiclePositionReceived && recenterNeeded()) {
+                // Move the map such that the vehicle is centered within the inset area
+                var vehiclePoint = _root.fromCoordinate(_activeVehicleCoordinate, false /* clipToViewport */)
+                var centerInsetRect = _insetCenterRect()
+                var centerInsetPoint = Qt.point(centerInsetRect.x + centerInsetRect.width / 2, centerInsetRect.y + centerInsetRect.height / 2)
+                var centerOffset = Qt.point((_root.width / 2) - centerInsetPoint.x, (_root.height / 2) - centerInsetPoint.y)
+                var vehicleOffsetPoint = Qt.point(vehiclePoint.x + centerOffset.x, vehiclePoint.y + centerOffset.y)
+                var vehicleOffsetCoord = _root.toCoordinate(vehicleOffsetPoint, false /* clipToViewport */)
+                animatedMapRecenter(_root.center, vehicleOffsetCoord)
             }
         }
     }
 
+    function updateMapToVehiclePosition() {
+        // We let FlightMap handle first vehicle position
+        if (!_keepMapCenteredOnVehicle && firstVehiclePositionReceived && _activeVehicleCoordinate.isValid && _vehicleTracking && !_disableVehicleTracking) {
+            moveMapToVehicle();
+        }
+    }
+
     on_ActiveVehicleCoordinateChanged: {
-        if (_keepMapCenteredOnVehicle && _activeVehicleCoordinate.isValid && !_disableVehicleTracking) {
+        if (_keepMapCenteredOnVehicle && _activeVehicleCoordinate.isValid && _vehicleTracking) {
             _root.center = _activeVehicleCoordinate
         }
     }
@@ -199,7 +221,7 @@ FlightMap {
         interval:   10000
         running:    false
         onTriggered: {
-            _disableVehicleTracking = false
+            _vehicleTracking = true
             updateMapToVehiclePosition()
         }
     }
@@ -303,22 +325,79 @@ FlightMap {
 
             Connections {
                 target: _activeVehicle ? _activeVehicle.autopilotPlugin.mapMatching : null
-                onAnchorsChanged: anchorCanvas.requestPaint()
-            }
-
-            Connections {
-                target: _root
-                onCenterChanged:    anchorCanvas.requestPaint()
-                onZoomLevelChanged: anchorCanvas.requestPaint()
-                onWidthChanged:     anchorCanvas.requestPaint()
-                onHeightChanged:    anchorCanvas.requestPaint()
+                function onAnchorsChanged()   { anchorCanvas.requestPaint()}
             }
         }
+
+
+
+    MapItemView {
+        id: detectionsView
+        model: _activeVehicle ? _activeVehicle.autopilotPlugin.dialectHandler.detections : []
+        visible : _root._showDetections
+        delegate: MapQuickItem {
+            id: maker
+            readonly property real indicatorSize : ScreenTools.defaultFontPixelHeight * 2.5
+            required property var modelData
+
+            coordinate:  modelData.coord
+            anchorPoint: Qt.point(indicatorSize / 2, indicatorSize / 2)
+            visible:     modelData.coord !== undefined
+
+            sourceItem: Item{
+                width:      maker.indicatorSize
+                height:     maker.indicatorSize
+                Image {
+                    source:     "qrc:/custom/map/" + maker.modelData.type + ".svg"
+                    sourceSize: Qt.size(maker.indicatorSize, maker.indicatorSize)
+                    anchors.fill: parent
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        let pos = _root.fromCoordinate(maker.modelData.coord)
+                        let dropPanel = coordsDropPanelComponent.createObject(mainWindow, {coordinates: maker.modelData.coord, clickRect: Qt.rect(pos.x, pos.y, 0, 0)})
+                        dropPanel.open()
+                    }
+                }
+
+                Component {
+                    id: coordsDropPanelComponent
+                    DropPanel {
+
+                        property var coordinates
+                        sourceComponent:  Component {
+                            ColumnLayout {
+                                id: layout
+                                spacing: ScreenTools.defaultFontPixelWidth / 2
+                                QGCLabel {
+                                    text: qsTr("Detection Position")
+                                    Layout.alignment: Qt.AlignHCenter
+                                }
+                                QGCTextField {
+                                    implicitWidth: ScreenTools.defaultFontPixelWidth * 25
+                                    text: coordinates.latitude.toFixed(6) + ", " + coordinates.longitude.toFixed(6)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function updateCanvases() {
+        if (_root._showGPSrawTrajectory) {
+            anchorCanvas.requestPaint();
+        }
+    }
 
     // Add the vehicles to the map
     MapItemView {
         model: QGroundControl.multiVehicleManager.vehicles
         delegate: VehicleMapItem {
+
             vehicle:        object
             coordinate:     object.coordinate
             map:            _root
@@ -339,7 +418,7 @@ FlightMap {
     // Add ADSB vehicles to the map
     MapItemView {
         model: QGroundControl.adsbVehicleManager.adsbVehicles
-        delegate: VehicleMapItem {
+        delegate: ADSBVehicleMapItem {
             coordinate:     object.coordinate
             altitude:       object.altitude
             callsign:       object.callsign
@@ -374,6 +453,8 @@ FlightMap {
     CustomMapItems {
         map:            _root
         largeMapView:   !pipMode
+
+
     }
 
     GeoFenceMapVisuals {
@@ -418,7 +499,9 @@ FlightMap {
         mapControl:         parent
         mapCircle:          _fwdFlightGotoMapCircle
         radiusLabelVisible: true
+        // PX4 ignores the commanded loiter radius (flies NAV_LOITER_RAD), so the circle size is unknown
         visible:            gotoLocationItem.visible && _activeVehicle &&
+                            !_activeVehicle.px4Firmware &&
                             _activeVehicle.inFwdFlight &&
                             !_activeVehicle.orbitActive
 
@@ -461,7 +544,7 @@ FlightMap {
             showRotation:       true
             clockwiseRotation:  true
 
-            property real _defaultLoiterRadius: _flyViewSettings.forwardFlightGoToLocationLoiterRad.value
+            property real _defaultLoiterRadius: _flyViewSettings.forwardFlightGoToLocationLoiterRad.rawValue
             property real _committedRadius;
 
             onCenterChanged: {
@@ -810,9 +893,14 @@ FlightMap {
                     }
 
                     ColumnLayout {
+                        Layout.alignment: Qt.AlignHCenter
                         spacing: 0
-                        QGCLabel { text: qsTr("Lat: %1").arg(mapClickCoord.latitude.toFixed(6)) }
-                        QGCLabel { text: qsTr("Lon: %1").arg(mapClickCoord.longitude.toFixed(6)) }
+                        QGCLabel { text: qsTr("Position"); Layout.alignment: Qt.AlignHCenter}
+                        QGCTextField {
+                            text: qsTr("%1, %2").arg(mapClickCoord.latitude.toFixed(6)).arg(mapClickCoord.longitude.toFixed(6))
+                            Layout.alignment: Qt.AlignHCenter
+                            implicitWidth: ScreenTools.defaultFontPixelWidth * text.length * 1.2
+                        }
                     }
                 }
             }

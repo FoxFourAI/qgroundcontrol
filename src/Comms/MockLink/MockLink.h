@@ -22,6 +22,7 @@ class MockLinkCamera;
 class MockLinkFTP;
 class MockLinkGimbal;
 class MockLinkWorker;
+class MockVideoStreamServer;
 class QThread;
 
 class MockLink : public LinkInterface
@@ -96,6 +97,9 @@ public:
     /// Returns the filename for the simulated log file. Only available after a download is requested.
     QString logDownloadFile() const { return _logDownloadFilename; }
 
+    /// Vehicle-side channel used to encode outgoing (mock vehicle -> QGC) messages. Signing state lives here.
+    uint8_t outgoingMavlinkChannel() const { return _outgoingMavlinkChannel; }
+
     void clearReceivedMavCommandCounts() { _receivedMavCommandCountMap.clear(); _receivedMavCommandByCompCountMap.clear(); _receivedRequestMessageByCompAndMsgCountMap.clear(); }
     int receivedMavCommandCount(MAV_CMD command) const { return _receivedMavCommandCountMap.value(command, 0); }
     int receivedMavCommandCount(MAV_CMD command, int compId) const { return _receivedMavCommandByCompCountMap.value(command).value(compId, 0); }
@@ -168,6 +172,18 @@ public:
     /// Change a float parameter value directly on MockLink (for testing cache invalidation)
     void setMockParamValue(int componentId, const QString &paramName, float value);
 
+    /// Simulates ArduPilot streaming MAG_CAL_REPORT(MAG_CAL_FAILED) after a failed onboard
+    /// compass cal. Like real ArduPilot, the failed report keeps streaming until
+    /// MAV_CMD_DO_CANCEL_MAG_CAL is received; MAV_CMD_DO_START_MAG_CAL does not stop it.
+    void startAPMStaleFailedMagCalReportStreaming();
+
+    /// Returns true while the stale failed MAG_CAL_REPORT stream is active
+    bool apmStaleFailedMagCalReportStreamingActive() const;
+
+    /// When enabled, MAV_CMD_DO_START_MAG_CAL is rejected with MAV_RESULT_FAILED
+    /// instead of starting the compass cal simulation.
+    void setAPMMagCalStartFailureMode(bool fail) { _apmMagCalStartFailureMode = fail; }
+
     /// Change an int32 parameter value directly on MockLink. Used to simulate the
     /// firmware storing calibration results (e.g. CAL_MAG0_ID).
     void setInt32ParamValue(int componentId, const QString &paramName, int32_t value) { _mapParamName2Value[componentId][paramName] = QVariant::fromValue(value); }
@@ -180,14 +196,23 @@ public:
     /// status is a MAV_ODID_ARM_STATUS value.
     void setRemoteIDArmStatus(uint8_t status, const QString& error);
 
-    static MockLink *startPX4MockLink(bool sendStatusText, bool enableCamera, bool enableGimbal, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone);
-    static MockLink *startPX4MockLinkWithMission(bool sendStatusText, bool enableCamera, bool enableGimbal, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone);
-    static MockLink *startGenericMockLink(bool sendStatusText, bool enableCamera, bool enableGimbal, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone);
-    static MockLink *startNoInitialConnectMockLink(bool sendStatusText, bool enableCamera, bool enableGimbal, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone);
-    static MockLink *startAPMArduCopterMockLink(bool sendStatusText, bool enableCamera, bool enableGimbal, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone);
-    static MockLink *startAPMArduPlaneMockLink(bool sendStatusText, bool enableCamera, bool enableGimbal, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone);
-    static MockLink *startAPMArduSubMockLink(bool sendStatusText, bool enableCamera, bool enableGimbal, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone);
-    static MockLink *startAPMArduRoverMockLink(bool sendStatusText, bool enableCamera, bool enableGimbal, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone);
+    static MockLink *startPX4MockLink(MockConfiguration::Options options = MockConfiguration::OptionNone, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone, MockConfiguration::VideoStreamType videoStreamType = MockConfiguration::VideoStreamNone);
+    static MockLink *startPX4MockLinkWithMission(MockConfiguration::Options options = MockConfiguration::OptionNone, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone);
+    static MockLink *startGenericMockLink(MockConfiguration::Options options = MockConfiguration::OptionNone, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone, MockConfiguration::VideoStreamType videoStreamType = MockConfiguration::VideoStreamNone);
+    static MockLink *startNoInitialConnectMockLink(MockConfiguration::Options options = MockConfiguration::OptionNone, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone);
+    static MockLink *startAPMArduCopterMockLink(MockConfiguration::Options options = MockConfiguration::OptionNone, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone, MockConfiguration::VideoStreamType videoStreamType = MockConfiguration::VideoStreamNone);
+    static MockLink *startAPMArduPlaneMockLink(MockConfiguration::Options options = MockConfiguration::OptionNone, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone, MockConfiguration::VideoStreamType videoStreamType = MockConfiguration::VideoStreamNone);
+    static MockLink *startAPMArduSubMockLink(MockConfiguration::Options options = MockConfiguration::OptionNone, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone, MockConfiguration::VideoStreamType videoStreamType = MockConfiguration::VideoStreamNone);
+    static MockLink *startAPMArduRoverMockLink(MockConfiguration::Options options = MockConfiguration::OptionNone, MockConfiguration::FailureMode_t failureMode = MockConfiguration::FailNone, MockConfiguration::VideoStreamType videoStreamType = MockConfiguration::VideoStreamNone);
+
+    /// Thread-safe snapshot of the video stream actually being served (VideoStreamNone/empty
+    /// when none is served). Safe to call from the worker thread while _connect()/disconnect()
+    /// mutate the served state on the main thread. MockLinkCamera advertises
+    /// VIDEO_STREAM_INFORMATION consistent with this snapshot.
+    void servedVideoStream(MockConfiguration::VideoStreamType &type, QString &uri) const;
+
+    /// Video stream type the configuration requested (immutable after construction).
+    MockConfiguration::VideoStreamType requestedVideoStreamType() const { return _requestedVideoStreamType; }
 
     // Special commands for testing Vehicle::sendMavCommandWithHandler
     static constexpr MAV_CMD MAV_CMD_MOCKLINK_ALWAYS_RESULT_ACCEPTED = MAV_CMD_USER_1;
@@ -227,6 +252,7 @@ private:
 
     void _loadParams();
     void _resetParamsToDefaults();
+    void _applyAPMFreshFlashState();
 
     /// Convert from a parameter variant to the float value from mavlink_param_union_t
     float _floatUnionForParam(int componentId, const QString &paramName);
@@ -255,6 +281,7 @@ private:
     void _handlePreFlightCalibration(const mavlink_command_long_t &request);
     void _handleTakeoff(const mavlink_command_long_t &request);
     void _handleLogRequestList(const mavlink_message_t &msg);
+    void _handleLogErase(const mavlink_message_t &msg);
     void _handleLogRequestData(const mavlink_message_t &msg);
     void _handleParamMapRC(const mavlink_message_t &msg);
     void _handleSetupSigning(const mavlink_message_t &msg);
@@ -274,6 +301,7 @@ private:
     void _sendSysStatus();
     void _sendBatteryStatus();
     void _sendNamedValueFloats();
+    void _sendDistanceSensors();
     void _sendChunkedStatusText(uint16_t chunkId, bool missingChunks);
     void _sendStatusTextMessages();
     void _respondWithAutopilotVersion();
@@ -299,12 +327,16 @@ private:
     int  _availableModesCount() const;
     void _moveADSBVehicle(int vehicleIndex);
 
-    static MockLink *_startMockLinkWorker(const QString &configName, MAV_AUTOPILOT firmwareType, MAV_TYPE vehicleType, bool sendStatusText, bool enableCamera, bool enableGimbal, MockConfiguration::FailureMode_t failureMode, bool preloadMission = false);
+    static MockLink *_startMockLinkWorker(const QString &configName, MAV_AUTOPILOT firmwareType, MAV_TYPE vehicleType, MockConfiguration::Options options, MockConfiguration::FailureMode_t failureMode, MockConfiguration::VideoStreamType videoStreamType = MockConfiguration::VideoStreamNone);
     static MockLink *_startMockLink(MockConfiguration *mockConfig);
+
+    void _startVideoStreamServer();
+    void _stopVideoStreamServer();
 
     /// Creates a file with random contents of the specified size.
     /// @return Fully qualified path to created file
     static QString _createRandomFile(uint32_t byteCount);
+    QString _createLogContentsFile(const QString &logName);
 
     QThread *_workerThread = nullptr;
     MockLinkWorker *_worker = nullptr;
@@ -313,9 +345,13 @@ private:
     const MAV_AUTOPILOT _firmwareType = MAV_AUTOPILOT_PX4;
     const MAV_TYPE _vehicleType = MAV_TYPE_QUADROTOR;
     const bool _sendStatusText = false;
+    const bool _apmStartFreshParams = false;
     const bool _enableCamera = false;
     const bool _enableGimbal = false;
+    const bool _enableProximity = false;
     const MockConfiguration::FailureMode_t _failureMode = MockConfiguration::FailNone;
+    const bool _stayMavlinkV1 = false;  ///< Test-only: never upgrade outgoing traffic to MAVLink v2
+    const bool _ftpCapability = false;  ///< Test-only: advertise MAV_PROTOCOL_CAPABILITY_FTP
     const uint8_t _vehicleSystemId = 0;
     const double _vehicleLatitude = 0.0;
     const double _vehicleLongitude = 0.0;
@@ -330,6 +366,14 @@ private:
     MockLinkPX4Calibration *const _mockLinkPX4Calibration = nullptr;
     MockLinkFTP *const _mockLinkFTP = nullptr;
 
+    const MockConfiguration::VideoStreamType _requestedVideoStreamType = MockConfiguration::VideoStreamNone;
+    MockVideoStreamServer *_videoStreamServer = nullptr;
+    // Served state is written on the connect/disconnect thread and read from the worker
+    // thread (MockLinkCamera), so it is guarded by _videoStreamMutex.
+    mutable QMutex _videoStreamMutex;
+    MockConfiguration::VideoStreamType _servedVideoStreamType = MockConfiguration::VideoStreamNone;
+    QString _videoStreamUri;
+
     uint8_t _incomingMavlinkChannel = std::numeric_limits<uint8_t>::max();
     QMutex _incomingMavlinkMutex;
     /// Outgoing (vehicle-side) channel; signing state lives here, decoupled from QGC's incoming parser channel.
@@ -343,7 +387,6 @@ private:
 
     uint8_t _mavBaseMode = MAV_MODE_FLAG_MANUAL_INPUT_ENABLED | MAV_MODE_FLAG_CUSTOM_MODE_ENABLED;
     uint32_t _mavCustomMode = PX4CustomMode::MANUAL;
-    uint8_t _mavState = MAV_STATE_STANDBY;
 
     QElapsedTimer _runningTime;
     static constexpr int kTestParamRequestListBatch = 25;
@@ -357,6 +400,7 @@ private:
 
     double _vehicleAltitudeAMSL = _defaultVehicleHomeAltitude;
     std::atomic<bool> _commLost = false;
+    bool _mavlinkV2Upgraded = false;    ///< True once outgoing traffic has switched from v1 to v2
     bool _signingEnabled = false;
     bool _highLatencyTransmissionEnabled = true;
 
@@ -381,6 +425,9 @@ private:
     uint8_t _availableModesMonitorSeqNumber = 0;        ///< Sequence number for the next available mode message to send
 
     QString _logDownloadFilename;                       ///< Filename for log download which is in progress
+    bool _logsErased = false;                           ///< Set by LOG_ERASE, LOG_REQUEST_LIST reports no logs
+    uint16_t _logDownloadId = 0;                        ///< Log id being served, echoed in LOG_DATA
+    uint32_t _logDownloadSize = 0;                      ///< Size of the log being served
     uint32_t _logDownloadCurrentOffset = 0;             ///< Current offset we are sending from
     uint32_t _logDownloadBytesRemaining = 0;            ///< Number of bytes still to send, 0 = send inactive
     /// Protects log download state from race conditions between:
@@ -409,9 +456,11 @@ private:
     // APM compass calibration worker state
     // Protects _apmCompassCalProgress: main thread writes 0 to start/stop,
     // worker thread reads/increments each 100ms tick.
-    QMutex _apmCompassCalMutex;
+    mutable QMutex _apmCompassCalMutex;
     int    _apmCompassCalProgress  = -1; ///< -1 = inactive, 0-100 = progress pct
     int    _apmCompassCalTickCount = 0;  ///< 500 Hz tick counter for ~10 Hz throttle
+    bool   _apmStaleFailedMagCalReportStreaming = false; ///< Streaming MAG_CAL_REPORT(FAILED) from a previous failed cal
+    bool   _apmMagCalStartFailureMode = false; ///< Reject MAV_CMD_DO_START_MAG_CAL with MAV_RESULT_FAILED
 
     // APM accel calibration worker state
     // Protects _apmAccelCalPos: main thread writes the starting pos,
@@ -484,6 +533,13 @@ private:
     };
 
     static QList<FlightMode_t> _availableFlightModes;
+    static QList<FlightMode_t> _apmCopterAvailableFlightModes;
+    static QList<FlightMode_t> _apmPlaneAvailableFlightModes;
+    static QList<FlightMode_t> _apmRoverAvailableFlightModes;
+    static QList<FlightMode_t> _apmSubAvailableFlightModes;
+
+    /// Returns the flight mode list appropriate for the simulated firmware/vehicle type
+    const QList<FlightMode_t> &_flightModeList() const;
 
     std::atomic<bool> _disconnectedEmitted{false};
 };

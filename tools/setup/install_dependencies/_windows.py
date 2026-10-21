@@ -1,4 +1,4 @@
-"""Windows installer (MSI for GStreamer, exe for Vulkan SDK)."""
+"""Windows dependency installers."""
 
 from __future__ import annotations
 
@@ -6,7 +6,6 @@ import os
 import subprocess
 import sys
 import tempfile
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from . import _common as _c
@@ -14,7 +13,6 @@ from . import _common as _c
 WINDOWS_GSTREAMER_BASE_URL = (
     "https://qgroundcontrol.s3.us-west-2.amazonaws.com/dependencies/gstreamer/windows"
 )
-WINDOWS_GSTREAMER_INSTALL_DIR = "C:\\gstreamer"
 WINDOWS_GSTREAMER_PREFIX = "C:\\gstreamer\\1.0\\msvc_x86_64"
 WINDOWS_VULKAN_INSTALL_DIR = "C:\\VulkanSDK\\latest"
 WINDOWS_VULKAN_URL = "https://sdk.lunarg.com/sdk/download/latest/windows/vulkan-sdk.exe"
@@ -24,7 +22,78 @@ WINDOWS_NSIS_URL = (
     f"https://downloads.sourceforge.net/project/nsis/NSIS%203/{WINDOWS_NSIS_VERSION}/"
     f"nsis-{WINDOWS_NSIS_VERSION}-setup.exe"
 )
+WINDOWS_GDAL_INSTALL_DIR = "C:/OSGeo4W"
+WINDOWS_GDAL_SETUP_URL = "https://download.osgeo.org/osgeo4w/v2/osgeo4w-setup.exe"
+WINDOWS_GDAL_SITE = "https://download.osgeo.org/osgeo4w/v2/"
+# gdal-dev pulls in the runtime (gdal), headers and .lib; proj/geos come in as deps.
+WINDOWS_GDAL_PACKAGES = "gdal-devel"
 
+def install_windows_gdal(dry_run: bool = False) -> bool:
+    """Install GDAL on Windows via the OSGeo4W unattended installer."""
+    arch = os.environ.get("PROCESSOR_ARCHITECTURE", "")
+    if arch != "AMD64":
+        _c.log_warn(f"Skipping GDAL: only supported on AMD64 (detected: {arch or 'unknown'})")
+        return True
+
+    install_dir = WINDOWS_GDAL_INSTALL_DIR
+    root = Path(install_dir)
+
+    def _export_env() -> None:
+        _c.set_env_var("GDAL_LIBRARY", f"{install_dir}\\lib")
+        _c.set_env_var("GDAL_INCLUDE_DIR", f"{install_dir}\\include")
+        _c.set_env_var("OSGEO4W_ROOT", install_dir)
+        _c.add_to_path(f"{install_dir}\\bin")
+
+    if (root / "bin" / "gdalinfo.exe").exists() and (root / "include" / "gdal.h").exists():
+        print(f"GDAL already installed at {install_dir}; skipping download+install")
+        _export_env()
+        return True
+
+    print("\nInstalling GDAL (OSGeo4W)...")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        setup = Path(tmpdir) / "osgeo4w-setup.exe"
+        if not _c.download_file(WINDOWS_GDAL_SETUP_URL, setup, dry_run):
+            return False
+
+        # -q unattended, -A advanced (needed for -P), -k/-O pin to the one site,
+        # -n no shortcuts, -r no replace-on-reboot.
+        if not _c.run_command(
+            [
+                str(setup),
+                "-q",
+                "-A",
+                "-k",
+                "-O",
+                "-n",
+                "-r",
+                "-s",
+                WINDOWS_GDAL_SITE,
+                "-P",
+                WINDOWS_GDAL_PACKAGES,
+                "-R",
+                install_dir,
+                "-l",
+                str(Path(tmpdir) / "pkgs"),
+            ],
+            dry_run,
+        ):
+            return False
+
+    if not dry_run:
+        missing = [
+            str(p)
+            for p in (root / "bin" / "gdalinfo.exe", root / "include" / "gdal.h")
+            if not p.exists()
+        ]
+        if missing:
+            _c.log_error(
+                "GDAL installer reported success but these are missing: " + ", ".join(missing)
+            )
+            return False
+
+    _export_env()
+    print(f"GDAL installed to {install_dir}")
+    return True
 
 def install_windows_nsis(dry_run: bool = False) -> bool:
     """Install NSIS (makensis) for the Windows installer build step."""
@@ -120,55 +189,30 @@ def install_windows_gstreamer(version: str, dry_run: bool = False) -> bool:
         _c.add_to_path(f"{prefix}\\bin")
         return True
 
-    base_url = f"{WINDOWS_GSTREAMER_BASE_URL}/{version}"
-    runtime_name = f"gstreamer-1.0-msvc-x86_64-{version}.msi"
-    devel_name = f"gstreamer-1.0-devel-msvc-x86_64-{version}.msi"
+    installer_name = f"gstreamer-1.0-msvc-x86_64-{version}.exe"
 
     print(f"\nInstalling GStreamer {version}...")
     with tempfile.TemporaryDirectory() as tmpdir:
-        tmp = Path(tmpdir)
-        runtime_msi = tmp / runtime_name
-        devel_msi = tmp / devel_name
-
-        download_targets = [
-            ("runtime", f"{base_url}/{runtime_name}", runtime_msi),
-            ("devel", f"{base_url}/{devel_name}", devel_msi),
-        ]
-        if dry_run:
-            for _, url, path in download_targets:
-                if not _c.download_file(url, path, dry_run):
-                    return False
-        else:
-            print("  Downloading GStreamer installers in parallel...")
-            with ThreadPoolExecutor(max_workers=2) as executor:
-                futures = {
-                    executor.submit(_c.download_file, url, path): label
-                    for label, url, path in download_targets
-                }
-                for future in as_completed(futures):
-                    label = futures[future]
-                    if not future.result():
-                        print(
-                            f"Failed to download GStreamer {label} installer",
-                            file=sys.stderr,
-                        )
-                        return False
-
-        install_dir = WINDOWS_GSTREAMER_INSTALL_DIR
-        for label, msi in [("runtime", runtime_msi), ("devel", devel_msi)]:
-            print(f"  Installing GStreamer {label}...")
-            if not _c.run_command(
-                [
-                    "msiexec.exe",
-                    "/i",
-                    str(msi),
-                    "/passive",
-                    f"INSTALLDIR={install_dir}",
-                    "ADDLOCAL=ALL",
-                ],
-                dry_run,
-            ):
-                return False
+        installer = Path(tmpdir) / installer_name
+        if not _c.download_file(
+            f"{WINDOWS_GSTREAMER_BASE_URL}/{installer_name}",
+            installer,
+            dry_run,
+        ):
+            return False
+        if not _c.run_command(
+            [
+                str(installer),
+                "/VERYSILENT",
+                "/SUPPRESSMSGBOXES",
+                "/SP-",
+                "/NORESTART",
+                "/TYPE=devel",
+                f"/DIR={WINDOWS_GSTREAMER_PREFIX}",
+            ],
+            dry_run,
+        ):
+            return False
 
     prefix = WINDOWS_GSTREAMER_PREFIX
     _c.set_env_var("GSTREAMER_1_0_ROOT_MSVC_X86_64", prefix)
@@ -219,6 +263,7 @@ def install_windows(
     msvc: bool = False,
     msvc_arm64: bool = False,
     nsis: bool = False,
+    gdal: bool = False
 ) -> bool:
     """Install Windows dependencies."""
     _c.log_info("Installing Windows dependencies...")
@@ -229,6 +274,9 @@ def install_windows(
         return False
 
     if nsis and not install_windows_nsis(dry_run):
+        return False
+
+    if gdal and not install_windows_gdal(dry_run):
         return False
 
     if not skip_gstreamer:
@@ -252,7 +300,6 @@ def install_windows(
 
 __all__ = [
     "WINDOWS_GSTREAMER_BASE_URL",
-    "WINDOWS_GSTREAMER_INSTALL_DIR",
     "WINDOWS_GSTREAMER_PREFIX",
     "WINDOWS_VS_BUILDTOOLS_URL",
     "WINDOWS_VULKAN_INSTALL_DIR",

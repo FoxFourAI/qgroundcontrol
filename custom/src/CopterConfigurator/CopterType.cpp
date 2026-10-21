@@ -23,6 +23,11 @@ CopterMission* CopterType::currentMission()
     return _currentMission;
 }
 
+void CopterType::refresh()
+{
+    _update();
+}
+
 void CopterType::_currentMissionChangedCallback()
 {
     CopterMission* newMission = reinterpret_cast<CopterMission*>(sender());
@@ -68,6 +73,9 @@ void CopterType::_handleFacts(int componentId, Fact* fact)
 
 void CopterType::resetVgmBootType()
 {
+    if (!_typeChangeFact) {
+        return;
+    }
     _vgmBootType = Type(_typeChangeFact->rawValue().toInt());
     _update();
 }
@@ -88,6 +96,7 @@ CopterType::CopterType(Type type, Vehicle* vehicle, QObject* parent) : CopterSta
             break;
         case Plane:
             _missions.append(new CopterMission(CopterMission::Disable, {}, _vehicle, this));
+            _missions.append(new CopterMission(CopterMission::TerminalAttack, {}, _vehicle, this));
             break;
 
         case Bomber:

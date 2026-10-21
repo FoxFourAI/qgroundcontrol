@@ -4,6 +4,11 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QSettings>
 
+//FoxFour part
+#include <QtCore/QDir>
+#include <QtCore/QFileInfo>
+#include <QtCore/QRegularExpression>
+
 #include "QGCCacheTile.h"
 #include "QGCCachedTileSet.h"
 #include "QGCLoggingCategory.h"
@@ -182,6 +187,9 @@ void QGCCacheWorker::_runTask(QGCMapTask *task)
         break;
     case QGCMapTask::TaskType::taskImport:
         _importSets(task);
+        break;
+    case QGCMapTask::TaskType::taskExportMRF:
+        _exportSetAsMRF(task);
         break;
     default:
         qCWarning(QGCTileCacheWorkerLog) << "given unhandled task type" << task->type();
@@ -453,6 +461,26 @@ void QGCCacheWorker::_exportSets(QGCMapTask *mtask)
 
     auto progress = [task](int pct) { task->setProgress(pct); };
     DatabaseResult result = _database->exportSets(task->sets(), task->path(), progress);
+
+    if (!result.success) {
+        task->setError(result.errorString);
+        return;
+    }
+
+    task->setExportCompleted();
+}
+
+//FoxFour part
+void QGCCacheWorker::_exportSetAsMRF(QGCMapTask* mtask)
+{
+    if (!_testTask(mtask)) {
+        return;
+    }
+
+    QGCExportMRFTileTask* task = static_cast<QGCExportMRFTileTask*>(mtask);
+
+    auto progress = [task](int pct) { task->setProgress(pct); };
+    DatabaseResult result = _database->exportSetsAsMRF(task->sets(), task->path(), progress);
 
     if (!result.success) {
         task->setError(result.errorString);

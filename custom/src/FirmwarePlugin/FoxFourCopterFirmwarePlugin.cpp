@@ -1,0 +1,43 @@
+/****************************************************************************
+ *
+ * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
+ *
+ * QGroundControl is licensed according to the terms in the file
+ * COPYING.md in the root of the source code directory.
+ *
+ ****************************************************************************/
+
+#include "FoxFourCopterFirmwarePlugin.h"
+#include "FoxFourAutoPilotPlugin.h"
+#include "Vehicle.h"
+#include "Camera/FoxFourCameraControl.h"
+#include "ParameterMetaData/FoxFourParameterMetaData.h"
+AutoPilotPlugin* FoxFourCopterFirmwarePlugin::autopilotPlugin(Vehicle *vehicle) const
+{
+    return new FoxFourAutoPilotPlugin(vehicle, vehicle);
+}
+
+MavlinkCameraControlInterface *FoxFourCopterFirmwarePlugin::createCameraControl(const mavlink_camera_information_t *info, Vehicle *vehicle, int compID, QObject *parent) const
+{
+    return new FoxFourCameraControl(info,vehicle,compID,parent);
+}
+
+const QVariantList &FoxFourCopterFirmwarePlugin::toolIndicators(const Vehicle *vehicle)
+{
+    if(_toolIndicatorList.isEmpty()){
+        _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/CopterIndicator.qml")));
+        _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/VioIndicator.qml")));
+        _toolIndicatorList.append(ArduCopterFirmwarePlugin::toolIndicators(vehicle));
+#ifdef SNS_ENABLE
+        _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Sine/qml/Toolbar/EK3Sources.qml")));
+#else
+        _toolIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/Custom/qml/Toolbar/EK3Sources.qml")));
+#endif
+    }
+    return _toolIndicatorList;
+}
+
+ParameterMetaData* FoxFourCopterFirmwarePlugin::_createParameterMetaData() {
+    //returning custom parameters metadata
+    return new FoxFourParameterMetaData(this);
+}

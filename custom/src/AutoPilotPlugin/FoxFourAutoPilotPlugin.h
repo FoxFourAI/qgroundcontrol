@@ -9,6 +9,8 @@
 #include "VioTrajectory/VioTrajectoryPoints.h"
 #include "CopterConfigurator/CopterConfigurator.h"
 #include "StatusHandler/StatusHandler.h"
+#include "Dialect/VGMDialect.h"
+
 class Vehicle;
 class FoxFourCameraControl;
 class FoxFourAutoPilotPlugin : public APMAutoPilotPlugin {
@@ -24,6 +26,7 @@ class FoxFourAutoPilotPlugin : public APMAutoPilotPlugin {
     Q_PROPERTY(bool exposureAvailable READ exposureAvailable NOTIFY exposureAvailableChanged)
     Q_PROPERTY(CopterConfigurator* configurator MEMBER _configurator)
     Q_PROPERTY(StatusHandler* computerStatus MEMBER _computerStatus NOTIFY childsCreated)
+    Q_PROPERTY(VGMDialect* dialectHandler MEMBER _dialectHandler)
 public:
     explicit FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent = nullptr);
     ~FoxFourAutoPilotPlugin();
@@ -37,6 +40,7 @@ public:
     MapMatching* mapMatching() {return _mapMatching;}
     bool isDropper() { return _isDropper; }
     OnboardComputersManager* onboardComputersManager();
+    CopterConfigurator* configurator() {return _configurator;}
     bool exposureAvailable() {return _exposureAvailable;}
 signals:
     void exposureAvailableChanged();
@@ -45,6 +49,7 @@ signals:
     void buttonListChanged();
     void childsCreated();
 private slots:
+    void _recalcSetupComplete();
     void setIsDropper(int type);
     void handleStorageCapacityChanged(uint32_t total, uint32_t free);
     void handleFactAdded(int compinentId, Fact* fact);
@@ -63,4 +68,6 @@ private:
     QString _storageCapacityStr = "0 / 0 MB";
     CopterConfigurator* _configurator = nullptr;
     QMetaObject::Connection _cameraConnection;
+    VGMDialect* _dialectHandler = nullptr;
+
 };

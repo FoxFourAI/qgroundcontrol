@@ -2,50 +2,52 @@
 
 #include <QtCore/QObject>
 
+#include "AutoPilotWidget/AutoPilotWidget.h"
 #include "QGCLoggingCategory.h"
 #include "Vehicle.h"
 
 Q_DECLARE_LOGGING_CATEGORY(EKSourcesLog)
 
 class Vehicle;
+class Fact;
 
-class EKSources : public QObject {
+class EKSources : public AutoPilotWidget
+{
     Q_OBJECT
     Q_PROPERTY(QStringList sources READ sources NOTIFY sourcesChanged)
-    Q_PROPERTY(int currentSource READ currentSource NOTIFY currentSourceChanged)
-    Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
+    Q_PROPERTY(Fact* ekfSrcFact MEMBER _ekfSrcFact NOTIFY ekfSrcFactChanged)
     Q_PROPERTY(bool dirty READ dirty NOTIFY dirtyChanged)
+
 public:
     EKSources(Vehicle* vehicle, QObject* parent);
     QStringList sources() const;
-    int currentSource();
+    Fact* ekfSrcFact();
     bool visible();
-    bool dirty() {return _dirty;}
+
+    bool dirty() { return _dirty; }
+
     Q_INVOKABLE void setSource(int index);
+
 signals:
     void sourcesChanged();
     void visibleChanged();
-    void currentSourceChanged();
+    void ekfSrcFactChanged();
     void dirtyChanged();
+
 private slots:
-    void _fetchSources(bool ready);
-    void _setVisible(bool visible);
-    void _setCurrentSource(int indx);
+    void _handleFact(Fact* fact);
 
 private:
-    static void _changeSrcHandler(void* responceData,[[maybe_unused]] int compid, const mavlink_command_ack_t& ack,
+    static void _changeSrcHandler(void* responceData, [[maybe_unused]] int compid, const mavlink_command_ack_t& ack,
                                   Vehicle::MavCmdResultFailureCode_t failureCode);
     void _setDirty(bool newState);
 
 private:
     Vehicle* _vehicle = nullptr;
-    const QString _ekfParamName = "SCR_EKF_SRC";
     QStringList _sources;
-    bool _canSwitchSources = false;
-    bool _visible = false;
+    Fact* _ekfSrcFact = nullptr;
+    QVector<Fact*> _sourcesFact;
     bool _dirty = false;
-    QMetaObject::Connection _paramConnection;
     int _refreshFailedCount = 0;
-    int _currentSource = -1;
     const int _maximumFaildeCount = 3;
 };

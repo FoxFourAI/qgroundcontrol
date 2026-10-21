@@ -65,35 +65,52 @@ qt_add_library(FoxFourModule STATIC)
 
 # new method of setting aliases
 qgc_set_qt_resource_alias(
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourCustomSimpleMessageDialog.qml
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourCustomPopupDialog.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/FoxFourCustomSimpleMessageDialog.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/FoxFourCustomPopupDialog.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Toolbar/VioIndicatorPage.qml
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourControlPage.qml
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CopterConfiguratorPage.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/FoxFourControlPage.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/CopterConfiguratorPage.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusButton.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusRadioButton.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusRect.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusLabel.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusColors.qml
-)
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSD.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDCanvas.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDLadder.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDStyle.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDCompass.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDRoll.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDHorizon.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/ValueHistory.qml
+    )
 
 qt_add_qml_module(FoxFourModule
     URI FoxFour.Widgets
     VERSION 1.0
     RESOURCE_PREFIX /qml
     QML_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourCustomSimpleMessageDialog.qml
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourCustomPopupDialog.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/FoxFourCustomSimpleMessageDialog.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/FoxFourCustomPopupDialog.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Toolbar/VioIndicatorPage.qml
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/FoxFourControlPage.qml
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/Qml/CopterConfiguratorPage.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/FoxFourControlPage.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/CopterConfiguratorPage.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusButton.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusRadioButton.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusRect.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusLabel.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/res/Control/StatusColors.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSD.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDCanvas.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDLadder.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDStyle.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDCompass.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDRoll.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/FlyViewVideo/OnScreenDisplay/OSDHorizon.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/Custom/ValueHistory.qml
     NO_PLUGIN
     SOURCES
+
 )
 
 # ============================================================================
@@ -105,8 +122,10 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FoxFourPlugin.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoPilotPlugin/FoxFourAutoPilotPlugin.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoPilotPlugin/FoxFourAutoPilotPlugin.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourFirmwarePlugin.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourFirmwarePlugin.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourCopterFirmwarePlugin.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourCopterFirmwarePlugin.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourPlaneFirmwarePlugin.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourPlaneFirmwarePlugin.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourFirmwarePluginFactory.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/FoxFourFirmwarePluginFactory.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera/FoxFourCameraControl.h
@@ -143,6 +162,8 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CopterConfigurator/CopterMission.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ParameterMetaData/FoxFourParameterMetaData.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ParameterMetaData/FoxFourParameterMetaData.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoPilotWidget/AutoPilotWidget.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoPilotWidget/AutoPilotWidget.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/plugins/Plugin.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/StatusHandler/StatusHandler.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/StatusHandler/StatusHandler.cpp
@@ -154,8 +175,6 @@ if(${QGC_ENABLE_GST_VIDEOSTREAMING})
         ${CUSTOM_SOURCES}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/FoxFourGstVideoReceiver.h
         ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/FoxFourGstVideoReceiver.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/KLVMetadata.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/KLVMetadata.cpp
         CACHE INTERNAL "adding custom gstreamer" FORCE
     )
 endif()

@@ -1,9 +1,13 @@
 #include "QGCCorePlugin.h"
 #include "AppSettings.h"
-#if defined(Q_OS_ANDROID) || defined(Q_OS_IOS)
-#include "MavlinkSettings.h"
+#ifdef Q_OS_ANDROID
+#include "Viewer3DSettings.h"
+#ifndef QGC_NO_SERIAL_LINK
+#include "AndroidSerial.h"
+#endif
 #endif
 #include "FactMetaData.h"
+#include "FirmwarePluginManager.h"
 #include "QGCMAVLink.h"
 #include "HorizontalFactValueGrid.h"
 #include "InstrumentValueData.h"
@@ -87,11 +91,6 @@ const QVariantList &QGCCorePlugin::analyzePages()
             QUrl::fromUserInput(QStringLiteral("qrc:/qmlimages/OnboardLogIcon.svg")),
             nullptr, true /* requiresVehicle */)),
         QVariant::fromValue(new QmlComponentInfo(
-            tr("Onboard Logs (FTP)"),
-            QUrl::fromUserInput(QStringLiteral("qrc:/qml/QGroundControl/AnalyzeView/OnboardLogsFtp/OnboardLogFtpPage.qml")),
-            QUrl::fromUserInput(QStringLiteral("qrc:/qmlimages/OnboardLogIcon.svg")),
-            nullptr, true /* requiresVehicle */)),
-        QVariant::fromValue(new QmlComponentInfo(
             tr("GeoTag Images"),
             QUrl::fromUserInput(QStringLiteral("qrc:/qml/QGroundControl/AnalyzeView/GeoTag/GeoTagPage.qml")),
             QUrl::fromUserInput(QStringLiteral("qrc:/qml/QGroundControl/AnalyzeView/GeoTag/GeoTagIcon.svg")))),
@@ -128,7 +127,13 @@ const QmlObjectListModel *QGCCorePlugin::customMapItems()
 void QGCCorePlugin::adjustSettingMetaData(const QString &settingsGroup, FactMetaData &metaData, bool &userVisible)
 {
 #ifdef Q_OS_ANDROID
-    Q_UNUSED(userVisible);
+    // 3D view rendering is too flaky on Android GPUs/drivers; force the
+    // feature off. Hiding the setting also forces it to its default value
+    // (false) regardless of any previously saved user setting.
+    if ((settingsGroup == Viewer3DSettings::settingsGroup) && (metaData.name() == Viewer3DSettings::enabledName)) {
+        userVisible = false;
+        return;
+    }
 #endif
 
     if (settingsGroup == AppSettings::settingsGroup) {
@@ -142,18 +147,21 @@ void QGCCorePlugin::adjustSettingMetaData(const QString &settingsGroup, FactMeta
             metaData.setRawDefaultValue(outdoorPalette);
             return;
         }
-#if defined(Q_OS_ANDROID) || defined(Q_OS_IOS)
-        else if (metaData.name() == MavlinkSettings::telemetrySaveName) {
-            metaData.setRawDefaultValue(false);
-            return;
-        }
-#endif
 #ifndef Q_OS_ANDROID
         else if (metaData.name() == AppSettings::androidDontSaveToSDCardName) {
             userVisible = false;
             return;
         }
 #endif
+        else if (metaData.name() == AppSettings::androidUsePosixSerialName) {
+#if defined(Q_OS_ANDROID) && !defined(QGC_NO_SERIAL_LINK)
+            // Only show when the device actually exposes accessible serial device nodes
+            userVisible = AndroidSerial::hasPosixSerialPorts();
+#else
+            userVisible = false;
+#endif
+            return;
+        }
     }
 }
 
@@ -163,6 +171,16 @@ QString QGCCorePlugin::showAdvancedUIMessage() const
               "If used incorrectly, this may cause your vehicle to malfunction thus voiding your warranty. "
               "You should do so only if instructed by customer support. "
               "Are you sure you want to enable Advanced Mode?");
+}
+
+bool QGCCorePlugin::showInitialSetupVehiclePreferences() const
+{
+    return !FirmwarePluginManager::instance()->singleVehicleSupport();
+}
+
+bool QGCCorePlugin::showInitialSetupMeasurementUnits() const
+{
+    return true;
 }
 
 void QGCCorePlugin::factValueGridCreateDefaultSettings(FactValueGrid* factValueGrid)
@@ -287,6 +305,11 @@ QQmlApplicationEngine *QGCCorePlugin::createQmlApplicationEngine(QObject *parent
     return qmlEngine;
 }
 
+void QGCCorePlugin::destroyQmlApplicationEngine(QQmlApplicationEngine *qmlEngine)
+{
+    delete qmlEngine;
+}
+
 void QGCCorePlugin::createRootWindow(QQmlApplicationEngine *qmlEngine)
 {
     qmlEngine->load(QUrl(QStringLiteral("qrc:/qml/QGroundControl/MainWindow.qml")));
@@ -316,6 +339,15 @@ const QVariantList &QGCCorePlugin::toolBarIndicators()
     );
 
     return toolBarIndicatorList;
+}
+
+QList<int> QGCCorePlugin::firstRunPromptStdIds()
+{
+    if (showInitialSetupVehiclePreferences() || showInitialSetupMeasurementUnits()) {
+        return { kInitialSetupPromptId };
+    }
+
+    return {};
 }
 
 QVariantList QGCCorePlugin::firstRunPromptsToShow()

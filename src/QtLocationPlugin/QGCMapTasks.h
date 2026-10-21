@@ -337,3 +337,34 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+
+// FoxFour part
+class QGCExportMRFTileTask : public QGCMapTask
+{
+    Q_OBJECT
+
+public:
+    explicit QGCExportMRFTileTask(const QList<TileSetRecord>& sets, const QString& path, QObject* parent = nullptr)
+        : QGCMapTask(TaskType::taskExportMRF, parent), m_sets(sets), m_path(path)
+    {}
+
+    ~QGCExportMRFTileTask() = default;
+
+    const QList<TileSetRecord>& sets() const { return m_sets; }
+
+    QString path() const { return m_path; }
+
+    void setExportCompleted() { emit actionCompleted(); }
+
+    void setProgress(int percentage) { emit actionProgress(percentage); }
+
+signals:
+    void actionCompleted();
+    void actionProgress(int percentage);
+
+private:
+    const QList<TileSetRecord> m_sets;
+    const QString m_path;
+};
+
+//-----------------------------------------------------------------------------

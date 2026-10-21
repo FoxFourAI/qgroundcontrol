@@ -80,7 +80,7 @@ public:
     Q_PROPERTY(bool                 singleFirmwareSupport   READ    singleFirmwareSupport   CONSTANT)
     Q_PROPERTY(bool                 singleVehicleSupport    READ    singleVehicleSupport    CONSTANT)
     Q_PROPERTY(bool                 px4ProFirmwareSupported READ    px4ProFirmwareSupported CONSTANT)
-    Q_PROPERTY(int                  apmFirmwareSupported    READ    apmFirmwareSupported    CONSTANT)
+    Q_PROPERTY(bool                 apmFirmwareSupported    READ    apmFirmwareSupported    CONSTANT)
     Q_PROPERTY(QGeoCoordinate       flightMapPosition       READ    flightMapPosition       WRITE setFlightMapPosition  NOTIFY flightMapPositionChanged)
     Q_PROPERTY(double               flightMapZoom           READ    flightMapZoom           WRITE setFlightMapZoom      NOTIFY flightMapZoomChanged)
     Q_PROPERTY(double               flightMapInitialZoom    MEMBER  _flightMapInitialZoom   CONSTANT)   ///< Zoom level to use when either gcs or vehicle shows up for first time
@@ -99,7 +99,6 @@ public:
     Q_PROPERTY(qreal zOrderWaypointIndicators   READ zOrderWaypointIndicators   CONSTANT)
     Q_PROPERTY(qreal zOrderTrajectoryLines      READ zOrderTrajectoryLines      CONSTANT)
     Q_PROPERTY(qreal zOrderWaypointLines        READ zOrderWaypointLines        CONSTANT)
-    Q_PROPERTY(bool     hasAPMSupport           READ hasAPMSupport              CONSTANT)
 
 
     //-------------------------------------------------------------------------
@@ -114,12 +113,12 @@ public:
 
 
 
-    Q_INVOKABLE void    startPX4MockLink            (bool sendStatusText, bool enableCamera, bool enableGimbal);
-    Q_INVOKABLE void    startGenericMockLink        (bool sendStatusText, bool enableCamera, bool enableGimbal);
-    Q_INVOKABLE void    startAPMArduCopterMockLink  (bool sendStatusText, bool enableCamera, bool enableGimbal);
-    Q_INVOKABLE void    startAPMArduPlaneMockLink   (bool sendStatusText, bool enableCamera, bool enableGimbal);
-    Q_INVOKABLE void    startAPMArduSubMockLink     (bool sendStatusText, bool enableCamera, bool enableGimbal);
-    Q_INVOKABLE void    startAPMArduRoverMockLink   (bool sendStatusText, bool enableCamera, bool enableGimbal);
+    Q_INVOKABLE void    startPX4MockLink            (bool sendStatusText, bool enableCamera, bool enableGimbal, bool enableProximity = false, int videoStreamType = 0);
+    Q_INVOKABLE void    startGenericMockLink        (bool sendStatusText, bool enableCamera, bool enableGimbal, bool enableProximity = false, int videoStreamType = 0);
+    Q_INVOKABLE void    startAPMArduCopterMockLink  (bool sendStatusText, bool enableCamera, bool enableGimbal, bool enableProximity = false, bool apmStartFreshParams = false, int videoStreamType = 0);
+    Q_INVOKABLE void    startAPMArduPlaneMockLink   (bool sendStatusText, bool enableCamera, bool enableGimbal, bool enableProximity = false, bool apmStartFreshParams = false, int videoStreamType = 0);
+    Q_INVOKABLE void    startAPMArduSubMockLink     (bool sendStatusText, bool enableCamera, bool enableGimbal, bool enableProximity = false, bool apmStartFreshParams = false, int videoStreamType = 0);
+    Q_INVOKABLE void    startAPMArduRoverMockLink   (bool sendStatusText, bool enableCamera, bool enableGimbal, bool enableProximity = false, bool apmStartFreshParams = false, int videoStreamType = 0);
     Q_INVOKABLE void    stopOneMockLink             (void);
 
     Q_INVOKABLE bool linesIntersect(QPointF xLine1, QPointF yLine1, QPointF xLine2, QPointF yLine2);
@@ -179,12 +178,6 @@ public:
     qreal zOrderVehicles            () { return 49; }
     qreal zOrderTrajectoryLines     () { return 48; }
     qreal zOrderWaypointLines       () { return 47; }
-
-#if defined(QGC_NO_ARDUPILOT_DIALECT)
-    bool    hasAPMSupport           () { return false; }
-#else
-    bool    hasAPMSupport           () { return true; }
-#endif
 
     QString elevationProviderName   ();
     QString elevationProviderNotice ();

@@ -34,6 +34,7 @@ public class QGCActivity extends QtActivity {
         super.onCreate(savedInstanceState);
         m_instance = this;
 
+        QGCLogger.initialize(getApplicationContext());
         nativeInit();
         setupMulticastLock();
 
@@ -44,6 +45,9 @@ public class QGCActivity extends QtActivity {
 
     @Override
     protected void onPause() {
+        if (m_storagePermissionController != null) {
+            m_storagePermissionController.onPause();
+        }
         QGCSDLManager.onPause();
         super.onPause();
     }
@@ -52,6 +56,13 @@ public class QGCActivity extends QtActivity {
     protected void onResume() {
         super.onResume();
         QGCSDLManager.onResume();
+
+        if (m_storagePermissionController != null) {
+            final Boolean granted = m_storagePermissionController.onResume();
+            if (granted != null) {
+                nativeStoragePermissionsResult(granted);
+            }
+        }
     }
 
     @Override
