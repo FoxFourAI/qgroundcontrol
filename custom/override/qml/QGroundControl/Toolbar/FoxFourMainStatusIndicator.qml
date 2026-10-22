@@ -246,7 +246,6 @@ RowLayout {
             }
 
             SettingsGroupLayout {
-
                 id:                             f4CompStatusGroup
                 heading: qsTr("F4 Computer status")
                 property var app:               _activeVehicle.autopilotPlugin
@@ -331,7 +330,7 @@ RowLayout {
                 }
                 QGCDelayButton {
                     property var paramSetter:   QGroundControl.corePlugin.parameterSetter
-                    property var compId:        _activeVehicle.autopilotPlugin.onboardComputersManager.currentComputerComponent
+                    property var compId:        f4CompStatusGroup.app.onboardComputersManager.currentComputerComponent
                     Layout.fillWidth: true
                     text: qsTr("Clear logs and reboot VGM")
                     onActivated: {
@@ -345,7 +344,7 @@ RowLayout {
                     interval: 1000
                     repeat: false
                     onTriggered: {
-                        app.rebootOnboardComputers()
+                        f4CompStatusGroup.app.rebootOnboardComputers()
                     }
                 }
             }
