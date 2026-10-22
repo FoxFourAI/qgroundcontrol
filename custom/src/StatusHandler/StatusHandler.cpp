@@ -1,5 +1,6 @@
 #include "StatusHandler.h"
 
+#include "AppMessages.h"
 #include "Vehicle.h"
 #include "FoxFourAutoPilotPlugin.h"
 StatusHandler::StatusHandler(Vehicle* vehicle, QObject* parent) : QObject(parent), _vehicle(vehicle)
@@ -36,9 +37,15 @@ void StatusHandler::handleMavlinkMessage(const mavlink_message_t& msg)
     _ramInfo["total"] = static_cast<double>(static_cast<uint64_t>(decoded.ram_total) << 20) / 1e9;
     _ramInfo["usage"] = static_cast<double>(static_cast<uint64_t>(decoded.ram_usage) << 20) / 1e9;
 
-    for (int i = 0; i < 4 && decoded.storage_type[i] < _storageNames.count(); i++) {
+    for (int i = 0; i < 4 && decoded.storage_type[i] != UINT32_MAX; i++) {
         QVariantMap storageInfo;
-        storageInfo["type"] = _storageNames[decoded.storage_type[i]];
+        QString fsType = _storageTypes[decoded.storage_type[i] >> 16];
+        storageInfo["type"] = _storageNames[decoded.storage_type[i] & 0xFF];
+        storageInfo["fsType"] = fsType;
+        if(_badStorageTypes.contains(fsType) && !_warningShown) {
+            QGC::showCriticalVehicleMessage("Wrong filesystem detected! Maximum size of secure logs or captured video is 4 GB!\n Consider changing filesystem type!");
+            _warningShown = true;
+        }
         storageInfo["usage"] = static_cast<double>(static_cast<uint64_t>(decoded.storage_usage[i]) << 20) / 1e9;
         storageInfo["total"] = static_cast<double>(static_cast<uint64_t>(decoded.storage_total[i]) << 20) / 1e9;
         list.append(storageInfo);

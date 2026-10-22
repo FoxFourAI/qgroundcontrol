@@ -255,12 +255,13 @@ RowLayout {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: ScreenTools.defaultFontPixelWidth
-                    Rectangle {
+                    StatusRect {
                         Layout.fillWidth: true
                         property var info: f4CompStatusGroup.computerStatus.cpuInfo
                         implicitHeight: ScreenTools.defaultFontPixelHeight * 1.2
                         visible: info.totalUsage !== undefined
                         radius: ScreenTools.defaultBorderRadius
+                        statusIndex: 4
                         StatusRect {
                             anchors.top: parent.top
                             anchors.bottom: parent.bottom
@@ -274,12 +275,13 @@ RowLayout {
                             anchors.centerIn: parent
                         }
                     }
-                    Rectangle {
+                    StatusRect {
                         Layout.fillWidth: true
                         property var info: f4CompStatusGroup.computerStatus.ramInfo
                         implicitHeight: ScreenTools.defaultFontPixelHeight * 1.2
                         visible: info.total !== undefined
                         radius: ScreenTools.defaultBorderRadius
+                        statusIndex: 4
                         StatusRect {
                             anchors.top: parent.top
                             anchors.bottom: parent.bottom
@@ -296,12 +298,13 @@ RowLayout {
                 }
                 Repeater {
                     model: f4CompStatusGroup.computerStatus.storageInfo
-                    delegate: Rectangle {
+                    delegate: StatusRect {
                         Layout.fillWidth: true
                         property var storageData: modelData
                         implicitHeight: ScreenTools.defaultFontPixelHeight * 1.2
-                        visible: storageData.type !== "SSD"
+                        visible: storageData.type !== "EMMC"
                         radius: ScreenTools.defaultBorderRadius
+                        statusIndex: 4
                         StatusRect {
                             anchors.top: parent.top
                             anchors.bottom: parent.bottom
@@ -319,26 +322,8 @@ RowLayout {
                                 return status
                             }
                         }
-
-                        // Rectangle {
-                        //     anchors.top: parent.top
-                        //     anchors.bottom: parent.bottom
-                        //     anchors.left: parent.left
-                        //     width: parent.width * parent.storageData.usage / parent.storageData.total
-                        //     color: {
-                        //         const available = parent.storageData.total - parent.storageData.usage
-                        //         if (available <= 2) {
-                        //             return qgcPal.alertText
-                        //         } ///else if (available <= 6) {
-                        //             return qgcPal.buttonHighlight
-                        //         // }
-                        //         return qgcPal.colorGreen
-                        //     }
-
-                        //     radius: ScreenTools.defaultBorderRadius
-                        // }
                         QGCLabel{
-                            text: qsTr(parent.storageData.type + ": " + parent.storageData.usage.toFixed(2) + " / " + parent.storageData.total.toFixed(2) + "GB")
+                            text: qsTr("%1 (%2): %3/%4 GB").arg(parent.storageData.type).arg(parent.storageData.fsType).arg(parent.storageData.usage.toFixed(2)).arg(parent.storageData.total.toFixed(2))
                             font.bold: true
                             anchors.centerIn: parent
                         }

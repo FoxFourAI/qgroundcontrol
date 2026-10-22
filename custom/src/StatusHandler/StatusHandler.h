@@ -21,7 +21,8 @@ private slots:
 
 private:
     const QStringList _storageNames{"HDD", "SSD", "EMMC", "SD", "SD+"};
-
+    const QStringList _storageTypes{"Unkhown","vfat","msdos","f2fs","exfat","ext2","ext3","ext4","xfs","btrfs","ntfs"};
+    const QStringList _badStorageTypes = _storageTypes.mid(1, 3);
     Vehicle* _vehicle = nullptr;
     /** cpuInfo
      *  {
@@ -47,6 +48,8 @@ private:
      *      }
      */
     QVariantList _storageInfo;
+
+    bool _warningShown = false;
 };
 
 #endif  // STATUSHANDLER_H
