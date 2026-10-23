@@ -3,7 +3,7 @@ import QtQuick.Layouts
 
 import QGroundControl
 import QGroundControl.Controls
-
+import FoxFour.Widgets 1.0
 RowLayout {
     id:         control
     spacing:    ScreenTools.defaultFontPixelWidth
@@ -246,17 +246,91 @@ RowLayout {
             }
 
             SettingsGroupLayout {
-                heading: qsTr("VGM Logs")
-                LabelledLabel {
-                    property var app:           _activeVehicle.autopilotPlugin
+                id:                             f4CompStatusGroup
+                heading: qsTr("F4 Computer status")
+                property var app:               _activeVehicle.autopilotPlugin
+                property var computerStatus:    app.computerStatus
+
+                RowLayout {
                     Layout.fillWidth: true
-                    label: qsTr("Space available:")
-                    labelText: app.storageCapacity
+                    spacing: ScreenTools.defaultFontPixelWidth
+                    StatusRect {
+                        Layout.fillWidth: true
+                        property var info: f4CompStatusGroup.computerStatus.cpuInfo
+                        implicitHeight: ScreenTools.defaultFontPixelHeight * 1.2
+                        visible: info.totalUsage !== undefined
+                        radius: ScreenTools.defaultBorderRadius
+                        statusIndex: 4
+                        StatusRect {
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.left: parent.left
+                            width: parent.width * parent.info.totalUsage / 100
+                            statusIndex: 0
+                        }
+                        QGCLabel{
+                            text: qsTr("CPU " + parent.info.totalUsage + "%")
+                            font.bold: true
+                            anchors.centerIn: parent
+                        }
+                    }
+                    StatusRect {
+                        Layout.fillWidth: true
+                        property var info: f4CompStatusGroup.computerStatus.ramInfo
+                        implicitHeight: ScreenTools.defaultFontPixelHeight * 1.2
+                        visible: info.total !== undefined
+                        radius: ScreenTools.defaultBorderRadius
+                        statusIndex: 4
+                        StatusRect {
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.left: parent.left
+                            width: parent.width * parent.info.usage / parent.info.total
+                            statusIndex: 0
+                        }
+                        QGCLabel{
+                            text: qsTr("RAM " + parent.info.usage.toFixed(2) + " / " + parent.info.total.toFixed(2) + "GB")
+                            font.bold: true
+                            anchors.centerIn: parent
+                        }
+                    }
+                }
+                Repeater {
+                    model: f4CompStatusGroup.computerStatus.storageInfo
+                    delegate: StatusRect {
+                        Layout.fillWidth: true
+                        property var storageData: modelData
+                        implicitHeight: ScreenTools.defaultFontPixelHeight * 1.2
+                        visible: storageData.type !== "EMMC"
+                        radius: ScreenTools.defaultBorderRadius
+                        statusIndex: 4
+                        StatusRect {
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.left: parent.left
+                            width: parent.width * parent.storageData.usage / parent.storageData.total
+                            statusIndex: {
+                                const available = parent.storageData.total - parent.storageData.usage
+                                let status = 1
+                                if (available <= 6) {
+                                    status ++
+                                }
+                                if (available <= 2) {
+                                    status ++
+                                }
+                                return status
+                            }
+                        }
+                        QGCLabel{
+                            text: qsTr("%1 (%2): %3/%4 GB").arg(parent.storageData.type).arg(parent.storageData.fsType).arg(parent.storageData.usage.toFixed(2)).arg(parent.storageData.total.toFixed(2))
+                            font.bold: true
+                            anchors.centerIn: parent
+                        }
+                    }
                 }
                 QGCDelayButton {
                     property var paramSetter:   QGroundControl.corePlugin.parameterSetter
-                    property var app:           _activeVehicle.autopilotPlugin
-                    property var compId:        globals.activeVehicle.autopilotPlugin.onboardComputersManager.currentComputerComponent
+                    property var compId:        f4CompStatusGroup.app.onboardComputersManager.currentComputerComponent
                     Layout.fillWidth: true
                     text: qsTr("Clear logs and reboot VGM")
                     onActivated: {
@@ -266,12 +340,11 @@ RowLayout {
                     }
                 }
                 Timer{
-                    property var app:           _activeVehicle.autopilotPlugin
                     id: rebootTimer
                     interval: 1000
                     repeat: false
                     onTriggered: {
-                        app.rebootOnboardComputers()
+                        f4CompStatusGroup.app.rebootOnboardComputers()
                     }
                 }
             }
@@ -279,7 +352,10 @@ RowLayout {
             SettingsGroupLayout {
                 //Layout.fillWidth:   true
                 heading:            qsTr("Vehicle Messages")
-
+                QGCLabel {
+                    text: qsTr("No new vehicle messages")
+                    visible: _activeVehicle.messageCount === 0
+                }
                 Item{
                     Layout.preferredWidth:      ScreenTools.defaultFontPixelWidth * 50
                     height:                     ScreenTools.defaultFontPixelHeight * 20
@@ -316,11 +392,6 @@ RowLayout {
                             }
                         }
                     }
-                }
-
-                QGCLabel {
-                    text: qsTr("No new vehicle messages")
-                    visible: vehicleMessageList.noMessages
                 }
             }
 

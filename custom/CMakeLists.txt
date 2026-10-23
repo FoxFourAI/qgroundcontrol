@@ -165,6 +165,8 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoPilotWidget/AutoPilotWidget.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoPilotWidget/AutoPilotWidget.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/plugins/Plugin.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/StatusHandler/StatusHandler.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/StatusHandler/StatusHandler.cpp
     CACHE INTERNAL "adding custom sources" FORCE
 )
 
