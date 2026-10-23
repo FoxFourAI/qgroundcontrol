@@ -126,7 +126,7 @@ LONG WINAPI WindowsUnhandledExceptionFilter(EXCEPTION_POINTERS* ep)
         (void) WriteFile(h, narrow, (DWORD)sizeof(narrow) - 1, &ignored, nullptr);
     }
 
-    return EXCEPTION_EXECUTE_HANDLER;
+    return EXCEPTION_CONTINUE_SEARCH;
 }
 
 void setWindowsErrorModes(bool quietWindowsAsserts)
