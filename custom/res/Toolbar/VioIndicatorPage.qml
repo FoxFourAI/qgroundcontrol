@@ -21,7 +21,7 @@ ToolIndicatorPage {
 
                 FactCheckBoxSlider {
                     Layout.fillWidth: true
-                    text: qsTr("Eanble")
+                    text: qsTr("Enable")
                     fact: comparer.user2Fact
                 }
 

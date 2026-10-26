@@ -23,9 +23,16 @@ Item {
         fillMode: Image.PreserveAspectFit
         property bool _outdoorPalette: qgcPal.globalTheme === QGCPalette.Light
         QGCMouseArea {
+            cursorShape: Qt.PointingHandCursor
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
             anchors.fill: parent
-            onClicked: mainWindow.showIndicatorDrawer(foxFourControlPanel,
-                                                      foxFourLogo)
+            onClicked: (mouse) =>{
+                            if (mouse.button === Qt.LeftButton) {
+                               mainWindow.showVehicleConfigParametersPage()
+                            } else {
+                               mainWindow.showIndicatorDrawer(foxFourControlPanel, foxFourLogo)
+                            }
+                       }
         }
     }
 
@@ -80,6 +87,17 @@ Item {
                         text: parent.fact.shortDescription
                     }
                 }
+
+                FactCheckBoxSlider {
+                    Layout.fillWidth: true
+                    fact: control._settings.useFTP
+                    text: fact.label
+                    ToolTip {
+                        visible: parent.hovered
+                        text: parent.fact.shortDescription
+                    }
+                }
+
                 FactCheckBoxSlider {
                     Layout.fillWidth: true
                     fact: control._settings.directVGM

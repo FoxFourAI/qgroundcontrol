@@ -60,9 +60,17 @@ ParameterManager::ParameterManager(Vehicle *vehicle)
     (void) connect(&_hashCheckTimer, &QTimer::timeout, this, &ParameterManager::_hashCheckTimeout);
 
     //FoxFour part
-    if (SettingsManager::instance()->foxFourSettings()->minimalMode()) {
+    if (SettingsManager::instance()->foxFourSettings()->minimalMode()->rawValue().toBool()) {
         _disableAllRetries = true;
     }
+
+    if (!SettingsManager::instance()->foxFourSettings()->useFTP()->rawValue().toBool()) {
+        _tryftp = false;
+    }
+
+#ifdef SNS_ENALE
+    _tryftp = false;
+#endif
 
     _paramRequestListTimer.setSingleShot(true);
     _paramRequestListTimer.setInterval(QGC::runningUnitTests() ? kTestInitialRequestIntervalMs : kParamRequestListTimeoutMs);
@@ -107,8 +115,8 @@ void ParameterManager::_updateProgressBar()
 void ParameterManager::mavlinkMessageReceived(const mavlink_message_t &message)
 {
         // FoxFourFIXME: we are not using FTP as this way updating parameters from other components other than autopilot is not happening
-        // if (_tryftp && (message.compid == MAV_COMP_ID_AUTOPILOT1) && !_initialLoadComplete)
-        // return;
+    if (_tryftp && (message.compid == MAV_COMP_ID_AUTOPILOT1) && !_initialLoadComplete)
+        return;
 
     if (message.msgid == MAVLINK_MSG_ID_PARAM_VALUE) {
         mavlink_param_value_t param_value{};
@@ -134,7 +142,6 @@ void ParameterManager::mavlinkMessageReceived(const mavlink_message_t &message)
 
 void ParameterManager::_handleParamValue(int componentId, const QString &parameterName, int parameterCount, int parameterIndex, MAV_PARAM_TYPE mavParamType, const QVariant &parameterValue)
 {
-
     qCDebug(ParameterManagerVerbose1Log) << _logVehiclePrefix(componentId) <<
                                             "_parameterUpdate" <<
                                             "name:" << parameterName <<

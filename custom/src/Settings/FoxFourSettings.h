@@ -14,7 +14,9 @@ public:
 
     DEFINE_SETTING_NAME_GROUP()
 
+    //minimal mode part
     DEFINE_SETTINGFACT(minimalMode)
+    DEFINE_SETTINGFACT(useFTP)
     DEFINE_SETTINGFACT(trackingRate)
     DEFINE_SETTINGFACT(cacheVehicleParameters)
     DEFINE_SETTINGFACT(autoConfigureStream)
