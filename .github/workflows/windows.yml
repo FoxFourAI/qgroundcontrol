@@ -16,9 +16,10 @@ on:
       build_type:
         description: 'Build type'
         required: false
-        default: 'Release'
+        default: 'RelWithDebInfo'
         type: choice
         options:
+          - RelWithDebInfo
           - Release
           - Debug
 
@@ -56,7 +57,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build_type: ['${{ inputs.build_type || ''Release'' }}']
+        build_type: ['${{ inputs.build_type || ''RelWithDebInfo'' }}']
         variant: [amd64]
         include:
           - variant: amd64
@@ -149,7 +150,7 @@ jobs:
           build-type: ${{ matrix.build_type }}
 
       - name: Verify Executable
-        if: matrix.build_type == 'Release' && matrix.arch != 'win64_msvc2022_arm64_cross_compiled'
+        if: (matrix.build_type == 'Release' || matrix.build_type == 'RelWithDebInfo') && matrix.arch != 'win64_msvc2022_arm64_cross_compiled'
         uses: ./.github/actions/verify-executable
         with:
           binary-path: ${{ runner.temp }}/build/${{ matrix.build_type }}/QGroundControl.exe
@@ -163,7 +164,7 @@ jobs:
           build-type: ${{ matrix.build_type }}
 
       - name: Install and verify installer
-        if: matrix.build_type == 'Release' && matrix.arch != 'win64_msvc2022_arm64_cross_compiled'
+        if: (matrix.build_type == 'Release' || matrix.build_type == 'RelWithDebInfo') && matrix.arch != 'win64_msvc2022_arm64_cross_compiled'
         shell: pwsh
         run: |
           $buildDir = "${{ runner.temp }}\build"
@@ -198,7 +199,7 @@ jobs:
           }
 
       - name: Remove build SDK from PATH for installed verification
-        if: matrix.build_type == 'Release' && matrix.gstreamer
+        if: (matrix.build_type == 'Release' || matrix.build_type == 'RelWithDebInfo') && matrix.gstreamer
         shell: pwsh
         env:
           GST_ROOT: ${{ steps.gst-root.outputs.gst_root }}
@@ -208,7 +209,7 @@ jobs:
           "QGC_VERIFY_INSTALLED_PATH=$sanitizedPath" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Verify installed executable
-        if: matrix.build_type == 'Release' && matrix.arch != 'win64_msvc2022_arm64_cross_compiled'
+        if: (matrix.build_type == 'Release' || matrix.build_type == 'RelWithDebInfo') && matrix.arch != 'win64_msvc2022_arm64_cross_compiled'
         uses: ./.github/actions/verify-executable
         env:
           PATH: ${{ env.QGC_VERIFY_INSTALLED_PATH || env.PATH }}
@@ -217,7 +218,7 @@ jobs:
           type: exe
 
       - name: Attest and Upload
-        if: matrix.build_type == 'Release'
+        if: if: (matrix.build_type == 'Release' || matrix.build_type == 'RelWithDebInfo') && matrix.gstreamer
         uses: ./.github/actions/attest-and-upload
         with:
           artifact-name: ${{ matrix.package }}.exe
