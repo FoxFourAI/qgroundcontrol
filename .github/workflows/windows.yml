@@ -19,9 +19,9 @@ on:
         default: 'RelWithDebInfo'
         type: choice
         options:
-          - RelWithDebInfo
           - Release
           - Debug
+          - RelWithDebInfo
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -218,7 +218,7 @@ jobs:
           type: exe
 
       - name: Attest and Upload
-        if: if: (matrix.build_type == 'Release' || matrix.build_type == 'RelWithDebInfo') && matrix.gstreamer
+        if: (matrix.build_type == 'Release' || matrix.build_type == 'RelWithDebInfo') && matrix.gstreamer
         uses: ./.github/actions/attest-and-upload
         with:
           artifact-name: ${{ matrix.package }}.exe
