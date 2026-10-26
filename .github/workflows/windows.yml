@@ -19,6 +19,7 @@ on:
         default: 'RelWithDebInfo'
         type: choice
         options:
+          - RelWithDebInfo
           - Release
           - Debug
           - RelWithDebInfo
