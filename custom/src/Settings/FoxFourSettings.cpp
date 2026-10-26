@@ -5,6 +5,7 @@ DECLARE_SETTINGGROUP(FoxFour, "FoxFour")
 }
 
 DECLARE_SETTINGSFACT(FoxFourSettings, minimalMode)
+DECLARE_SETTINGSFACT(FoxFourSettings, useFTP)
 DECLARE_SETTINGSFACT(FoxFourSettings, trackingRate)
 DECLARE_SETTINGSFACT(FoxFourSettings, cacheVehicleParameters)
 DECLARE_SETTINGSFACT(FoxFourSettings, autoConfigureStream)
