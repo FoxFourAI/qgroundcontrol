@@ -11,6 +11,14 @@
             "keywords": "parameters minimal"
         },
         {
+            "name": "useFTP",
+            "shortDesc": "Try to pull parameters with FTP protocol if available",
+            "type": "bool",
+            "default": true,
+            "label": "Parameters FTP download",
+            "keywords": "parameters minimal"
+        },
+        {
             "name": "trackingRate",
             "shortDesc": "Define the VGM rate for sending CAMERA_TRACKING_IMAGE_STATUS.",
             "type": "uint32",
