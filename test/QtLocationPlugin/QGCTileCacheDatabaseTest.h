@@ -39,6 +39,7 @@ private slots:
     void _testGetTileDownloadListBatch();
     void _testSaveTileLinksToDifferentSet();
     void _testExportImportNoLingeringConnections();
+    void _testExportMrfBundle();
     void _testCreateTileSet();
     void _testDeleteBingNoTileTiles();
     void _testDeleteDefaultSetInvalidatesCache();

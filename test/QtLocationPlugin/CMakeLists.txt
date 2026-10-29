@@ -23,7 +23,21 @@ target_sources(${CMAKE_PROJECT_NAME}
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
+if(NOT GDAL_DISABLE)
+    find_package(GDAL REQUIRED)
+    target_sources(${CMAKE_PROJECT_NAME}
+        PRIVATE
+            MrfExportTest.cc
+            MrfExportTest.h
+    )
+    target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${GDAL_INCLUDE_DIRS})
+    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${GDAL_LIBRARIES})
+endif()
+
 add_qgc_test(MapProviderTest LABELS Unit)
+if(NOT GDAL_DISABLE)
+    add_qgc_test(MrfExportTest LABELS Unit)
+endif()
 add_qgc_test(QGCCacheWorkerTest LABELS Unit)
 add_qgc_test(QGCCachedTileSetTest LABELS Unit)
 add_qgc_test(QGCMapEngineManagerArchiveTest LABELS Unit RESOURCE_LOCK TempFiles)
