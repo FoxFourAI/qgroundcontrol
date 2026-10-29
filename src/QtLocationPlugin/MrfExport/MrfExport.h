@@ -15,7 +15,7 @@ public:
     static constexpr int kTileSize = 256;
 
     // basePath without extension -> basePath.mrf / .idx / .pjg
-    bool begin(const QString& basePath, int minZoom, int maxZoom, const QRect& area);
+    bool begin(const QString& basePath, int zoom, const QRect& area);
 
     // rgb must be 256*256*3 interleaved, as produced by SQLTileToRGB.
     bool writeTile(int x, int y, const QByteArray& rgb);

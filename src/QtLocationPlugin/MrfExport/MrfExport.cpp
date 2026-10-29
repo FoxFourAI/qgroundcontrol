@@ -100,9 +100,9 @@ bool MrfGridWriter::SQLParseTileHash(const QString& hash, int& x, int& y, int& z
     return x < span && y < span;
 }
 
-bool MrfGridWriter::begin(const QString& basePath, int minZoom, int maxZoom, const QRect& area)
+bool MrfGridWriter::begin(const QString& basePath, int zoom, const QRect& area)
 {
-    if (minZoom < 0 || maxZoom < minZoom || maxZoom > 30 || area.isEmpty()) {
+    if (zoom < 0 || zoom > 30 || area.isEmpty()) {
         return false;
     }
 
@@ -111,8 +111,13 @@ bool MrfGridWriter::begin(const QString& basePath, int minZoom, int maxZoom, con
     _nx = area.width();
     _ny = area.height();
     _overviewFactors.clear();
-    for (int zoom = maxZoom - 1; zoom >= minZoom; --zoom) {
-        _overviewFactors.push_back(1 << (maxZoom - zoom));
+    if (_nx > 1 || _ny > 1) {
+        for (int factor = 2;; factor *= 2) {
+            _overviewFactors.push_back(factor);
+            if (factor >= _nx && factor >= _ny) {
+                break;
+            }
+        }
     }
 
     GDALDriver* drv = GetGDALDriverManager()->GetDriverByName("MRF");
@@ -143,7 +148,7 @@ bool MrfGridWriter::begin(const QString& basePath, int minZoom, int maxZoom, con
     srs.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER);
 
     // North-up, square pixels: the only shape get_tile()'s gt[0],[1],[3],[5] math handles.
-    const double res = 2.0 * kHalf / (kTileSize * std::pow(2.0, maxZoom));
+    const double res = 2.0 * kHalf / (kTileSize * std::pow(2.0, zoom));
     double gt[6] = {-kHalf + _x0 * res * kTileSize, res, 0.0, kHalf - _y0 * res * kTileSize, 0.0, -res};
     if (_ds->SetSpatialRef(&srs) != CE_None || _ds->SetGeoTransform(gt) != CE_None) {
         GDALClose(_ds);

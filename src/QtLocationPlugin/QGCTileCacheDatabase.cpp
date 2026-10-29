@@ -1258,7 +1258,7 @@ DatabaseResult QGCTileCacheDatabase::exportSetsAsMRF(const QList<TileSetRecord>&
         QString basePath = QStringLiteral("%1_%2").arg(path, set.name);
         basePath = basePath.mid(0, basePath.lastIndexOf('.'));  // trunk the extention of the file
 
-        if (!writer.begin(basePath, set.minZoom, set.maxZoom, tilesArea)) {
+        if (!writer.begin(basePath, set.maxZoom, tilesArea)) {
             result.errorString = "Error creating MRF for " + set.name;
             return result;
         }

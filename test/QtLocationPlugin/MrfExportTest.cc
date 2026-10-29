@@ -14,7 +14,7 @@ void MrfExportTest::_testProjectionAndOverviews()
     const QString basePath = tempDir.filePath(QStringLiteral("map"));
     const QRect tileArea(10, 12, 4, 4);
     MrfGridWriter writer;
-    QVERIFY(writer.begin(basePath, 3, 5, tileArea));
+    QVERIFY(writer.begin(basePath, 5, tileArea));
 
     QByteArray rgb(MrfGridWriter::kTileSize * MrfGridWriter::kTileSize * 3, '\0');
     for (int y = tileArea.top(); y <= tileArea.bottom(); ++y) {
