@@ -100,12 +100,20 @@ bool MrfGridWriter::SQLParseTileHash(const QString& hash, int& x, int& y, int& z
     return x < span && y < span;
 }
 
-bool MrfGridWriter::begin(const QString& basePath, int zoom, const QRect &area)
+bool MrfGridWriter::begin(const QString& basePath, int minZoom, int maxZoom, const QRect& area)
 {
+    if (minZoom < 0 || maxZoom < minZoom || maxZoom > 30 || area.isEmpty()) {
+        return false;
+    }
+
     _x0 = area.topLeft().x();
     _y0 = area.topLeft().y();
     _nx = area.width();
     _ny = area.height();
+    _overviewFactors.clear();
+    for (int zoom = maxZoom - 1; zoom >= minZoom; --zoom) {
+        _overviewFactors.push_back(1 << (maxZoom - zoom));
+    }
 
     GDALDriver* drv = GetGDALDriverManager()->GetDriverByName("MRF");
     if (drv == nullptr) {
@@ -127,14 +135,23 @@ bool MrfGridWriter::begin(const QString& basePath, int zoom, const QRect &area)
     }
 
     OGRSpatialReference srs;
-    srs.importFromEPSG(3857);
+    if (srs.importFromEPSG(3857) != OGRERR_NONE) {
+        GDALClose(_ds);
+        _ds = nullptr;
+        return false;
+    }
     srs.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER);
-    _ds->SetSpatialRef(&srs);
 
     // North-up, square pixels: the only shape get_tile()'s gt[0],[1],[3],[5] math handles.
-    const double res = 2.0 * kHalf / (kTileSize * std::pow(2.0, zoom));
+    const double res = 2.0 * kHalf / (kTileSize * std::pow(2.0, maxZoom));
     double gt[6] = {-kHalf + _x0 * res * kTileSize, res, 0.0, kHalf - _y0 * res * kTileSize, 0.0, -res};
-    return _ds->SetGeoTransform(gt) == CE_None;
+    if (_ds->SetSpatialRef(&srs) != CE_None || _ds->SetGeoTransform(gt) != CE_None) {
+        GDALClose(_ds);
+        _ds = nullptr;
+        return false;
+    }
+
+    return true;
 }
 
 bool MrfGridWriter::writeTile(int x, int y, const QByteArray& rgb)
@@ -154,9 +171,15 @@ bool MrfGridWriter::finish()
     if (_ds == nullptr) {
         return false;
     }
+
+    bool success = _ds->FlushCache() == CE_None;
+    if (success && !_overviewFactors.empty()) {
+        success = _ds->BuildOverviews("AVERAGE", static_cast<int>(_overviewFactors.size()), _overviewFactors.data(), 0,
+                                      nullptr, nullptr, nullptr) == CE_None;
+    }
     GDALClose(_ds);
     _ds = nullptr;
-    return true;
+    return success;
 }
 
 MrfGridWriter::~MrfGridWriter()

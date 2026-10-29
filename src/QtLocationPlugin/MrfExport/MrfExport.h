@@ -1,11 +1,12 @@
 #pragma once
 #include <QAtomicInt>
 #include <QByteArray>
+#include <QRect>
 #include <QString>
 #include <cpl_vsi.h>
 #include <gdal_priv.h>
 #include <ogr_spatialref.h>
-#include <QRect>
+#include <vector>
 
 class MrfGridWriter
 {
@@ -14,7 +15,7 @@ public:
     static constexpr int kTileSize = 256;
 
     // basePath without extension -> basePath.mrf / .idx / .pjg
-    bool begin(const QString& basePath, int zoom, const QRect &area);
+    bool begin(const QString& basePath, int minZoom, int maxZoom, const QRect& area);
 
     // rgb must be 256*256*3 interleaved, as produced by SQLTileToRGB.
     bool writeTile(int x, int y, const QByteArray& rgb);
@@ -38,4 +39,5 @@ private:
     static constexpr double kHalf = 20037508.342789244;
     GDALDataset* _ds = nullptr;
     int _x0 = 0, _y0 = 0, _nx = 0, _ny = 0;
+    std::vector<int> _overviewFactors;
 };

@@ -1258,7 +1258,7 @@ DatabaseResult QGCTileCacheDatabase::exportSetsAsMRF(const QList<TileSetRecord>&
         QString basePath = QStringLiteral("%1_%2").arg(path, set.name);
         basePath = basePath.mid(0, basePath.lastIndexOf('.'));  // trunk the extention of the file
 
-        if (!writer.begin(basePath, set.maxZoom, tilesArea)) {
+        if (!writer.begin(basePath, set.minZoom, set.maxZoom, tilesArea)) {
             result.errorString = "Error creating MRF for " + set.name;
             return result;
         }
@@ -1292,15 +1292,21 @@ DatabaseResult QGCTileCacheDatabase::exportSetsAsMRF(const QList<TileSetRecord>&
             if (!MrfGridWriter::SQLTileToRGB(tilesQuery.value(1).toByteArray(), rgb)) {
                 continue;
             }
-            writer.writeTile(x, y, rgb);
+            if (!writer.writeTile(x, y, rgb)) {
+                result.errorString = "Error writing MRF tile for " + set.name;
+                return result;
+            }
             progress += tileWeigth;
 
             if (progressCb) {
                 progressCb(progress);
             }
         }
-        writer.finish();
-        success |= true;
+        if (!writer.finish()) {
+            result.errorString = "Error finalizing MRF for " + set.name;
+            return result;
+        }
+        success = true;
     }
     result.success = success;
 #endif
