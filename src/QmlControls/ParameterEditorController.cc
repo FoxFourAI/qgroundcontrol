@@ -7,6 +7,9 @@
 #include "Vehicle.h"
 #include "QGCLoggingCategory.h"
 
+//FoxFour part
+#include "FoxFourAutoPilotPlugin.h"
+
 QGC_LOGGING_CATEGORY(ParameterEditorControllerLog, "QMLControls.ParameterEditorController")
 
 ParameterTableModel::ParameterTableModel(QObject* parent)
@@ -457,6 +460,9 @@ bool ParameterEditorController::buildDiffFromFile(const QString& filename)
     int         diffSendableCount       = 0;
     QStringList diffMissingParams;
 
+    //FoxFour part
+    int onboardCompId = reinterpret_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager()->currentComputerComponent();
+
     int firstComponentId = -1;
     while (!stream.atEnd()) {
         QString line = stream.readLine();
@@ -510,6 +516,10 @@ bool ParameterEditorController::buildDiffFromFile(const QString& filename)
             bool        noVehicleValue  = false;
             bool        readOnly        = false;
 
+            //FoxFour part
+            if (isMPFormat && !_parameterMgr->parameterExists(componentId, paramName)) {
+                componentId = onboardCompId;
+            }
             if (_parameterMgr->parameterExists(componentId, paramName)) {
                 Fact*           vehicleFact         = _parameterMgr->getParameter(componentId, paramName);
                 FactMetaData*   vehicleFactMetaData = vehicleFact->metaData();
