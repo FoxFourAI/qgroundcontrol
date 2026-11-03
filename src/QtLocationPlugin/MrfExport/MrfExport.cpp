@@ -154,6 +154,40 @@ bool MrfGridWriter::finish()
     if (_ds == nullptr) {
         return false;
     }
+
+    // Generate pyramid levels: 2x, 4x, 8x, 16x, ...
+    // Continue until the smallest overview fits into one 256x256 tile.
+    const int width = _ds->GetRasterXSize();
+    const int height = _ds->GetRasterYSize();
+
+    const int maxDimension = std::max(width, height);
+
+    std::vector<int> overviewLevels;
+
+    for (int factor = 2; factor <= maxDimension; factor *= 2) {
+        overviewLevels.push_back(factor);
+
+        if ((maxDimension + factor - 1) / factor <= kTileSize) {
+            break;
+        }
+    }
+
+    bool ok = true;
+
+    if (!overviewLevels.empty()) {
+        const int bands[] = {1, 2, 3};
+
+        ok = _ds->BuildOverviews(
+                 "AVERAGE",
+                 static_cast<int>(overviewLevels.size()),
+                 overviewLevels.data(),
+                 3,
+                 bands,
+                 nullptr,
+                 nullptr
+                 ) == CE_None;
+    }
+
     GDALClose(_ds);
     _ds = nullptr;
     return true;
