@@ -10,6 +10,7 @@
 #include "CopterConfigurator/CopterConfigurator.h"
 #include "StatusHandler/StatusHandler.h"
 #include "Dialect/VGMDialect.h"
+#include "FtpComponentManager/FtpComponentManager.h"
 
 class Vehicle;
 class FoxFourCameraControl;
@@ -27,6 +28,7 @@ class FoxFourAutoPilotPlugin : public APMAutoPilotPlugin {
     Q_PROPERTY(CopterConfigurator* configurator MEMBER _configurator)
     Q_PROPERTY(StatusHandler* computerStatus MEMBER _computerStatus NOTIFY childsCreated)
     Q_PROPERTY(VGMDialect* dialectHandler MEMBER _dialectHandler NOTIFY childsCreated)
+    Q_PROPERTY(FtpComponentManager* ftpCompMgr MEMBER _ftpCompMgr NOTIFY childsCreated)
 public:
     explicit FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent = nullptr);
     ~FoxFourAutoPilotPlugin();
@@ -69,5 +71,6 @@ private:
     CopterConfigurator* _configurator = nullptr;
     QMetaObject::Connection _cameraConnection;
     VGMDialect* _dialectHandler = nullptr;
+    FtpComponentManager *_ftpCompMgr = nullptr;
 
 };

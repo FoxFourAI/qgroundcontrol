@@ -689,7 +689,7 @@ void ParameterManager::_startParameterDownload(uint8_t componentId)
     }
     if (!(_tryftp && componentId == MAV_COMP_ID_AUTOPILOT1))
         {
-            qDebug(ParameterManagerLog) << "Resetting indices";
+            qCDebug(ParameterManagerLog) << "Resetting indices";
         if (!_initialLoadComplete) {
             _paramRequestListTimer.start();
         }

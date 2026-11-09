@@ -35,9 +35,11 @@ FoxFourAutoPilotPlugin::FoxFourAutoPilotPlugin(Vehicle* vehicle, QObject* parent
     _configurator = new CopterConfigurator(vehicle,this);
     _computerStatus = new StatusHandler(vehicle, this);
     _dialectHandler = new VGMDialect(vehicle, this, this);
+    _ftpCompMgr = new FtpComponentManager(vehicle, this);
     _dialectHandler->setupTriggerSignals();
     emit childsCreated();
     auto cameraMgr = vehicle->cameraManager();
+    connect(_onboardComputersMngr, &OnboardComputersManager::currentComputerComponentChanged, _ftpCompMgr, &FtpComponentManager::setTargetComponent);
     connect(_vehicle->parameterManager(), &ParameterManager::factAdded, this, &FoxFourAutoPilotPlugin::handleFactAdded);
     connect(cameraMgr, &QGCCameraManager::currentCameraChanged, this, [this, cameraMgr]() {
         if (_cameraConnection) {
