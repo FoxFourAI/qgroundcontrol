@@ -64,7 +64,7 @@ FlightMap {
         anchors.left: parent.left
         anchors.leftMargin: ScreenTools.defaultFontPixelWidth
         text: qsTr("Go to Vehicle")
-        visible: _activeVehicle && recenterNeeded() && _disableVehicleTracking
+        visible: !pipMode && _activeVehicle && recenterNeeded() && _disableVehicleTracking
         onClicked: moveMapToVehicle()
         z: 100
     }
