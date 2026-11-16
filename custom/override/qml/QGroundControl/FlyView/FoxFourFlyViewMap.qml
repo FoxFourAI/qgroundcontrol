@@ -46,6 +46,7 @@ FlightMap {
 
     function _adjustMapZoomForPipMode() {
         _saveZoomLevelSetting = false
+        showGoToVehicle();
         if (pipMode) {
             if (QGroundControl.flightMapZoom > 3) {
                 zoomLevel = QGroundControl.flightMapZoom - 3
@@ -58,15 +59,23 @@ FlightMap {
 
     onPipModeChanged: _adjustMapZoomForPipMode()
 
+    function showGoToVehicle() {
+        if (_activeVehicle && _disableVehicleTracking) {
+            goToVehicle.visible = !pipMode && recenterNeeded()
+        } else {
+            goToVehicle.visible = false
+        }
+    }
+
     QGCButton {
         id: goToVehicle
         anchors.verticalCenter:parent.verticalCenter
         anchors.left: parent.left
         anchors.leftMargin: ScreenTools.defaultFontPixelWidth
         text: qsTr("Go to Vehicle")
-        visible: !pipMode && _activeVehicle && recenterNeeded() && _disableVehicleTracking
         onClicked: moveMapToVehicle()
         z: 100
+        Component.onCompleted: showGoToVehicle()
     }
 
     onVisibleChanged: {
@@ -83,9 +92,7 @@ FlightMap {
     }
     onCenterChanged: {
         QGroundControl.flightMapPosition = _root.center
-        if (_disableVehicleTracking && _activeVehicle) {
-            goToVehicle.visible = recenterNeeded()
-        }
+        showGoToVehicle();
         updateCanvases();
     }
 
