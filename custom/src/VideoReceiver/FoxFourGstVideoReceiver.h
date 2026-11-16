@@ -13,8 +13,10 @@
 #include <gst/gstpad.h>
 
 #include "VideoReceiver.h"
+#include "FoxFourSeiParser/FoxFourSeiParser.h"
 
 typedef std::function<void()> Task;
+Q_DECLARE_METATYPE(F4Sei::Telemetry)   // outside the class
 
 /*===========================================================================*/
 
@@ -83,6 +85,7 @@ public slots:
 signals:
     void decoderStatsChanged();
     void timestampReceived(quint64 timestamp);
+    void seiTelemetryReceived(const F4Sei::Telemetry &telemetry, quint64 receiverPts);
 private slots:
     void _watchdog();
     void _handleEOS();
@@ -170,5 +173,10 @@ protected:
     };
 
 private:
+    gulong _seiProbeId = 0;
+    void _handleSeiBuffer(GstBuffer *buf);
+    static GstPadProbeReturn _seiProbe(GstPad *pad, GstPadProbeInfo *info, gpointer user_data);
+
     static quint64 _parseKlvTimestamp(guint8* data, gsize size, qint64 pts);
+
 };

@@ -151,6 +151,10 @@ void FoxFourGstVideoReceiver::start(uint32_t timeout)
             break;
         }
 
+        _seiProbeId = gst_pad_add_probe(pad,
+                                        static_cast<GstPadProbeType>(GST_PAD_PROBE_TYPE_BUFFER | GST_PAD_PROBE_TYPE_BUFFER_LIST),
+                                        _seiProbe, this, nullptr);
+
         _lastSourceFrameTime = 0;
 
         _teeProbeId = gst_pad_add_probe(pad, GST_PAD_PROBE_TYPE_BUFFER, _teeProbe, this, nullptr);
@@ -368,7 +372,7 @@ void FoxFourGstVideoReceiver::stop()
     }
 
     qCDebug(FoxFourGstVideoReceiverLog) << "Stopping" << _uri;
-
+    _seiProbeId = 0;
     // Bump the epoch synchronously (atomic — no GUI thread needed) so any in-flight reconnect lambda
     // is superseded before this stop() returns; cross-callsite QueuedConnection FIFO is not guaranteed.
     _reconnectEpoch.fetch_add(1, std::memory_order_relaxed);
@@ -1820,6 +1824,36 @@ GstPadProbeReturn FoxFourGstVideoReceiver::_keyframeWatch(GstPad *pad, GstPadPro
     emit pThis->recordingStarted(pThis->recordingOutput());
 
     return GST_PAD_PROBE_REMOVE;
+}
+
+GstPadProbeReturn FoxFourGstVideoReceiver::_seiProbe(GstPad *, GstPadProbeInfo *info, gpointer user_data)
+{
+    auto *self = static_cast<FoxFourGstVideoReceiver *>(user_data);
+
+    if (GST_PAD_PROBE_INFO_TYPE(info) & GST_PAD_PROBE_TYPE_BUFFER) {
+        self->_handleSeiBuffer(GST_PAD_PROBE_INFO_BUFFER(info));
+    } else if (GST_PAD_PROBE_INFO_TYPE(info) & GST_PAD_PROBE_TYPE_BUFFER_LIST) {
+        GstBufferList *list = GST_PAD_PROBE_INFO_BUFFER_LIST(info);
+        const guint n = gst_buffer_list_length(list);
+        for (guint i = 0; i < n; ++i) {
+            self->_handleSeiBuffer(gst_buffer_list_get(list, i));
+        }
+    }
+    return GST_PAD_PROBE_OK;
+}
+
+void FoxFourGstVideoReceiver::_handleSeiBuffer(GstBuffer *buf)
+{
+    GstMapInfo map;
+    if (!gst_buffer_map(buf, &map, GST_MAP_READ)) {
+        return;
+    }
+    const auto pose = F4Sei::parseTelemetry(map.data, map.size);
+    const GstClockTime pts = GST_BUFFER_PTS(buf);
+    gst_buffer_unmap(buf, &map);
+    if (pose) {
+        emit seiTelemetryReceived(*pose, static_cast<quint64>(pts));
+    }
 }
 
 GstFlowReturn FoxFourGstVideoReceiver::_onKlvSample(GstElement* sink, gpointer user_data) {
