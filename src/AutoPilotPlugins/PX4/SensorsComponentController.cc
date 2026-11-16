@@ -186,7 +186,7 @@ void SensorsComponentController::_handleUASTextMessage(int uasId, int compId, in
     Q_UNUSED(severity);
     Q_UNUSED(description);
 
-    if (uasId != _vehicle->id()) {
+    if (static_cast<uint32_t>(uasId) != _vehicle->id()) {
         return;
     }
 

@@ -93,7 +93,7 @@ void RemoteIDManager::_handleArmStatus(mavlink_message_t& message)
     }
 
     // We set the targetsystem
-    if (_targetSystem != message.sysid) {
+    if (static_cast<uint32_t>(_targetSystem) != message.sysid) {
         _targetSystem = message.sysid;
         qCDebug(RemoteIDManagerLog) << "Subscribing to ODID messages coming from system " << _targetSystem;
     }

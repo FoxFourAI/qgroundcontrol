@@ -327,7 +327,7 @@ void MultiVehicleManager::deselectVehicle(int vehicleId)
 {
     for (int i = 0; i < _selectedVehicles->count(); i++) {
         Vehicle *const vehicle = qobject_cast<Vehicle*>(_selectedVehicles->get(i));
-        if (vehicle->id() == vehicleId) {
+        if (vehicle->id() == static_cast<uint32_t>(vehicleId)) {
             _selectedVehicles->removeAt(i);
             return;
         }
@@ -343,7 +343,7 @@ bool MultiVehicleManager::_vehicleSelected(int vehicleId)
 {
     for (int i = 0; i < _selectedVehicles->count(); i++) {
         Vehicle *const vehicle = qobject_cast<Vehicle*>(_selectedVehicles->get(i));
-        if (vehicle->id() == vehicleId) {
+        if (vehicle->id() == static_cast<uint32_t>(vehicleId)) {
             return true;
         }
     }
@@ -354,7 +354,7 @@ Vehicle *MultiVehicleManager::getVehicleById(int vehicleId) const
 {
     for (int i = 0; i < _vehicles->count(); i++) {
         Vehicle *const vehicle = qobject_cast<Vehicle*>(_vehicles->get(i));
-        if (vehicle->id() == vehicleId) {
+        if (vehicle->id() == static_cast<uint32_t>(vehicleId)) {
             return vehicle;
         }
     }

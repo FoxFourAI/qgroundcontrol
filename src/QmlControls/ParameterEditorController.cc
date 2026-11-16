@@ -483,7 +483,7 @@ bool ParameterEditorController::buildDiffFromFile(const QString& filename)
                 fileValueStr    = wpParams.at(3);
                 mavParamType    = wpParams.at(4).toInt();
 
-                if (_vehicle->id() != vehicleId) {
+                if (_vehicle->id() != static_cast<uint32_t>(vehicleId)) {
                     if (!diffOtherVehicle) {
                         qCDebug(ParameterEditorControllerLog) << "buildDiffFromFile: file is from other vehicle - file vehicleId:" << vehicleId << "connected vehicleId:" << _vehicle->id();
                     }

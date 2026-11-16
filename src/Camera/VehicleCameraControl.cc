@@ -762,7 +762,7 @@ void VehicleCameraControl::_mavCommandResult(int vehicleId, int component, int c
     Q_UNUSED(failureCode);
 
     //-- Is this ours?
-    if (_vehicle->id() != vehicleId || compID() != component) {
+    if (_vehicle->id() != static_cast<uint32_t>(vehicleId) || compID() != component) {
         return;
     }
     if (result == MAV_RESULT_IN_PROGRESS) {

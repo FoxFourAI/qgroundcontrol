@@ -2712,7 +2712,7 @@ void Vehicle::_vehicleParamLoaded(bool ready)
 
 void Vehicle::_mavlinkMessageStatus(int uasId, uint64_t totalSent, uint64_t totalReceived, uint64_t totalLoss, float lossPercent)
 {
-    if(uasId == _systemID) {
+    if(static_cast<uint32_t>(uasId) == _systemID) {
         _mavlinkSentCount       = totalSent;
         _mavlinkReceivedCount   = totalReceived;
         _mavlinkLossCount       = totalLoss;
