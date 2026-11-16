@@ -22,7 +22,7 @@ void PowerComponentController::_handleVehicleTextMessage(int vehicleId, int /* c
 {
     Q_UNUSED(description);
 
-    if (vehicleId != _vehicle->id()) {
+    if (static_cast<uint32_t>(vehicleId) != _vehicle->id()) {
         return;
     }
 

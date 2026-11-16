@@ -171,7 +171,7 @@ void APMSensorsComponentController::_mavCommandResult(int vehicleId, int compone
 {
     Q_UNUSED(component); Q_UNUSED(failureCode);
 
-    if (_vehicle->id() != vehicleId) {
+    if (_vehicle->id() != static_cast<uint32_t>(vehicleId)) {
         return;
     }
 
@@ -380,7 +380,7 @@ void APMSensorsComponentController::_handleTextMessage(int sysid, int componenti
 {
     Q_UNUSED(componentid); Q_UNUSED(severity); Q_UNUSED(description);
 
-    if (sysid != _vehicle->id()) {
+    if (static_cast<uint32_t>(sysid) != _vehicle->id()) {
         return;
     }
 

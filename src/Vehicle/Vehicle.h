@@ -426,7 +426,7 @@ public:
     void sendJoystickAuxRcOverrideThreadSafe(const std::array<uint16_t, kAuxRcOverrideChannelCount> &channelValues, const std::array<bool, kAuxRcOverrideChannelCount> &channelEnabled, bool useRcOverride);
 
     // Property accesors
-    int id() const{ return _systemID; }
+    uint32_t id() const{ return _systemID; }
     int compId() const{ return _compID; }
     MAV_AUTOPILOT firmwareType() const { return _firmwareType; }
     MAV_TYPE vehicleType() const { return _vehicleType; }
@@ -910,7 +910,7 @@ private:
     /// Stops command processing timers to prevent callbacks during vehicle destruction.
     void _stopCommandProcessing();
 
-    int     _systemID;                    ///< Mavlink system id
+    uint32_t     _systemID;                    ///< Mavlink system id
     int     _defaultComponentId;
     bool    _offlineEditingVehicle = false; ///< true: This Vehicle is a "disconnected" vehicle for ui use while offline editing
 

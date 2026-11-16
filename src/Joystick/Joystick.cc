@@ -1789,11 +1789,11 @@ void Joystick::_buildAvailableButtonsActionList(Vehicle *vehicle)
     _availableButtonActions->append(new AvailableButtonAction(_buttonActionEmergencyStop,
                                                               [this]() { emit emergencyStop(); }));
     _availableButtonActions->append(new AvailableButtonAction(_buttonActionGripperGrab,
-                                                              [this]() { emit gripperAction(GRIPPER_ACTION_CLOSE); }));
+                                                              [this]() {  emit gripperAction(GRIPPER_ACTION_GRAB); }));
     _availableButtonActions->append(new AvailableButtonAction(_buttonActionGripperRelease,
-                                                              [this]() { emit gripperAction(GRIPPER_ACTION_OPEN); }));
+                                                              [this]() { emit gripperAction(GRIPPER_ACTION_RELEASE); }));
     _availableButtonActions->append(new AvailableButtonAction(_buttonActionGripperHold,
-                                                              [this]() { emit gripperAction(GRIPPER_ACTION_STOP); }));
+                                                              [this]() { emit gripperAction(GRIPPER_ACTION_HOLD); }));
     _availableButtonActions->append(new AvailableButtonAction(_buttonActionLandingGearDeploy,
                                                               [this]() { emit landingGearDeploy(); }));
     _availableButtonActions->append(new AvailableButtonAction(_buttonActionLandingGearRetract,

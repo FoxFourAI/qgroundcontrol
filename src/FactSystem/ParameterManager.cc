@@ -373,7 +373,6 @@ void ParameterManager::_mavlinkParamSet(int componentId, const QString &paramNam
 
         mavlink_param_error_t paramError{};
         mavlink_msg_param_error_decode(&message, &paramError);
-
         char paramId[MAVLINK_MSG_PARAM_ERROR_FIELD_PARAM_ID_LEN + 1] = {};
         (void) strncpy(paramId, paramError.param_id, MAVLINK_MSG_PARAM_ERROR_FIELD_PARAM_ID_LEN);
 
@@ -689,7 +688,7 @@ void ParameterManager::_startParameterDownload(uint8_t componentId)
     }
     if (!(_tryftp && componentId == MAV_COMP_ID_AUTOPILOT1))
         {
-            qDebug(ParameterManagerLog) << "Resetting indices";
+            qCDebug(ParameterManagerLog) << "Resetting indices";
         if (!_initialLoadComplete) {
             _paramRequestListTimer.start();
         }

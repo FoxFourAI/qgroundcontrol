@@ -167,6 +167,8 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/plugins/Plugin.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/StatusHandler/StatusHandler.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/StatusHandler/StatusHandler.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FtpComponentManager/FtpComponentManager.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FtpComponentManager/FtpComponentManager.cpp
     CACHE INTERNAL "adding custom sources" FORCE
 )
 

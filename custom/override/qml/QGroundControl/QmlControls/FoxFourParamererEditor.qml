@@ -88,6 +88,16 @@ Item {
                 fileDialog.openForLoad()
             }
         }
+
+        QGCMenuItem {
+            visible:        _activeVehicle.autopilotPlugin.ftpCompMgr.canTransfer
+            text:           qsTr("Upload .param to VGM")
+            onTriggered: {
+                ftpUploadDialog.title =  qsTr("Select file to upload")
+                ftpUploadDialog.openForLoad()
+            }
+        }
+
         QGCMenuItem {
             text:           qsTr("Save to file...")
             onTriggered: {
@@ -111,12 +121,24 @@ Item {
         }
         QGCMenuItem {
             text:           qsTr("Reboot VGM")
-            visible:        _vehicle.autopilotPlugin.onboardComputersManager.currentComputerComponent !== 0
+            visible:        _activeVehicle.autopilotPlugin.onboardComputersManager.currentComputerComponent !== 0
             onTriggered:    QGroundControl.showMessageDialog(_root,qsTr("Reboot VGM?"),
                                                          qsTr("Select Ok to reboot VGM."),
                                                          Dialog.Cancel | Dialog.Ok,
                                                          function() {_activeVehicle.autopilotPlugin.rebootOnboardComputers()}
                                                              )
+        }
+    }
+
+    QGCFileDialog {
+
+        id:             ftpUploadDialog
+        folder:         _appSettings.parameterSavePath
+        nameFilters:    [qsTr("VGM parameters (*.param)")]
+
+        onAcceptedForLoad: (file) => {
+            close()
+            _activeVehicle.autopilotPlugin.ftpCompMgr.upload(file)
         }
     }
 
