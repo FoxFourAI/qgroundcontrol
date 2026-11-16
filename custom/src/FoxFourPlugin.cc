@@ -165,8 +165,9 @@ VideoReceiver* FoxFourPlugin::createVideoReceiver(QObject* parent) {
     connect(receiver, &FoxFourGstVideoReceiver::timestampReceived,this,[this] (quint64 ts) {
         _latestKlvTimestamp = ts;
     });
-    connect(receiver, &FoxFourGstVideoReceiver::seiTelemetryReceived, this, [this] (const F4Sei::Telemetry &telemetry,quint64 ts) {
-        qDebug() << telemetry.encoderPts << ", received ts: " << ts;
+    connect(receiver, &FoxFourGstVideoReceiver::seiTelemetryReceived, this, [this] (const F4Sei::Telemetry &telemetry, quint64 /*ts*/) {
+        qDebug() << telemetry.encoderPts;
+        _latestSeiTimestamp = telemetry.encoderPts;
     });
     return receiver;
 #elif defined(QGC_QT_STREAMING)

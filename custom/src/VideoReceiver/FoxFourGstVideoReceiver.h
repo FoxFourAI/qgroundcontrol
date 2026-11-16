@@ -16,7 +16,6 @@
 #include "FoxFourSeiParser/FoxFourSeiParser.h"
 
 typedef std::function<void()> Task;
-Q_DECLARE_METATYPE(F4Sei::Telemetry)   // outside the class
 
 /*===========================================================================*/
 

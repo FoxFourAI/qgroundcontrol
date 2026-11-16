@@ -1,28 +1,31 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
+#include <QtCore/QByteArrayView>
+#include <QtCore/QMetaType>
+#include <QtCore/QString>
+
 #include <optional>
-#include <string>
 
 namespace F4Sei {
 
 
 struct Telemetry {
-    uint64_t encoderPts = 0;   // pts
-    double   posX = 0;         // pos_x
-    double   posY = 0;         // pos_y
-    double   posZ = 0;         // pos_z
-    double   qw = 0;           // orient_w
-    double   qx = 0;           // orient_x
-    double   qy = 0;           // orient_y
-    double   qz = 0;           // orient_z
-    double   nedZ = 0;         // local_pose_ned
-    bool     valid = false;    // extra: false when the sender wrote -1 placeholders
+    uint64_t encoderPts = 0;
+    double   posX = 0;
+    double   posY = 0;
+    double   posZ = 0;
+    double   qw = 0;
+    double   qx = 0;
+    double   qy = 0;
+    double   qz = 0;
+    double   nedZ = 0;
+    bool     valid = false;
 };
 
-std::optional<std::string> parseFrame(const uint8_t *data, size_t size);
+std::optional<QString> parseFrame(QByteArrayView data);
 
-std::optional<Telemetry> parseTelemetry(const uint8_t *data, size_t size);
+std::optional<Telemetry> parseTelemetry(QByteArrayView data);
 
 } // namespace F4Sei
+
+Q_DECLARE_METATYPE(F4Sei::Telemetry)

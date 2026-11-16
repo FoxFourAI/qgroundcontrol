@@ -1,121 +1,104 @@
 #include "FoxFourSeiParser.h"
 
-#include <cstring>
-#include <cctype>
-#include <limits>
-#include <locale>
-#include <sstream>
-#include <vector>
+#include <QtCore/QByteArray>
+#include <QtCore/QStringList>
+#include <QtCore/QtEndian>
+
+#include <algorithm>
+#include <iterator>
 
 namespace F4Sei {
 namespace {
 
 // _UUID
-constexpr uint8_t kUuid[16] = {
-    0xf4, 0xf0, 0x4a, 0x1b, 0xc8, 0xe5, 0x11, 0xed, 0xaa, 0x4b, 0x02, 0x42, 0xac, 0x12, 0x00, 0x02,
+constexpr char kUuidBytes[16] = {
+    '\xf4', '\xf0', '\x4a', '\x1b', '\xc8', '\xe5', '\x11', '\xed',
+    '\xaa', '\x4b', '\x02', '\x42', '\xac', '\x12', '\x00', '\x02',
 };
+const QByteArrayView kUuid(kUuidBytes, sizeof(kUuidBytes));
 
-// _dep3(): strip emulation prevention bytes (00 00 03 -> 00 00)
-std::vector<uint8_t> dep3(const uint8_t *data, size_t len)
+const QByteArrayView kStartCode3("\x00\x00\x01", 3);
+const QByteArrayView kStartCode4("\x00\x00\x00\x01", 4);
+const QByteArrayView kEmulation("\x00\x00\x03", 3);
+const QByteArrayView kTwoZeros("\x00\x00", 2);
+
+inline quint8 byteAt(QByteArrayView data, qsizetype i)
 {
-    std::vector<uint8_t> out;
-    out.reserve(len);
-    size_t i = 0;
-    while (i < len) {
-        if (i + 2 < len && data[i] == 0 && data[i + 1] == 0 && data[i + 2] == 3) {
-            out.push_back(0);
-            out.push_back(0);
-            i += 3;
-        } else {
-            out.push_back(data[i]);
-            i += 1;
-        }
-    }
-    return out;
+    return static_cast<quint8>(data.at(i));
 }
 
 // _decode_sei_size()
-uint32_t decodeSeiSize(const std::vector<uint8_t> &rbsp, size_t &k)
+qsizetype decodeSeiSize(QByteArrayView rbsp, qsizetype &k)
 {
-    uint32_t size = 0;
-    while (k < rbsp.size() && rbsp[k] == 0xFF) {
+    qsizetype size = 0;
+    while (k < rbsp.size() && byteAt(rbsp, k) == 0xFF) {
         size += 255;
-        k += 1;
+        ++k;
     }
     if (k < rbsp.size()) {
-        size += rbsp[k];
-        k += 1;
+        size += byteAt(rbsp, k);
+        ++k;
     }
     return size;
 }
 
-bool isStartCode4(const uint8_t *d, size_t n, size_t i)
+// End of the NAL that starts at 'from': position of the next 3- or 4-byte start code
+qsizetype findNalEnd(QByteArrayView data, qsizetype from)
 {
-    return i + 3 < n && d[i] == 0 && d[i + 1] == 0 && d[i + 2] == 0 && d[i + 3] == 1;
-}
-
-bool isStartCode3(const uint8_t *d, size_t n, size_t i)
-{
-    return i + 2 < n && d[i] == 0 && d[i + 1] == 0 && d[i + 2] == 1;
+    const qsizetype sc = data.indexOf(kStartCode3, from);
+    if (sc < 0) {
+        return data.size();
+    }
+    // 00 00 00 01: the NAL ends at the leading zero of the 4-byte start code
+    return (sc - 1 >= from && data.at(sc - 1) == '\0') ? sc - 1 : sc;
 }
 
 // Body of parse_frame_sei(), on Annex-B data
-std::optional<std::string> parseAnnexB(const uint8_t *data, size_t n)
+std::optional<QString> parseAnnexB(QByteArrayView data)
 {
-    size_t i = 0;
-    while (n >= 2 && i < n - 2) {
-        // Locate next start code
-        if (isStartCode4(data, n, i)) {
-            i += 4;
-        } else if (isStartCode3(data, n, i)) {
-            i += 3;
-        } else {
-            i += 1;
-            continue;
+    qsizetype i = 0;
+    while (true) {
+        // Locate next start code (00 00 01, also matches the tail of 00 00 00 01)
+        const qsizetype sc = data.indexOf(kStartCode3, i);
+        if (sc < 0) {
+            break;
         }
-        if (i >= n) {
+        i = sc + 3;
+        if (i >= data.size()) {
             break;
         }
 
-        const uint8_t first = data[i];
-        const uint8_t h264Type = first & 0x1f;
-        const uint8_t h265Type = (first >> 1) & 0x3f;
+        const quint8 first = byteAt(data, i);
+        const quint8 h264Type = first & 0x1f;
+        const quint8 h265Type = (first >> 1) & 0x3f;
 
         const bool isSei = (h264Type == 6) || (h265Type == 39);
         i += (h265Type == 39 && h264Type != 6) ? 2 : 1;
 
-        if (!isSei) {
+        if (!isSei || i > data.size()) {
             continue;
         }
 
-                // Find end of this NAL unit (next start code or buffer end)
-        size_t j = i;
-        while (j < n) {
-            if (isStartCode4(data, n, j)) break;
-            if (isStartCode3(data, n, j)) break;
-            j += 1;
-        }
-        if (i > j) {   // H.265 header ran past the end of the buffer
-            continue;
-        }
+        const qsizetype j = findNalEnd(data, i);
+        QByteArray rbsp = data.sliced(i, j - i).toByteArray();
+        rbsp.replace(kEmulation, kTwoZeros);   // _dep3()
 
-        const std::vector<uint8_t> rbsp = dep3(data + i, j - i);
-        size_t k = 0;
+        qsizetype k = 0;
         while (k < rbsp.size()) {
-            if (rbsp[k] == 0x80) {   // RBSP trailing bits
+            if (byteAt(rbsp, k) == 0x80) {   // RBSP trailing bits
                 break;
             }
-            const uint8_t seiType = rbsp[k];
-            k += 1;
+            const quint8 seiType = byteAt(rbsp, k);
+            ++k;
             if (k >= rbsp.size()) {
                 break;
             }
-            const uint32_t seiSize = decodeSeiSize(rbsp, k);
+            const qsizetype seiSize = decodeSeiSize(rbsp, k);
             if (k + seiSize > rbsp.size()) {
                 break;
             }
-            if (seiType == 5 && seiSize > 16 && std::memcmp(&rbsp[k], kUuid, 16) == 0) {
-                return std::string(reinterpret_cast<const char *>(&rbsp[k + 16]), seiSize - 16);
+            if (seiType == 5 && seiSize > 16 && QByteArrayView(rbsp).sliced(k, 16) == kUuid) {
+                return QString::fromUtf8(rbsp.sliced(k + 16, seiSize - 16));   // decode(errors='replace')
             }
             k += seiSize;
         }
@@ -123,130 +106,82 @@ std::optional<std::string> parseAnnexB(const uint8_t *data, size_t n)
     return std::nullopt;
 }
 
-bool startsWithStartCode(const uint8_t *d, size_t n)
+// avc / hvc1 (4-byte big-endian NAL lengths) -> Annex-B.
+// Returns nullopt if the lengths don't add up, i.e. the buffer isn't length-prefixed.
+std::optional<QByteArray> lengthPrefixedToAnnexB(QByteArrayView data)
 {
-    return isStartCode3(d, n, 0) || isStartCode4(d, n, 0);
-}
-
-// avc / hvc1 (4-byte big-endian NAL lengths) -> Annex-B. Returns false if the
-// lengths don't add up exactly, i.e. the buffer isn't length-prefixed.
-bool lengthPrefixedToAnnexB(const uint8_t *d, size_t n, std::vector<uint8_t> &out)
-{
-    out.clear();
-    out.reserve(n + 16);
-    size_t pos = 0;
-    while (pos < n) {
-        if (n - pos < 4) return false;
-        const size_t len = (size_t(d[pos]) << 24) | (size_t(d[pos + 1]) << 16) |
-                           (size_t(d[pos + 2]) << 8) | size_t(d[pos + 3]);
+    QByteArray out;
+    out.reserve(data.size() + 16);
+    qsizetype pos = 0;
+    while (pos < data.size()) {
+        if (data.size() - pos < 4) {
+            return std::nullopt;
+        }
+        const qsizetype len = qFromBigEndian<quint32>(data.constData() + pos);
         pos += 4;
-        if (len == 0 || len > n - pos) return false;
-        out.insert(out.end(), {0x00, 0x00, 0x00, 0x01});
-        out.insert(out.end(), d + pos, d + pos + len);
+        if (len == 0 || len > data.size() - pos) {
+            return std::nullopt;
+        }
+        out.append(kStartCode4);
+        out.append(data.sliced(pos, len));
         pos += len;
     }
-    return true;
-}
-
-// Python str.strip() for the whitespace that int()/float() tolerate
-std::string strip(const std::string &s)
-{
-    const char *ws = " \t\n\r\f\v";
-    const size_t b = s.find_first_not_of(ws);
-    if (b == std::string::npos) return {};
-    return s.substr(b, s.find_last_not_of(ws) - b + 1);
-}
-
-// Python float(): locale-independent, whole string must be consumed
-bool pyFloat(const std::string &field, double &out)
-{
-    const std::string s = strip(field);
-    if (s.empty()) return false;
-
-    std::string lower;
-    for (char c : s) lower += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-    const bool neg = !lower.empty() && lower[0] == '-';
-    const std::string body = (lower[0] == '-' || lower[0] == '+') ? lower.substr(1) : lower;
-    if (body == "nan") { out = std::numeric_limits<double>::quiet_NaN(); return true; }
-    if (body == "inf" || body == "infinity") {
-        out = neg ? -std::numeric_limits<double>::infinity() : std::numeric_limits<double>::infinity();
-        return true;
-    }
-
-    std::istringstream in(s);
-    in.imbue(std::locale::classic());   // '.' decimal point even under cs_CZ etc.
-    in >> out;
-    return !in.fail() && in.peek() == std::char_traits<char>::eof();
-}
-
-// Python int() for the pts field
-bool pyInt(const std::string &field, uint64_t &out)
-{
-    const std::string s = strip(field);
-    if (s.empty()) return false;
-    size_t p = (s[0] == '+') ? 1 : 0;
-    if (p >= s.size()) return false;
-    uint64_t v = 0;
-    for (; p < s.size(); ++p) {
-        if (s[p] < '0' || s[p] > '9') return false;
-        v = v * 10 + uint64_t(s[p] - '0');
-    }
-    out = v;
-    return true;
+    return out;
 }
 
 } // namespace
 
-std::optional<std::string> parseFrame(const uint8_t *data, size_t size)
+std::optional<QString> parseFrame(QByteArrayView data)
 {
-    if (!data || size == 0) {
+    if (data.isEmpty()) {
         return std::nullopt;
     }
-    if (startsWithStartCode(data, size)) {
-        return parseAnnexB(data, size);
+    if (data.startsWith(kStartCode3) || data.startsWith(kStartCode4)) {
+        return parseAnnexB(data);
     }
-    std::vector<uint8_t> annexB;
-    if (lengthPrefixedToAnnexB(data, size, annexB)) {
-        return parseAnnexB(annexB.data(), annexB.size());
+    if (const auto annexB = lengthPrefixedToAnnexB(data)) {
+        return parseAnnexB(*annexB);
     }
-    return parseAnnexB(data, size);
+    return parseAnnexB(data);
 }
 
-std::optional<Telemetry> parseTelemetry(const uint8_t *data, size_t size)
+std::optional<Telemetry> parseTelemetry(QByteArrayView data)
 {
-    const std::optional<std::string> text = parseFrame(data, size);
+    const std::optional<QString> text = parseFrame(data);
     if (!text) {
         return std::nullopt;
     }
 
             // fields = text.rstrip(",").split(",")
-    std::string t = *text;
-    while (!t.empty() && t.back() == ',') t.pop_back();
-    std::vector<std::string> fields;
-    size_t start = 0;
-    while (true) {
-        const size_t comma = t.find(',', start);
-        fields.push_back(t.substr(start, comma == std::string::npos ? std::string::npos : comma - start));
-        if (comma == std::string::npos) break;
-        start = comma + 1;
+    QString csv = *text;
+    while (csv.endsWith(u',')) {
+        csv.chop(1);
     }
+    const QStringList fields = csv.split(u',');
     if (fields.size() < 9) {
         return std::nullopt;
     }
 
+            // int() / float(): C locale, surrounding whitespace allowed
+    bool ok = false;
     Telemetry r;
+    r.encoderPts = fields[0].trimmed().toULongLong(&ok);
+    if (!ok) {
+        return std::nullopt;
+    }
+
     double v[8];
-    if (!pyInt(fields[0], r.encoderPts)) return std::nullopt;
     for (int idx = 0; idx < 8; ++idx) {
-        if (!pyFloat(fields[idx + 1], v[idx])) return std::nullopt;
+        v[idx] = fields[idx + 1].trimmed().toDouble(&ok);
+        if (!ok) {
+            return std::nullopt;
+        }
     }
     r.posX = v[0]; r.posY = v[1]; r.posZ = v[2];
     r.qw = v[3];   r.qx = v[4];   r.qy = v[5]; r.qz = v[6];
     r.nedZ = v[7];
 
-    bool allMinusOne = true;
-    for (double d : v) allMinusOne = allMinusOne && (d == -1.0);
-    r.valid = !allMinusOne;
+    r.valid = !std::all_of(std::begin(v), std::end(v), [](double d) { return d == -1.0; });
     return r;
 }
 

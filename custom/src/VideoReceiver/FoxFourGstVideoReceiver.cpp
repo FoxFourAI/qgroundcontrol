@@ -1848,7 +1848,7 @@ void FoxFourGstVideoReceiver::_handleSeiBuffer(GstBuffer *buf)
     if (!gst_buffer_map(buf, &map, GST_MAP_READ)) {
         return;
     }
-    const auto pose = F4Sei::parseTelemetry(map.data, map.size);
+    const auto pose = F4Sei::parseTelemetry(QByteArrayView(map.data, static_cast<qsizetype>(map.size)));
     const GstClockTime pts = GST_BUFFER_PTS(buf);
     gst_buffer_unmap(buf, &map);
     if (pose) {

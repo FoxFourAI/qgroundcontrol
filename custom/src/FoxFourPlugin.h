@@ -59,6 +59,7 @@ private:
     MandatoryParameters* _mandatoryParameters = nullptr;
     QList<Plugin*> _plugins;
     quint64 _latestKlvTimestamp = 0;
+    quint64 _latestSeiTimestamp = 0;
 };
 
 /*===========================================================================*/
