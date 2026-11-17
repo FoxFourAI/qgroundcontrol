@@ -121,7 +121,7 @@ option(QGC_ENABLE_GST_VIDEOSTREAMING "Enable GStreamer video backend" ON)
 # ============================================================================
 
 set(QGC_MAVLINK_GIT_REPO "https://github.com/FoxFourAI/mavlink.git" CACHE STRING "MAVLink repository URL")
-set(QGC_MAVLINK_GIT_TAG "d8f26656eb823a8fe662e5741beae60b1db89a90" CACHE STRING "MAVLink repository commit/tag")
+set(QGC_MAVLINK_GIT_TAG "bc6f23ec9af9dfa286851669351473495af6b4cd" CACHE STRING "MAVLink repository commit/tag")
 set(QGC_MAVLINK_DIALECT "all" CACHE STRING "MAVLink dialect")
 set(QGC_MAVLINK_VERSION "2.0" CACHE STRING "MAVLink protocol version")
 
