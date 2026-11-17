@@ -231,7 +231,7 @@ bool FoxFourCameraControl::stopVideoRecording() {
 //-----------------------------------------------------------------------------
 void FoxFourCameraControl::startTracking(QRectF rec, bool zoom) {
 
-    uint64_t time = reinterpret_cast<FoxFourPlugin*>(FoxFourPlugin::instance())->latestKlvTimestamp();
+    uint64_t time = reinterpret_cast<FoxFourPlugin*>(FoxFourPlugin::instance())->latestAvailableTimestamp();
 
     if (_trackingImageRect != rec) {
         _trackingImageRect = rec;
@@ -263,7 +263,6 @@ void FoxFourCameraControl::startTracking(QRectF rec, bool zoom) {
 
         std::memcpy(&param5, &timestampLow, sizeof(param5));
         std::memcpy(&param6, &timestampHight, sizeof(param6));
-
         _vehicle->sendMavCommand(_compID, MAV_CMD_CAMERA_TRACK_RECTANGLE, true, static_cast<float>(rec.x()),
                                  static_cast<float>(rec.y()), static_cast<float>(rec.x() + rec.width()),
                                  static_cast<float>(rec.y() + rec.height()), param5, param6);
@@ -278,17 +277,17 @@ void FoxFourCameraControl::startTracking(QRectF rec, bool zoom) {
 //-----------------------------------------------------------------------------
 void FoxFourCameraControl::stopTracking() {
     qCDebug(FoxFourCameraControlLog) << "Stop Tracking";
-    uint64_t timestamp = reinterpret_cast<FoxFourPlugin*>(FoxFourPlugin::instance())->latestKlvTimestamp();
+    uint64_t timestamp = reinterpret_cast<FoxFourPlugin*>(FoxFourPlugin::instance())->latestAvailableTimestamp();
     uint32_t timestampLow = static_cast<uint32_t>(timestamp);
     uint32_t timestampHigh = static_cast<uint32_t>(timestamp >> 32);
-
     float param1, param2;
 
     std::memcpy(&param1, &timestampLow, sizeof(param1));
     std::memcpy(&param2, &timestampHigh, sizeof(param2));
 
     //-- Stop Tracking
-    _vehicle->sendMavCommand(_compID, MAV_CMD_CAMERA_STOP_TRACKING, false);
+    //MavSDK handle first and second parameters as a timestamp, which is not described in the documentation.
+    _vehicle->sendMavCommand(_compID, MAV_CMD_CAMERA_STOP_TRACKING, false, param1, param2);
 
     //-- Stop Sending Tracking Status
     _vehicle->sendMavCommand(_compID, MAV_CMD_SET_MESSAGE_INTERVAL, false, MAVLINK_MSG_ID_CAMERA_TRACKING_IMAGE_STATUS,

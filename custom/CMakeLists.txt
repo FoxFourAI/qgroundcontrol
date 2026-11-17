@@ -177,6 +177,8 @@ if(${QGC_ENABLE_GST_VIDEOSTREAMING})
         ${CUSTOM_SOURCES}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/FoxFourGstVideoReceiver.h
         ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/FoxFourGstVideoReceiver.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/FoxFourSeiParser/FoxFourSeiParser.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/VideoReceiver/FoxFourSeiParser/FoxFourSeiParser.cpp
         CACHE INTERNAL "adding custom gstreamer" FORCE
     )
 endif()

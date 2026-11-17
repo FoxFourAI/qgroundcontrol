@@ -143,15 +143,13 @@ ApplicationWindow {
             description: "Switch tracking selection"
             sequence: "Ctrl+T"
             action: function () {
-
-                if (globalShortcuts.activeCamera == undefined
+                if (globalShortcuts.activeCamera === undefined
                         || !globalShortcuts.activeCamera.hasTracking) {
                     return
                 }
                 let tracking = globalShortcuts.activeCamera.trackingEnabled
                 globalShortcuts.activeCamera.trackingEnabled
-                        = !globalShortcuts.activeCamera.trackingEnabled
-                globalShortcuts.activeCamera.stopTracking()
+                        = !tracking
                 return (tracking + " -> " + !tracking)
             }
         }
