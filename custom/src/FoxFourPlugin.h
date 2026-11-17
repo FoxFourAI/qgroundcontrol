@@ -45,7 +45,10 @@ public:
 
     QQmlApplicationEngine* createQmlApplicationEngine(QObject* parent) final;
     void paletteOverride(const QString& colorName, QGCPalette::PaletteColorInfo_t& colorInfo) override;
+
+    quint64 latestAvailableTimestamp();
     quint64 latestKlvTimestamp() {return _latestKlvTimestamp;}
+    quint64 latestSeiTimestamp() {return _latestSeiTimestamp;}
 
 private slots:
     void _advancedChanged(bool advanced);

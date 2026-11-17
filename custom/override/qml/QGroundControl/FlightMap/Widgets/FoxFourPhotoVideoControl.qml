@@ -468,12 +468,6 @@ Rectangle {
                         anchors.fill: parent
                         onClicked: {
                             _camera.trackingEnabled = !_camera.trackingEnabled;
-                            if (!_camera.trackingEnabled) {
-                                //TODO :klv
-                                // let latestFrameTimestamp = QGroundControl.videoManager.lastKlvTimestamp
-                                // _camera.stopTracking(latestFrameTimestamp)
-                                _camera.stopTracking()
-                            }
                         }
                     }
                 }

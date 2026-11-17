@@ -166,7 +166,6 @@ VideoReceiver* FoxFourPlugin::createVideoReceiver(QObject* parent) {
         _latestKlvTimestamp = ts;
     });
     connect(receiver, &FoxFourGstVideoReceiver::seiTelemetryReceived, this, [this] (const F4Sei::Telemetry &telemetry, quint64 /*ts*/) {
-        qDebug() << telemetry.encoderPts;
         _latestSeiTimestamp = telemetry.encoderPts;
     });
     return receiver;
@@ -405,6 +404,13 @@ void FoxFourPlugin::paletteOverride(const QString& colorName, QGCPalette::Palett
         colorInfo[QGCPalette::Dark][QGCPalette::ColorGroupDisabled] = QColor("#FFFFFF");
         colorInfo[QGCPalette::Dark][QGCPalette::ColorGroupEnabled] = QColor("#FFFFFF");
     }
+}
+
+quint64 FoxFourPlugin::latestAvailableTimestamp() {
+    if (_latestKlvTimestamp || _latestSeiTimestamp) {
+        return _latestKlvTimestamp > _latestSeiTimestamp ? _latestKlvTimestamp : _latestSeiTimestamp;
+    }
+    return 0;
 }
 
 /*===========================================================================*/
