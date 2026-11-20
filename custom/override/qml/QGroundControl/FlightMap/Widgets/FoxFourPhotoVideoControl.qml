@@ -121,15 +121,16 @@ Rectangle {
                 Layout.alignment:   Qt.AlignHCenter
                 Layout.fillHeight:  true
                 orientation:        Qt.Vertical
-                to:                 _camera.maxZoomLevel
-                from:               _camera.minZoomLevel
-                value:              _camera.zoomLevel
-                live:               true
+                to:                 _camera.maxZoomLevel.value
+                from:               _camera.minZoomLevel.value
                 onMoved:            _camera.zoomLevel = value
                 visible:            _camera.hasZoom
-                // Connections{
-                //     target:
-                // }
+                Connections{
+                    target: _camera
+                    onZoomLevelChanged: {
+                        zoomSlider.value = _camera.zoomLevel
+                    }
+                }
             }
 
             // Zoom button
@@ -245,7 +246,7 @@ Rectangle {
 
                 Timer{
                     property int elapsed: 0
-                    property int timeout: 3000
+                    property int timeout: 2000
                     id: cameraSwitchTimeout
                     interval: 1000
                     running: false

@@ -36,11 +36,8 @@ FoxFourCameraControl::FoxFourCameraControl(const mavlink_camera_information_t* i
             &FoxFourCameraControl::_processRecordingChanged);
     qCDebug(FoxFourCameraControlLog) << "FoxFour camera control initialized";
     _mavlinkCameraInfo.flags |= CAMERA_CAP_FLAGS_HAS_VIDEO_STREAM;
-
-    // _requestZoomBoundriesTimer.setInterval(1000);
-    // connect(&_requestZoomBoundriesTimer,&QTimer::timeout,this,&FoxFourCameraControl::_requestFacts);
-    // _requestZoomBoundriesTimer.start();
     connect(vehicle->parameterManager(), &ParameterManager::factAdded, this, &FoxFourCameraControl::_connectFact);
+    _fetchFacts();
 }
 
 //-----------------------------------------------------------------------------
@@ -77,12 +74,7 @@ void FoxFourCameraControl::handleSettings(const mavlink_camera_settings_t& setti
     int mode_id = 1;
     _setCameraMode(static_cast<CameraMode>(mode_id));
 
-    // qreal z = static_cast<qreal>(settings.zoomLevel);
     qreal f = static_cast<qreal>(settings.focusLevel);
-    // if(std::isfinite(z) && z != _zoomLevel) {
-    //     _zoomLevel = z;
-    //     emit zoomLevelChanged();
-    // }
     if (std::isfinite(f) && f != _focusLevel) {
         _focusLevel = f;
         emit focusLevelChanged();
@@ -103,41 +95,35 @@ void FoxFourCameraControl::_connectFact([[maybe_unused]] int componentId, Fact* 
     // signing to maximal zoom value
     if (fact->name() == "VID_ZOOM_MAX" && _maxZoomFact == nullptr) {
         _maxZoomFact = fact;
-        connect(_maxZoomFact, &Fact::valueChanged, this, [this]([[maybe_unused]] const QVariant& value) { emit maxZoomLevelChanged(); });
         emit maxZoomLevelChanged();
-    }
-
-    // signing  to the camera source
-    if (fact->name() == "SCR_USER3" && _cameraSwitchFact == nullptr) {
-        _cameraSwitchFact = fact;
-        _cameraIndex = _cameraSwitchFact->rawValue().toInt();
-        _cameraSwitchConnection = connect(_cameraSwitchFact, &Fact::valueChanged, this, [this](const QVariant& value) {
-            _cameraIndex = value.toInt();
-            emit cameraSwitched();
-        });
-        emit cameraSwitched();
     }
 
     // signing to minimal zoom value
     if (fact->name() == "VID_ZOOM_MIN" && _minZoomFact == nullptr) {
         _minZoomFact = fact;
-        connect(_minZoomFact, &Fact::valueChanged, this, [this]([[maybe_unused]] const QVariant& value) { emit minZoomLevelChanged(); });
         emit minZoomLevelChanged();
+    }
+}
+
+//Fetching facts on initialize complete, because simetimes camera can be created after all parameters are loaded.
+void FoxFourCameraControl::_fetchFacts()
+{
+    auto pm=_vehicle->parameterManager();
+    auto vgmId = reinterpret_cast<FoxFourAutoPilotPlugin*>(_vehicle->autopilotPlugin())->onboardComputersManager()->currentComputerComponent();
+
+    if(pm->parameterExists(vgmId, "VID_ZOOM_MAX")) {
+        _connectFact(vgmId,pm->getParameter(vgmId,"VID_ZOOM_MAX"));
+    }
+    if(pm->parameterExists(vgmId, "VID_ZOOM_MIN")) {
+        _connectFact(vgmId, pm->getParameter(vgmId, "VID_ZOOM_MIN"));
     }
 }
 
 //-----------------------------------------------------------------------------
 void FoxFourCameraControl::_requestTrackingStatus() {
-    //FOXFOUR_TODO: add parameter
     uint64_t rate = 1'000'000 / SettingsManager::instance()->foxFourSettings()->trackingRate()->rawValue().toInt();
     _vehicle->sendMavCommand(_compID, MAV_CMD_SET_MESSAGE_INTERVAL, true, MAVLINK_MSG_ID_CAMERA_TRACKING_IMAGE_STATUS,
                              rate);  // Interval (us)
-}
-
-void FoxFourCameraControl::_unsubscribeFromCameraFact() {
-    _commandSwitch = true;
-    disconnect(_cameraSwitchConnection);
-    _cameraSwitchFact = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -145,11 +131,19 @@ void FoxFourCameraControl::_zoomResponse(void *resultHandlerData, int /*compId*/
 {
     auto camControl = reinterpret_cast<FoxFourCameraControl*>(resultHandlerData);
     qCDebug(FoxFourCameraControlLog) << "new factor is " << ack.result_param2 / 100.;
-    float newFactor = qMin(camControl->maxZoomLevel(), qMax(camControl->minZoomLevel(), ack.result_param2 / 100));
+    camControl->_zoomLevel = ack.result_param2 / 100.;
+    camControl->_updateZoomEnable();
+    emit camControl->zoomLevelChanged();
 
-    camControl->_zoomLevel = newFactor;
-    camControl->emit minZoomLevelChanged();
+}
 
+void FoxFourCameraControl::_updateZoomEnable()
+{
+    const double minZoom = _minZoomFact ? _minZoomFact->rawValue().toDouble() : _defaultMinZoom;
+    if ((_zoomLevel > minZoom) != _zoomEnabled) {
+        _zoomEnabled = !_zoomEnabled;
+        emit zoomEnabledChanged();
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -159,11 +153,7 @@ void _cameraSwitchHandler(void* resultHandlerData,[[maybe_unused]] int compId, c
     if (ack.result != MAV_RESULT_ACCEPTED) {
         qCDebug(FoxFourCameraControlLog) << "error occured while switching cameras!";
     }
-
-    FoxFourCameraControl* ctrl = static_cast<FoxFourCameraControl*>(resultHandlerData);
-    if (ctrl->_cameraSwitchFact) {
-        ctrl->_unsubscribeFromCameraFact();
-    }
+    auto ctrl = reinterpret_cast<FoxFourCameraControl*>(resultHandlerData);
     qCDebug(FoxFourCameraControlLog) << "camera swiched successfully";
     ctrl->_requestStreamInfo(0);
     ctrl->_cameraIndex += 1;
@@ -186,17 +176,6 @@ bool FoxFourCameraControl::toggleVideoRecording() {
 
 //-----------------------------------------------------------------------------
 void FoxFourCameraControl::setCameraIndex(int index) {
-    if (!_commandSwitch) {
-        if (_cameraSwitchFact == nullptr && _vehicle->parameterManager()->parameterExists(_vehicle->defaultComponentId(), "SCR_USER3")) {
-            _cameraSwitchFact = _vehicle->parameterManager()->getParameter(_vehicle->defaultComponentId(), "SCR_USER3");
-        }
-        if (_cameraSwitchFact) {
-            _cameraSwitchFact->setCookedValue(index);
-            _cameraSwitchFact->valueChanged(index);
-            emit cameraSwitched();
-        }
-    }
-
     Vehicle::MavCmdAckHandlerInfo_t handler;
     handler.resultHandler = _cameraSwitchHandler;
     handler.resultHandlerData = this;
@@ -299,14 +278,33 @@ void FoxFourCameraControl::stopTracking() {
 
 //-----------------------------------------------------------------------------
 void FoxFourCameraControl::setZoomLevel(qreal level) {
-    VehicleCameraControl::setZoomLevel(level);
-    _zoomLevel = level;
-    double minZoom = _minZoomFact ? _minZoomFact->rawValue().toDouble() : _defaultMinZoom;
-    if ((_zoomLevel > minZoom) != _zoomEnabled) {
-        _zoomEnabled = !_zoomEnabled;
-        emit zoomEnabledChanged();
+
+    if(!hasZoom()) {
+        return;
     }
-    emit zoomLevelChanged();
+    //-- Limit
+    level = std::min(std::max(level, 0.0), 100.0);
+    Vehicle::MavCmdAckHandlerInfo_t *hndl = new Vehicle::MavCmdAckHandlerInfo_t;
+    hndl->resultHandlerData = this;
+    hndl->resultHandler = [](void* resultHandlerData, int /*compId*/, const mavlink_command_ack_t& /*ack*/, Vehicle::MavCmdResultFailureCode_t /*failureCode*/) {
+        auto camControl = reinterpret_cast<FoxFourCameraControl*>(resultHandlerData);
+        if(camControl->_pendingZoom < 0) {
+            return;
+        }
+        camControl->_zoomLevel = camControl->_pendingZoom;
+        camControl->_pendingZoom = -1;
+        camControl->_updateZoomEnable();
+        emit camControl->zoomLevelChanged();
+    };
+    if(_vehicle) {
+        _pendingZoom = level;
+        _vehicle->sendMavCommandWithHandler(
+            hndl,
+            _compID,                                // Target component
+            MAV_CMD_SET_CAMERA_ZOOM,                // Command id
+            ZOOM_TYPE_RANGE,                        // Zoom type
+            static_cast<float>(level));             // Level
+    }
 }
 
 //-----------------------------------------------------------------------------
