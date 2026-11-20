@@ -1292,15 +1292,21 @@ DatabaseResult QGCTileCacheDatabase::exportSetsAsMRF(const QList<TileSetRecord>&
             if (!MrfGridWriter::SQLTileToRGB(tilesQuery.value(1).toByteArray(), rgb)) {
                 continue;
             }
-            writer.writeTile(x, y, rgb);
+            if (!writer.writeTile(x, y, rgb)) {
+                result.errorString = "Error writing MRF tile for " + set.name;
+                return result;
+            }
             progress += tileWeigth;
 
             if (progressCb) {
                 progressCb(progress);
             }
         }
-        writer.finish();
-        success |= true;
+        if (!writer.finish()) {
+            result.errorString = "Error finalizing MRF for " + set.name;
+            return result;
+        }
+        success = true;
     }
     result.success = success;
 #endif
