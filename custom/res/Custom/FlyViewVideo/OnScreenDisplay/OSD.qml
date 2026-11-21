@@ -138,10 +138,21 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: spdTape.right
         anchors.right: altTape.left
-        anchors.bottom: parent.bottom
+        anchors.bottom: compass.top
         anchors.top: parent.top
         heading: activeGroup.heading.value
         roll: activeGroup.roll.value
         pitch: activeGroup.pitch.value
+    }
+
+    OSDFPI {
+        style: _style
+        playerSize: Qt.size(_root.width,_root.height)
+        property real _gs: activeGroup.groundSpeed.value
+        velNED: Qt.vector3d(_gs * Math.cos(heading * Math.PI / 180), _gs * Math.sin(heading * Math.PI / 180), -activeGroup.climbRate.value)
+        anchors.fill: parent
+        roll:  activeGroup.roll.value
+        pitch: activeGroup.pitch.value
+        heading: activeGroup.heading.value
     }
 }

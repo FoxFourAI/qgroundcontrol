@@ -52,12 +52,18 @@ Item{
 
 
             ctx.rotate((360 - _root.roll) * Math.PI / 180)
-            ctx.setLineDash([_root.style.majorLineWidth])
-            ctx.beginPath()
-            ctx.moveTo(0, 0)
-            ctx.lineTo(0, vertTranslate)
+            // ctx.setLineDash([_root.style.majorLineWidth])
+            // ctx.beginPath()
+            // ctx.moveTo(0, 0)
+            // ctx.lineTo(0, vertTranslate)
+            ctx.moveTo(0,vertTranslate)
+            let xPadding = style.fontPadding / 2
+            let yPadding = (vertTranslate < 0 ? -1 : 1) * style.fontPadding / 2;
+            ctx.lineTo( xPadding, vertTranslate -  yPadding )
+            ctx.lineTo( -xPadding, vertTranslate - yPadding )
+            ctx.closePath()
             ctx.stroke()
-            ctx.setLineDash([])
+            // ctx.setLineDash([])
             ctx.translate(-cx, -cy)
 
             //applying style to draw the pitch
@@ -74,7 +80,7 @@ Item{
             //applying styles to draw heading
             style.majorTickLength = _root.style.majorTickLength
             style.minorTickLength = _root.style.minorTickLength
-            majorEvery = 90
+            majorEvery = 30
             wrap = 360
             from = -Infinity
             to = Infinity
