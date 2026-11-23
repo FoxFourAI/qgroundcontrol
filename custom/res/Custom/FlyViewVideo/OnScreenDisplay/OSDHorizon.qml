@@ -52,10 +52,7 @@ Item{
 
 
             ctx.rotate((360 - _root.roll) * Math.PI / 180)
-            // ctx.setLineDash([_root.style.majorLineWidth])
-            // ctx.beginPath()
-            // ctx.moveTo(0, 0)
-            // ctx.lineTo(0, vertTranslate)
+            ctx.lineWidth = style.minorLineWidth
             ctx.moveTo(0,vertTranslate)
             let xPadding = style.fontPadding / 2
             let yPadding = (vertTranslate < 0 ? -1 : 1) * style.fontPadding / 2;
@@ -63,6 +60,7 @@ Item{
             ctx.lineTo( -xPadding, vertTranslate - yPadding )
             ctx.closePath()
             ctx.stroke()
+            ctx.lineWidth = style.majorLineWidth
             // ctx.setLineDash([])
             ctx.translate(-cx, -cy)
 
