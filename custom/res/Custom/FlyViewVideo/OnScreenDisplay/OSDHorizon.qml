@@ -25,9 +25,11 @@ Item{
     property real _fHorDisp: (playerSize.width / 2) / Math.tan(_halfHorFov)
     property real _aspect: playerSize.height / playerSize.width
     property real _fVertDisp: {
-                if (_settings.hudVertFov.value <= 1)
-                    return _fHorDisp * _aspect
-                return (playerSize.height / 2) / Math.tan((_settings.hudVertFov.value / 2) * Math.PI / 180)
+                let vertFov =  (_baseHorFov / 2) * _aspect;
+                if (_settings.hudVertFov.value > 1){
+                    vertFov = _settings.hudVertFov.value / 2
+                }
+                return (playerSize.height / 2) / Math.tan(vertFov * Math.PI / 180)
     }
 
     clip:true
