@@ -191,7 +191,19 @@ Item {
                         visible: hudGroup.showFull
                         Layout.fillWidth: true
                         text: fact.label
-                        fact: control._settings.hudFPI
+                        fact: control._settings.hudFpi
+                    }
+                    LabelledFactTextField {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        label: fact.label
+                        fact: control._settings.hudHorFov
+                    }
+                    LabelledFactTextField {
+                        visible: hudGroup.showFull
+                        Layout.fillWidth: true
+                        label: fact.label
+                        fact: control._settings.hudVertFov
                     }
                     FactCheckBoxSlider {
                         visible: hudGroup.showFull

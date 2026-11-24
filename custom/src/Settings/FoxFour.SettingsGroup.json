@@ -137,11 +137,27 @@
             "keywords":"HUD shadow"
         },
         {
-            "name": "hudFPI",
+            "name": "hudFpi",
             "shortDesc": "show FPI",
             "type": "bool",
             "default": true,
             "label": "FPI",
+            "keywords":"HUD FPI"
+        },
+        {
+            "name": "hudVertFov",
+            "shortDesc": "vert fov",
+            "type": "float",
+            "default": -1,
+            "label": "vertical FOV",
+            "keywords":"HUD FPI"
+        },
+        {
+            "name": "hudHorFov",
+            "shortDesc": "hor fov",
+            "type": "float",
+            "default": -1,
+            "label": "horizontal FOV",
             "keywords":"HUD FPI"
         },
         {

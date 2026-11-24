@@ -37,5 +37,8 @@ public:
     DEFINE_SETTINGFACT(hudSpeed)
     DEFINE_SETTINGFACT(hudAltitude)
     DEFINE_SETTINGFACT(hudHorizon)
+    DEFINE_SETTINGFACT(hudFpi)
+    DEFINE_SETTINGFACT(hudVertFov)
+    DEFINE_SETTINGFACT(hudHorFov)
 };
 

@@ -12,16 +12,22 @@ Item{
     property real pitch: 0
     property real heading: 0
     property real spacing: style.majorFontSize * 5
+    property var _settingsManager:  QGroundControl.settingsManager
+    property var _settings:         _settingsManager.foxFourSettings
 
     property var _videoManager:     QGroundControl.videoManager
-    property real _baseHorFov: (_videoManager && _videoManager.hfov > 5 ? _videoManager.hfov : 103)
+    property real _baseHorFov: {
+                if (_settings.hudHorFov.value <= 1)
+                        return (_videoManager && _videoManager.hfov > 5 ? _videoManager.hfov : 103)
+                return _settings.hudHorFov.value
+    }
     property real _halfHorFov: (_baseHorFov / 2) * Math.PI / 180
     property real _fHorDisp: (playerSize.width / 2) / Math.tan(_halfHorFov)
     property real _aspect: playerSize.height / playerSize.width
     property real _fVertDisp: {
-        if(playerSize.width < 800)
-            return _fHorDisp * _aspect
-        return (playerSize.height / 2) * Math.tan(27.5 * Math.PI / 180)
+                if (_settings.hudVertFov.value <= 1)
+                    return _fHorDisp * _aspect
+                return (playerSize.height / 2) / Math.tan((_settings.hudVertFov.value / 2) * Math.PI / 180)
     }
 
     clip:true

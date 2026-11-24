@@ -146,7 +146,7 @@ Item {
     }
 
     OSDFPI {
-        visible: _settings.hudFPI.value
+        visible: _settings.hudFpi.value
         style: _style
         playerSize: Qt.size(_root.width,_root.height)
         property real _gs: activeGroup.groundSpeed.value
