@@ -23,7 +23,7 @@
 #include "SettingsManager.h"
 #include "VideoManager.h"
 #include "QGCCameraManager.h"
-
+#include "f4_autonomy/f4_autonomy.h"
 QGC_LOGGING_CATEGORY(FoxFourCameraControlLog, "FoxFour.CameraControl")
 
 
@@ -38,6 +38,12 @@ FoxFourCameraControl::FoxFourCameraControl(const mavlink_camera_information_t* i
     _mavlinkCameraInfo.flags |= CAMERA_CAP_FLAGS_HAS_VIDEO_STREAM;
     connect(vehicle->parameterManager(), &ParameterManager::factAdded, this, &FoxFourCameraControl::_connectFact);
     _fetchFacts();
+
+    //Requesting camera calibration message from vehicle.
+    _vehicle->requestMessage([](void*, MAV_RESULT, Vehicle::RequestMessageResultHandlerFailureCode_t, const mavlink_message_t&){},
+                             nullptr,
+                             _compID,
+                             MAVLINK_MSG_ID_F4_CAM_CALIBR);
 }
 
 //-----------------------------------------------------------------------------
