@@ -30,6 +30,7 @@ Item {
 
     // status providers
     property var _activeVehicle:    globals.activeVehicle
+    property var _autopilot:        _activeVehicle.autopilotPlugin
     property var _videoManager:     QGroundControl.videoManager
     property var activeGroup:       _activeVehicle ? _activeVehicle.vehicle : null
     // status grid for telemetry
@@ -38,6 +39,17 @@ Item {
     property bool debug: true
     property real dummy: 0
     property real incr: 100
+
+    CameraModel {
+        calib: _autopilot.dialectHandler ? _autopilot.dialectHandler.camCalibration : null
+        id: cameraModel
+        roll:         activeGroup.roll.value
+        pitch:        activeGroup.pitch.value
+        fallbackHfov: (_videoManager && _videoManager.hfov > 5) ? _videoManager.hfov : 115
+        viewSize:     Qt.size(_root.width,_root.height)
+        //TODO: translate camera pitch level if needed
+        mountTilt:    0
+    }
 
     layer.enabled: _settings.hudShadow.value
     layer.effect: MultiEffect {
@@ -54,7 +66,7 @@ Item {
         style: _style
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: _style.majorFontSize * 2
+        anchors.bottomMargin: _style.fontPadding
         width: parent.width / 7
         height: width / 2
         onWidthChanged: requestPaint()
@@ -131,15 +143,19 @@ Item {
     }
 
     OSDHorizon {
+        playerSize: Qt.size(_root.width,_root.height)
+        cam:cameraModel
         id:horizon
         visible:_settings.hudHorizon.value
-        playerSize: Qt.size(_root.width,_root.height)
         style: _style
         anchors.verticalCenter: parent.verticalCenter
-        anchors.left: spdTape.right
-        anchors.right: altTape.left
-        anchors.bottom: parent.bottom
-        anchors.top: parent.top
+        anchors.left: spdTape.visible ? spdTape.right : parent.left
+        anchors.right: altTape.visible ? altTape.left : parent.right
+        height: {
+            let hReduce = Math.max(compass.visible ? compass.height : 0,
+                                   roll.visible ? roll.height : 0) + _style.fontPadding * 2
+            return parent.height - hReduce
+        }
         heading: activeGroup.heading.value
         roll: activeGroup.roll.value
         pitch: activeGroup.pitch.value

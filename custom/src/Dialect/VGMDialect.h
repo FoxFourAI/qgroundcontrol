@@ -10,6 +10,8 @@ class VGMDialect : public VehicleComponent
 {
     Q_OBJECT
     Q_PROPERTY(QVariantList detections READ detections NOTIFY detectionsListChanged FINAL)
+    Q_PROPERTY(QVariantMap camCalibration READ camCalibration NOTIFY camCalibrationChanged FINAL)
+    Q_PROPERTY(QVariantMap compVersion READ compVersion NOTIFY companionVersionChanged FINAL)
 public:
     VGMDialect(Vehicle* vehicle, AutoPilotPlugin* autopilot, QObject* parent = nullptr);
 
@@ -26,16 +28,20 @@ public:
     void setupTriggerSignals() override;
 
     QVariantList detections() const;
+    QVariantMap camCalibration() const;
+    QVariantMap compVersion() const;
 
     Q_INVOKABLE void clearDetections();
 signals:
-    void companionVersionReceived(QVariantMap);
+    void companionVersionChanged();
     void detectionsListChanged();
+    void camCalibrationChanged();
 
 private slots:
     void _handleMavMessage(const mavlink_message_t& msg);
     void _handleCompanionVersion(const mavlink_companion_version_t& msg);
     void _handleF4Detector(const mavlink_f4_detector_t& msg);
+    void _handleCameraCalibr(const mavlink_f4_cam_calibr_t& msg);
 
 private:
     const QMap<F4_AUTONOMY_DETECTION_CLASS, QString> _type2string{
@@ -46,5 +52,7 @@ private:
     const QString _name = "VGM Information", _description = "Infromation from VGM received by dialect.",
                   _icon = QStringLiteral("custom/img/vgm.svg");
     QVariantList _detections;
+    QVariantMap _camCalibration;
+    QVariantMap _compVersion;
     bool _setupCompleted = false;
 };
