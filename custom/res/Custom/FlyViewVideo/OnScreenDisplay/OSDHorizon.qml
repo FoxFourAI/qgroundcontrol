@@ -18,7 +18,11 @@ Item{
     property real _halfHorFov: (_baseHorFov / 2) * Math.PI / 180
     property real _fHorDisp: (playerSize.width / 2) / Math.tan(_halfHorFov)
     property real _aspect: playerSize.height / playerSize.width
-    property real _fVertDisp: _fHorDisp * _aspect
+    property real _fVertDisp: {
+        if(playerSize.width < 800)
+            return _fHorDisp * _aspect
+        return (playerSize.height / 2) * Math.tan(27.5 * Math.PI / 180)
+    }
 
     clip:true
     OSDLadder {

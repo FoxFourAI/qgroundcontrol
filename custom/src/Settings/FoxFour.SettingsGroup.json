@@ -137,6 +137,14 @@
             "keywords":"HUD shadow"
         },
         {
+            "name": "hudFPI",
+            "shortDesc": "show FPI",
+            "type": "bool",
+            "default": true,
+            "label": "FPI",
+            "keywords":"HUD FPI"
+        },
+        {
             "name": "hudCompass",
             "shortDesc": "show compass",
             "type": "bool",
