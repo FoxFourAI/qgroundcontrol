@@ -67,6 +67,11 @@ void VGMDialect::_handleMavMessage(const mavlink_message_t& msg)
             mavlink_msg_companion_version_decode(&msg, &decoded);
             _handleCompanionVersion(decoded);
         } break;
+        case MAVLINK_MSG_ID_F4_CAM_CALIBR: {
+            mavlink_f4_cam_calibr_t decoded;
+            mavlink_msg_f4_cam_calibr_decode(&msg, &decoded);
+            _handleCameraCalibr(decoded);
+        }
         default:
             return;
     }
@@ -74,22 +79,21 @@ void VGMDialect::_handleMavMessage(const mavlink_message_t& msg)
 
 void VGMDialect::_handleCompanionVersion(const mavlink_companion_version_t& msg)
 {
-    QVariantMap info;
-    info["capabilities"] = QVariant(static_cast<qlonglong>(msg.capabilities));
-    info["uid"] = QVariant(static_cast<qlonglong>(msg.uid));
-    info["flight_sw_version"] = QVariant(msg.flight_sw_version);
-    info["middleware_sw_version"] = QVariant(msg.middleware_sw_version);
-    info["os_sw_version"] = QVariant(msg.os_sw_version);
-    info["board_version"] = QVariant(msg.board_version);
-    info["vendor_id"] = QVariant(msg.vendor_id);
-    info["product_id"] = QVariant(msg.product_id);
+    _compVersion["capabilities"] = QVariant(static_cast<qlonglong>(msg.capabilities));
+    _compVersion["uid"] = QVariant(static_cast<qlonglong>(msg.uid));
+    _compVersion["flight_sw_version"] = QVariant(msg.flight_sw_version);
+    _compVersion["middleware_sw_version"] = QVariant(msg.middleware_sw_version);
+    _compVersion["os_sw_version"] = QVariant(msg.os_sw_version);
+    _compVersion["board_version"] = QVariant(msg.board_version);
+    _compVersion["vendor_id"] = QVariant(msg.vendor_id);
+    _compVersion["product_id"] = QVariant(msg.product_id);
     QString flightVersion(reinterpret_cast<const char*>(msg.flight_custom_version));
     QString middlewareVersion(reinterpret_cast<const char*>(msg.middleware_custom_version));
     QString osVersion(reinterpret_cast<const char*>(msg.os_custom_version));
-    info["flight_custom_version"] = QVariant(flightVersion);
-    info["middleware_custom_version"] = QVariant(middlewareVersion);
-    info["os_custom_version"] = QVariant(osVersion);
-    emit companionVersionReceived(info);
+    _compVersion["flight_custom_version"] = QVariant(flightVersion);
+    _compVersion["middleware_custom_version"] = QVariant(middlewareVersion);
+    _compVersion["os_custom_version"] = QVariant(osVersion);
+    emit companionVersionChanged();
 }
 
 void VGMDialect::_handleF4Detector(const mavlink_f4_detector_t& msg)
@@ -112,9 +116,45 @@ void VGMDialect::_handleF4Detector(const mavlink_f4_detector_t& msg)
     emit detectionsListChanged();
 }
 
+void VGMDialect::_handleCameraCalibr(const mavlink_f4_cam_calibr_t &msg)
+{
+    QVariantMap c;
+    c["valid"] = msg.width > 0 && msg.height > 0 && msg.K[0] > 0 && msg.K[2] > 0;
+    c["width"] = msg.width;
+    c["height"] = msg.height;
+    const char* raw = reinterpret_cast<const char*>(msg.distortion_model);
+    c["model"] = QString::fromLatin1(raw, qstrnlen(raw, sizeof(msg.distortion_model))).trimmed();
+
+    QVariantList list;
+    for (double val: msg.K) {
+        list.append(QVariant::fromValue(val));
+    }
+    c["intrinsics"] = list;
+    list.clear();
+    for (double val: msg.D) {
+        list.append(QVariant::fromValue(val));
+    }
+    c["distortion"] = list;
+
+    if (c == _camCalibration)
+        return;
+    _camCalibration = c;
+    emit camCalibrationChanged();
+}
+
 QVariantList VGMDialect::detections() const
 {
     return _detections;
+}
+
+QVariantMap VGMDialect::camCalibration() const
+{
+    return _camCalibration;
+}
+
+QVariantMap VGMDialect::compVersion() const
+{
+    return _compVersion;
 }
 
 void VGMDialect::clearDetections()

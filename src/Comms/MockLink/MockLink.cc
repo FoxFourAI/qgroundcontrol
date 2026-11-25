@@ -3269,7 +3269,7 @@ void MockLink::_sendAvailableMode(uint8_t modeIndexOneBased)
     std::strncpy(modeName, availableMode.name, sizeof(modeName) - 1);
 
     mavlink_message_t msg{};
-
+    static int seq = 1;
     (void) mavlink_msg_available_modes_pack_chan(
         _vehicleSystemId,
         _vehicleComponentId,
@@ -3280,7 +3280,8 @@ void MockLink::_sendAvailableMode(uint8_t modeIndexOneBased)
         availableMode.standard_mode,
         availableMode.custom_mode,
         availableMode.canBeSet ? 0 : MAV_MODE_PROPERTY_NOT_USER_SELECTABLE,
-        modeName);
+        modeName,
+        seq++);
     respondWithMavlinkMessage(msg);
 }
 
