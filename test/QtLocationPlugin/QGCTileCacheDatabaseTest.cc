@@ -1,17 +1,22 @@
 #include "QGCTileCacheDatabaseTest.h"
 
+#include <QtCore/QBuffer>
 #include <QtCore/QDateTime>
 #include <QtCore/QFile>
+#include <QtCore/QFileInfo>
 #include <QtCore/QRegularExpression>
 #include <QtCore/QSettings>
+#include <QtCore/QTemporaryDir>
+#include <QtGui/QImage>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlQuery>
+#include <gdal_priv.h>
+#include <ogr_spatialref.h>
 
 #include "QGCCacheTile.h"
 #include "QGCMapUrlEngine.h"
 #include "QGCTile.h"
 #include "QGCTileCacheDatabase.h"
-#include <QtCore/QTemporaryDir>
 
 static const QString kFixedProviderType = QStringLiteral("Bing Road");
 
@@ -768,6 +773,86 @@ void QGCTileCacheDatabaseTest::_testExportImportNoLingeringConnections()
     QVERIFY(db3->connectDB());
     const DatabaseResult imp2 = db3->importSetsMerge(exportPath, nullptr);
     QVERIFY(imp2.success);
+}
+
+void QGCTileCacheDatabaseTest::_testExportMrfBundle()
+{
+    GDALAllRegister();
+
+    QTemporaryDir tempDir;
+    auto db = _createInitializedDB(tempDir);
+    QVERIFY(db != nullptr);
+
+    const auto setID = db->createTileSet(QStringLiteral("MRF Flow"), QStringLiteral("TestMap"), 60.0, -90.0, 0.0, 45.0,
+                                         1, 3, kFixedProviderType, 12);
+    QVERIFY(setID.has_value());
+
+    QImage image(256, 256, QImage::Format_RGB888);
+    image.fill(qRgb(32, 96, 160));
+    QByteArray jpeg;
+    QBuffer buffer(&jpeg);
+    QVERIFY(buffer.open(QIODevice::WriteOnly));
+    QVERIFY(image.save(&buffer, "JPEG", 90));
+    QVERIFY(!jpeg.isEmpty());
+
+    for (int y = 2; y <= 4; ++y) {
+        for (int x = 2; x <= 5; ++x) {
+            const QString hash = UrlFactory::getTileHash(kFixedProviderType, x, y, 3);
+            QVERIFY(db->saveTile(hash, QStringLiteral("jpg"), jpeg, kFixedProviderType, setID.value()));
+        }
+    }
+
+    TileSetRecord record;
+    record.setID = setID.value();
+    record.name = QStringLiteral("MRF Flow");
+    record.topleftLat = 60.0;
+    record.topleftLon = -90.0;
+    record.bottomRightLat = 0.0;
+    record.bottomRightLon = 45.0;
+    record.minZoom = 1;
+    record.maxZoom = 3;
+    record.numTiles = 12;
+
+    const QString requestedPath = tempDir.filePath(QStringLiteral("flow.mrf"));
+    const DatabaseResult result = db->exportSetsAsMRF({record}, requestedPath, nullptr);
+    QVERIFY2(result.success, qPrintable(result.errorString));
+
+    const QString mrfPath = tempDir.filePath(QStringLiteral("flow.mrf"));
+    QVERIFY(QFile::exists(mrfPath));
+    const QString indexPath = tempDir.filePath(QStringLiteral("flow.idx"));
+    QVERIFY(QFile::exists(indexPath));
+    QCOMPARE(QFileInfo(indexPath).size(), 17 * 16);
+    QVERIFY(QFile::exists(tempDir.filePath(QStringLiteral("flow.pjg"))));
+
+    const QByteArray encodedPath = mrfPath.toUtf8();
+    GDALDataset* dataset = static_cast<GDALDataset*>(GDALOpen(encodedPath.constData(), GA_ReadOnly));
+    QVERIFY(dataset != nullptr);
+    QCOMPARE(dataset->GetRasterXSize(), 1024);
+    QCOMPARE(dataset->GetRasterYSize(), 768);
+
+    OGRSpatialReference expected;
+    QCOMPARE(expected.importFromEPSG(3857), OGRERR_NONE);
+    expected.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER);
+    const OGRSpatialReference* actual = dataset->GetSpatialRef();
+    QVERIFY(actual != nullptr);
+    QVERIFY(actual->IsSame(&expected));
+
+    double geoTransform[6] = {};
+    QCOMPARE(dataset->GetGeoTransform(geoTransform), CE_None);
+    QVERIFY(geoTransform[1] > 0.0);
+    QVERIFY(geoTransform[5] < 0.0);
+
+    GDALRasterBand* band = dataset->GetRasterBand(1);
+    QVERIFY(band != nullptr);
+    QCOMPARE(band->GetOverviewCount(), 2);
+    QCOMPARE(band->GetOverview(0)->GetXSize(), 512);
+    QCOMPARE(band->GetOverview(1)->GetXSize(), 256);
+
+    unsigned char pixel = 0;
+    QCOMPARE(band->RasterIO(GF_Read, 0, 0, 1, 1, &pixel, 1, 1, GDT_Byte, 0, 0, nullptr), CE_None);
+    QVERIFY(pixel > 0);
+
+    GDALClose(dataset);
 }
 
 void QGCTileCacheDatabaseTest::_testCreateTileSet()
