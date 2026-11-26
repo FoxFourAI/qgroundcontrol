@@ -46,13 +46,30 @@
             "keywords": "stream"
         },
         {
+            "name": "videoBGImage",
+            "shortDesc": "Use image as temlate, when there is no video",
+            "type": "bool",
+            "default": false,
+            "label": "Show image when no video",
+            "keywords": "video"
+        },
+        {
+            "name": "videoBGColor",
+            "shortDesc": "Color of background when no video",
+            "type": "string",
+            "default": "#4d80b3",
+            "label": "Background color when no video",
+            "keywords": "video"
+        },
+        {
             "name": "showGPSTrajectory",
             "shortDesc": "Show GPS_RAW_INT trajectory on map",
             "type": "bool",
             "default": true,
             "label": "Show GPS_RAW_INT trajectory on map",
             "keywords":"trajectory gps"
-        },{
+        },
+        {
             "name": "showDetections",
             "shortDesc": "Show detections on map",
             "type": "bool",

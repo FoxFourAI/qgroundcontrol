@@ -143,6 +143,30 @@ Item {
                     }
                 }
 
+                FactCheckBoxSlider {
+                    id: bgImgFact
+                    Layout.fillWidth: true
+                    text: fact.label
+                    fact: control._settings.videoBGImage
+
+                    ToolTip {
+                        visible: parent.hovered
+                        text: parent.fact.shortDescription
+                    }
+                }
+
+                LabelledFactTextField {
+                    Layout.fillWidth: true
+                    label: fact.label
+                    fact: control._settings.videoBGColor
+                    visible: !bgImgFact.checked
+
+                    ToolTip {
+                        visible: parent.hovered
+                        text: parent.fact.shortDescription
+                    }
+                }
+
                 SettingsGroupLayout {
                     id: hudGroup
                     property bool showFull: control._settings.hudVisible.value

@@ -20,6 +20,8 @@ public:
     DEFINE_SETTINGFACT(trackingRate)
     DEFINE_SETTINGFACT(cacheVehicleParameters)
     DEFINE_SETTINGFACT(autoConfigureStream)
+    DEFINE_SETTINGFACT(videoBGImage)
+    DEFINE_SETTINGFACT(videoBGColor)
     DEFINE_SETTINGFACT(showGPSTrajectory)
     DEFINE_SETTINGFACT(mapMatchingPointsCnt)
     DEFINE_SETTINGFACT(showDetections)

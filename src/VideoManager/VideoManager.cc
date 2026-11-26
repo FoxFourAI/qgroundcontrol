@@ -579,10 +579,6 @@ bool VideoManager::_updateUVC(VideoReceiver * /*receiver*/)
 
 bool VideoManager::autoStreamConfigured() const
 {
-    //FoxFour part
-    if (!SettingsManager::instance()->foxFourSettings()->autoConfigureStream()->rawValue().toBool()) {
-        return false;
-    }
     for (VideoReceiver *receiver : _videoReceivers) {
         QGCVideoStreamInfo *pInfo = receiver->videoStreamInfo();
         if (!receiver->isThermal() && pInfo && !pInfo->isThermal()) {
@@ -596,7 +592,8 @@ bool VideoManager::autoStreamConfigured() const
 bool VideoManager::_updateAutoStream(VideoReceiver *receiver)
 {
     const QGCVideoStreamInfo *pInfo = receiver->videoStreamInfo();
-    if (!pInfo) {
+    //FoxFour part
+    if (!pInfo || !SettingsManager::instance()->foxFourSettings()->autoConfigureStream()->rawValue().toBool()) {
         return false;
     }
 
@@ -972,9 +969,7 @@ void VideoManager::_initVideoReceiver(VideoReceiver *receiver, QQuickWindow *win
     (void) connect(receiver, &VideoReceiver::videoStreamInfoChanged, this, [this, receiver]() {
         const QGCVideoStreamInfo *videoStreamInfo = receiver->videoStreamInfo();
         qCDebug(VideoManagerLog) << "Video" << receiver->name() << "stream info:" << (videoStreamInfo ? "received" : "lost");
-        if (SettingsManager::instance()->foxFourSettings()->autoConfigureStream()->rawValue().toBool()) {
-            (void) _updateAutoStream(receiver);
-        }
+        (void) _updateAutoStream(receiver);
     });
 
     (void) _updateSettings(receiver);
